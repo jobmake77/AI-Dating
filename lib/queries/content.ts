@@ -19,7 +19,7 @@ export async function getContents(params: ContentListParams = {}) {
       users:author_id (
         id,
         username,
-        avatar_url,
+        avatar,
         full_name
       )
     `, { count: 'exact' })
@@ -62,7 +62,7 @@ export async function getContentById(id: string) {
       users:author_id (
         id,
         username,
-        avatar_url,
+        avatar,
         full_name,
         bio
       )
@@ -87,7 +87,7 @@ export async function getContentBySlug(slug: string) {
       users:author_id (
         id,
         username,
-        avatar_url,
+        avatar,
         full_name,
         bio
       )

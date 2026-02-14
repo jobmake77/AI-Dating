@@ -17,7 +17,7 @@ interface ContentCardProps {
     created_at: string
     users: {
       username: string
-      avatar_url: string | null
+      avatar: string | null
       full_name: string | null
     }
   }

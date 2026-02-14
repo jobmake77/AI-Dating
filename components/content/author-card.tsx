@@ -6,7 +6,7 @@ interface AuthorCardProps {
   author: {
     id: string
     username: string
-    avatar_url: string | null
+    avatar: string | null
     full_name: string | null
     bio: string | null
   }
@@ -21,7 +21,7 @@ export function AuthorCard({ author }: AuthorCardProps) {
       <CardContent>
         <Link href={`/u/${author.username}`} className="flex items-start gap-4 hover:opacity-80 transition-opacity">
           <Avatar className="h-12 w-12">
-            <AvatarImage src={author.avatar_url || undefined} alt={author.full_name || author.username} />
+            <AvatarImage src={author.avatar || undefined} alt={author.full_name || author.username} />
             <AvatarFallback>
               {(author.full_name || author.username).charAt(0).toUpperCase()}
             </AvatarFallback>

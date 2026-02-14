@@ -8,7 +8,7 @@ interface UserProfileProps {
   user: {
     id: string
     username: string
-    avatar_url: string | null
+    avatar: string | null
     full_name: string | null
     bio: string | null
     membership_tier: string
@@ -23,7 +23,7 @@ export function UserProfile({ user, isOwner }: UserProfileProps) {
       <CardContent className="pt-6">
         <div className="flex items-start gap-6">
           <Avatar className="h-24 w-24">
-            <AvatarImage src={user.avatar_url || undefined} alt={user.full_name || user.username} />
+            <AvatarImage src={user.avatar || undefined} alt={user.full_name || user.username} />
             <AvatarFallback className="text-2xl">
               {(user.full_name || user.username).charAt(0).toUpperCase()}
             </AvatarFallback>
