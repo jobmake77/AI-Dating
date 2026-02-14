@@ -34,18 +34,27 @@ export default async function PostPage({ params }: PostPageProps) {
     incrementViewCount(id).catch(console.error)
 
     return (
-      <div className="container py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
+      <div className="container max-w-7xl mx-auto py-8 px-4">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Left Spacer */}
+          <div className="hidden lg:block lg:col-span-2"></div>
+
+          {/* Main Content */}
+          <div className="lg:col-span-6">
             <ContentDetail
               content={content}
               isAuthenticated={!!user}
               isMember={isMember}
             />
           </div>
-          <aside className="space-y-6">
+
+          {/* Sidebar */}
+          <aside className="lg:col-span-2 space-y-6">
             <AuthorCard author={content.users} />
           </aside>
+
+          {/* Right Spacer */}
+          <div className="hidden lg:block lg:col-span-2"></div>
         </div>
       </div>
     )

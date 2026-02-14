@@ -31,8 +31,8 @@ export default async function UserPage({ params, searchParams }: UserPageProps) 
     })
 
     return (
-      <div className="container py-8">
-        <div className="max-w-4xl mx-auto space-y-8">
+      <div className="container max-w-4xl mx-auto py-8 px-4">
+        <div className="space-y-8">
           <UserProfile user={user} isOwner={isOwner} />
           <UserContents
             contents={contents}

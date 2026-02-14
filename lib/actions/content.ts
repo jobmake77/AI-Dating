@@ -8,11 +8,13 @@ import { contentSchema } from '@/lib/validations/content'
 
 // Calculate reading time based on word count (300 words per minute)
 function calculateReadingTime(content: string): number {
-  const wordCount = content.length
+  // Strip HTML tags for word count
+  const text = content.replace(/<[^>]*>/g, '')
+  const wordCount = text.length
   return Math.ceil(wordCount / 300)
 }
 
-// Generate unique slug
+// Generate unique slug from title
 function generateSlug(title: string): string {
   const baseSlug = title
     .toLowerCase()
@@ -21,6 +23,39 @@ function generateSlug(title: string): string {
     .substring(0, 50)
 
   return `${baseSlug}-${nanoid(8)}`
+}
+
+// Extract title from HTML content (first heading or first 50 chars)
+function extractTitle(htmlContent: string): string {
+  // Try to find first heading
+  const headingMatch = htmlContent.match(/<h[1-6][^>]*>(.*?)<\/h[1-6]>/i)
+  if (headingMatch) {
+    return headingMatch[1].replace(/<[^>]*>/g, '').substring(0, 200)
+  }
+
+  // Try to find first paragraph
+  const paragraphMatch = htmlContent.match(/<p[^>]*>(.*?)<\/p>/i)
+  if (paragraphMatch) {
+    const text = paragraphMatch[1].replace(/<[^>]*>/g, '')
+    return text.substring(0, 50) + (text.length > 50 ? '...' : '')
+  }
+
+  // Fallback: strip all HTML and take first 50 chars
+  const text = htmlContent.replace(/<[^>]*>/g, '').trim()
+  return text.substring(0, 50) + (text.length > 50 ? '...' : '')
+}
+
+// Extract excerpt from HTML content
+function extractExcerpt(htmlContent: string): string {
+  const text = htmlContent.replace(/<[^>]*>/g, '').trim()
+  return text.substring(0, 200) + (text.length > 200 ? '...' : '')
+}
+
+// Extract hashtags from HTML content
+function extractTags(htmlContent: string): string[] {
+  const text = htmlContent.replace(/<[^>]*>/g, '')
+  const hashtags = text.match(/#[\w\u4e00-\u9fa5]+/g) || []
+  return [...new Set(hashtags.map(tag => tag.slice(1)))]
 }
 
 export async function createContent(formData: FormData) {
@@ -34,44 +69,32 @@ export async function createContent(formData: FormData) {
 
   // Parse and validate form data
   const rawData = {
-    title: formData.get('title') as string,
     content: formData.get('content') as string,
-    excerpt: formData.get('excerpt') as string,
-    price_type: formData.get('price_type') as string,
-    tags: formData.get('tags') as string,
+    price_type: formData.get('price_type') as string || 'free',
   }
 
   const validatedData = contentSchema.parse(rawData)
 
-  // Generate slug and calculate reading time
-  const slug = generateSlug(validatedData.title)
+  // Auto-extract metadata from content
+  const title = extractTitle(validatedData.content)
+  const excerpt = extractExcerpt(validatedData.content)
+  const tags = extractTags(validatedData.content)
+  const slug = generateSlug(title)
   const readingTime = calculateReadingTime(validatedData.content)
-
-  // Parse tags: support both #hashtag and comma-separated
-  const parseTags = (tagString: string): string[] => {
-    // Extract hashtags
-    const hashtags = tagString.match(/#[\w\u4e00-\u9fa5]+/g)?.map(tag => tag.slice(1)) || []
-    // Extract comma-separated tags
-    const commaTags = tagString.split(/[,，]/).map(t => t.replace(/#/g, '').trim()).filter(Boolean)
-    // Combine and deduplicate
-    return [...new Set([...hashtags, ...commaTags])]
-  }
-
-  const tags = parseTags(validatedData.tags)
 
   // Insert content
   const { data, error } = await supabase
     .from('contents')
     .insert({
-      title: validatedData.title,
+      title,
       slug,
       content: validatedData.content,
-      excerpt: validatedData.excerpt || validatedData.content.substring(0, 200),
+      excerpt,
       price_type: validatedData.price_type,
       tags,
       reading_time: readingTime,
       author_id: user.id,
-      status: 'pending', // Default to pending for moderation
+      status: 'approved', // MVP: Auto-approve content (skip moderation)
     })
     .select()
     .single()
@@ -95,34 +118,25 @@ export async function updateContent(id: string, formData: FormData) {
 
   // Parse and validate form data
   const rawData = {
-    title: formData.get('title') as string,
     content: formData.get('content') as string,
-    excerpt: formData.get('excerpt') as string,
-    price_type: formData.get('price_type') as string,
-    tags: formData.get('tags') as string,
+    price_type: formData.get('price_type') as string || 'free',
   }
 
   const validatedData = contentSchema.parse(rawData)
 
-  // Calculate reading time
+  // Auto-extract metadata from content
+  const title = extractTitle(validatedData.content)
+  const excerpt = extractExcerpt(validatedData.content)
+  const tags = extractTags(validatedData.content)
   const readingTime = calculateReadingTime(validatedData.content)
-
-  // Parse tags
-  const parseTags = (tagString: string): string[] => {
-    const hashtags = tagString.match(/#[\w\u4e00-\u9fa5]+/g)?.map(tag => tag.slice(1)) || []
-    const commaTags = tagString.split(/[,，]/).map(t => t.replace(/#/g, '').trim()).filter(Boolean)
-    return [...new Set([...hashtags, ...commaTags])]
-  }
-
-  const tags = parseTags(validatedData.tags)
 
   // Update content
   const { error } = await supabase
     .from('contents')
     .update({
-      title: validatedData.title,
+      title,
       content: validatedData.content,
-      excerpt: validatedData.excerpt || validatedData.content.substring(0, 200),
+      excerpt,
       price_type: validatedData.price_type,
       tags,
       reading_time: readingTime,
