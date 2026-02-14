@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { CATEGORIES } from "@/lib/constants/categories";
 
 async function signOut() {
   'use server'
@@ -71,39 +72,24 @@ export default async function Home() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">源码深潜</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  开源项目源码解读
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">实战工坊</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  手把手项目教程
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">AI 前沿</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  大模型应用部署
-                </p>
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-6">
+            {Object.values(CATEGORIES).map((category) => (
+              <Link key={category.slug} href={`/category/${category.slug}`}>
+                <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <span>{category.icon}</span>
+                      <span>{category.name}</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground">
+                      {category.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
           </div>
 
           <p className="text-center text-sm text-muted-foreground">
