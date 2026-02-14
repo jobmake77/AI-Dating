@@ -11,7 +11,7 @@ export default async function CreatePage() {
   }
 
   return (
-    <div className="container max-w-4xl py-8">
+    <div className="container max-w-3xl mx-auto py-8 px-4">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">发布内容</h1>
         <p className="text-muted-foreground mt-2">

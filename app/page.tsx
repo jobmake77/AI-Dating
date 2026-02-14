@@ -25,6 +25,17 @@ export default async function Home({ searchParams }: HomeProps) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
+  // 获取用户的 username
+  let username = null
+  if (user) {
+    const { data: profile } = await supabase
+      .from('users')
+      .select('username')
+      .eq('id', user.id)
+      .single()
+    username = profile?.username
+  }
+
   const params = await searchParams
   const page = Number(params.page) || 1
 
@@ -34,7 +45,7 @@ export default async function Home({ searchParams }: HomeProps) {
     <div className="min-h-screen">
       {/* Header */}
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="container flex h-16 items-center justify-between">
+        <div className="container max-w-7xl mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-6">
             <Link href="/" className="font-bold text-xl">
               AI-Dating
@@ -49,13 +60,13 @@ export default async function Home({ searchParams }: HomeProps) {
           </div>
 
           <div className="flex items-center gap-4">
-            {user ? (
+            {user && username ? (
               <>
                 <Button asChild>
                   <Link href="/create">发布内容</Link>
                 </Button>
                 <Button variant="ghost" asChild>
-                  <Link href={`/u/${user.user_metadata.user_name}`}>
+                  <Link href={`/u/${username}`}>
                     {user.user_metadata.avatar_url && (
                       <img
                         src={user.user_metadata.avatar_url}
@@ -63,7 +74,7 @@ export default async function Home({ searchParams }: HomeProps) {
                         className="w-6 h-6 rounded-full mr-2"
                       />
                     )}
-                    {user.user_metadata.user_name}
+                    {user.user_metadata.user_name || username}
                   </Link>
                 </Button>
                 <form action={signOut}>
@@ -84,7 +95,7 @@ export default async function Home({ searchParams }: HomeProps) {
       </header>
 
       {/* Main Content */}
-      <div className="container py-8">
+      <div className="container max-w-7xl mx-auto py-8 px-4">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar - Trending Tags */}
           <aside className="lg:col-span-1 space-y-6">
@@ -108,7 +119,7 @@ export default async function Home({ searchParams }: HomeProps) {
 
       {/* Footer */}
       <footer className="border-t mt-16">
-        <div className="container py-8 text-center text-sm text-muted-foreground">
+        <div className="container max-w-7xl mx-auto py-8 px-4 text-center text-sm text-muted-foreground">
           <p>AI-Dating - 开放的 AI 开发者学习社区</p>
           <p className="mt-2">Day 2 重构完成：标签驱动的开放社区 ✅</p>
         </div>
