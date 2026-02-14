@@ -8,7 +8,7 @@ import 'highlight.js/styles/github-dark.css'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { CATEGORIES } from '@/lib/constants/categories'
+import { TagList } from '@/components/tag/tag-list'
 import { formatDistanceToNow } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
 
@@ -16,7 +16,6 @@ interface ContentDetailProps {
   content: {
     id: string
     title: string
-    category: string
     content: string
     price_type: string
     reading_time: number
@@ -29,7 +28,6 @@ interface ContentDetailProps {
 }
 
 export function ContentDetail({ content, isAuthenticated, isMember }: ContentDetailProps) {
-  const category = CATEGORIES[content.category as keyof typeof CATEGORIES]
   const isPaidContent = content.price_type === 'member_only'
   const canViewFullContent = !isPaidContent || isMember
 
@@ -42,26 +40,14 @@ export function ContentDetail({ content, isAuthenticated, isMember }: ContentDet
     <article className="max-w-4xl mx-auto">
       <header className="mb-8">
         <div className="flex items-center gap-2 mb-4">
-          <Badge variant="secondary">
-            {category?.icon} {category?.name}
-          </Badge>
           {isPaidContent && (
             <Badge variant="default">会员专享</Badge>
-          )}
-          {content.tags && content.tags.length > 0 && (
-            <>
-              {content.tags.map((tag) => (
-                <Badge key={tag} variant="outline">
-                  {tag}
-                </Badge>
-              ))}
-            </>
           )}
         </div>
 
         <h1 className="text-4xl font-bold mb-4">{content.title}</h1>
 
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
           <span>{content.reading_time} 分钟阅读</span>
           <span>{content.view_count} 浏览</span>
           <time>
@@ -71,6 +57,10 @@ export function ContentDetail({ content, isAuthenticated, isMember }: ContentDet
             })}
           </time>
         </div>
+
+        {content.tags && content.tags.length > 0 && (
+          <TagList tags={content.tags} />
+        )}
       </header>
 
       <div className="prose prose-slate dark:prose-invert max-w-none">

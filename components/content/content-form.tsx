@@ -13,10 +13,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { MarkdownEditor } from './markdown-editor'
 import { MarkdownPreview } from './markdown-preview'
-import { CATEGORY_OPTIONS } from '@/lib/constants/categories'
+import { TagInput } from '@/components/tag/tag-input'
 
 export function ContentForm() {
   const [content, setContent] = useState('')
+  const [tags, setTags] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -39,11 +40,10 @@ export function ContentForm() {
     try {
       const formData = new FormData()
       formData.append('title', data.title)
-      formData.append('category', data.category)
       formData.append('content', data.content)
       formData.append('excerpt', data.excerpt || '')
       formData.append('price_type', data.price_type)
-      formData.append('tags', data.tags || '')
+      formData.append('tags', data.tags)
 
       await createContent(formData)
     } catch (err) {
@@ -74,27 +74,6 @@ export function ContentForm() {
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="category">分类</Label>
-          <Select
-            onValueChange={(value) => setValue('category', value as any)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="选择分类" />
-            </SelectTrigger>
-            <SelectContent>
-              {CATEGORY_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {errors.category && (
-            <p className="text-sm text-destructive">{errors.category.message}</p>
-          )}
-        </div>
-
-        <div className="space-y-2">
           <Label htmlFor="price_type">价格类型</Label>
           <Select
             defaultValue="free"
@@ -112,28 +91,30 @@ export function ContentForm() {
             <p className="text-sm text-destructive">{errors.price_type.message}</p>
           )}
         </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="excerpt">摘要（可选）</Label>
+          <Input
+            id="excerpt"
+            {...register('excerpt')}
+            placeholder="简短描述文章内容"
+          />
+          {errors.excerpt && (
+            <p className="text-sm text-destructive">{errors.excerpt.message}</p>
+          )}
+        </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="excerpt">摘要（可选）</Label>
-        <Input
-          id="excerpt"
-          {...register('excerpt')}
-          placeholder="简短描述文章内容"
-        />
-        {errors.excerpt && (
-          <p className="text-sm text-destructive">{errors.excerpt.message}</p>
-        )}
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="tags">标签（可选，用逗号分隔）</Label>
-        <Input
-          id="tags"
-          {...register('tags')}
-          placeholder="例如：React, TypeScript, Next.js"
-        />
-      </div>
+      <TagInput
+        value={tags}
+        onChange={(value) => {
+          setTags(value)
+          setValue('tags', value)
+        }}
+      />
+      {errors.tags && (
+        <p className="text-sm text-destructive">{errors.tags.message}</p>
+      )}
 
       <Tabs defaultValue="edit" className="w-full">
         <TabsList className="grid w-full grid-cols-2">

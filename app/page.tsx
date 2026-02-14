@@ -1,9 +1,13 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { CATEGORIES } from "@/lib/constants/categories";
+import { getContents } from "@/lib/queries/content";
+import { ContentList } from "@/components/content/content-list";
+import { Pagination } from "@/components/content/pagination";
+import { TrendingTags } from "@/components/tag/trending-tags";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 
 async function signOut() {
   'use server'
@@ -13,94 +17,102 @@ async function signOut() {
   redirect('/')
 }
 
-export default async function Home() {
+interface HomeProps {
+  searchParams: Promise<{ page?: string }>
+}
+
+export default async function Home({ searchParams }: HomeProps) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-950 dark:to-neutral-900 p-4">
-      <Card className="w-full max-w-2xl">
-        <CardHeader className="text-center">
-          <CardTitle className="text-4xl font-bold mb-2">
-            AI-Dating
-          </CardTitle>
-          <CardDescription className="text-lg">
-            A Date with AI: The AI Developer Community
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {user ? (
-            <div className="text-center space-y-4">
-              <div className="flex items-center justify-center gap-3">
-                {user.user_metadata.avatar_url && (
-                  <img
-                    src={user.user_metadata.avatar_url}
-                    alt="Avatar"
-                    className="w-12 h-12 rounded-full"
-                  />
-                )}
-                <div className="text-left">
-                  <p className="font-medium">
-                    欢迎回来，{user.user_metadata.user_name || user.email}！
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {user.email}
-                  </p>
-                </div>
-              </div>
-              <form action={signOut}>
-                <Button type="submit" variant="outline">
-                  退出登录
-                </Button>
-              </form>
-            </div>
-          ) : (
-            <div className="text-center space-y-4">
-              <p className="text-lg text-muted-foreground">
-                🚀 AI 开发者技术社区
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/login">
-                  <Button size="lg">
-                    立即登录
-                  </Button>
-                </Link>
-                <Button size="lg" variant="outline">
-                  了解更多
-                </Button>
-              </div>
-            </div>
-          )}
+  const params = await searchParams
+  const page = Number(params.page) || 1
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-6">
-            {Object.values(CATEGORIES).map((category) => (
-              <Link key={category.slug} href={`/category/${category.slug}`}>
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <span>{category.icon}</span>
-                      <span>{category.name}</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground">
-                      {category.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
+  const { contents, totalPages } = await getContents({ page })
+
+  return (
+    <div className="min-h-screen">
+      {/* Header */}
+      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+        <div className="container flex h-16 items-center justify-between">
+          <div className="flex items-center gap-6">
+            <Link href="/" className="font-bold text-xl">
+              AI-Dating
+            </Link>
+            <div className="relative w-96 hidden md:block">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="搜索内容、标签..."
+                className="pl-10"
+              />
+            </div>
           </div>
 
-          <p className="text-center text-sm text-muted-foreground">
+          <div className="flex items-center gap-4">
             {user ? (
-              <>✅ 已登录 | Day 1 完成：GitHub OAuth ✅</>
+              <>
+                <Button asChild>
+                  <Link href="/create">发布内容</Link>
+                </Button>
+                <Button variant="ghost" asChild>
+                  <Link href={`/u/${user.user_metadata.user_name}`}>
+                    {user.user_metadata.avatar_url && (
+                      <img
+                        src={user.user_metadata.avatar_url}
+                        alt="Avatar"
+                        className="w-6 h-6 rounded-full mr-2"
+                      />
+                    )}
+                    {user.user_metadata.user_name}
+                  </Link>
+                </Button>
+                <form action={signOut}>
+                  <Button type="submit" variant="ghost" size="sm">
+                    退出
+                  </Button>
+                </form>
+              </>
             ) : (
-              <>项目正在搭建中... Day 1 进度：GitHub OAuth ✅</>
+              <>
+                <Button asChild>
+                  <Link href="/login">登录</Link>
+                </Button>
+              </>
             )}
-          </p>
-        </CardContent>
-      </Card>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <div className="container py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Sidebar - Trending Tags */}
+          <aside className="lg:col-span-1 space-y-6">
+            <TrendingTags />
+          </aside>
+
+          {/* Main Content Feed */}
+          <main className="lg:col-span-3">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold">最新内容</h2>
+              <p className="text-muted-foreground mt-1">
+                探索社区成员分享的技术见解和实战经验
+              </p>
+            </div>
+
+            <ContentList contents={contents} />
+            <Pagination currentPage={page} totalPages={totalPages} basePath="/" />
+          </main>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="border-t mt-16">
+        <div className="container py-8 text-center text-sm text-muted-foreground">
+          <p>AI-Dating - 开放的 AI 开发者学习社区</p>
+          <p className="mt-2">Day 2 重构完成：标签驱动的开放社区 ✅</p>
+        </div>
+      </footer>
     </div>
   );
 }

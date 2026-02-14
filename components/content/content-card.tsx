@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
-import { CATEGORIES } from '@/lib/constants/categories'
+import { TagList } from '@/components/tag/tag-list'
 import { formatDistanceToNow } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
 
@@ -10,7 +10,7 @@ interface ContentCardProps {
     id: string
     title: string
     excerpt: string
-    category: string
+    tags: string[] | null
     price_type: string
     reading_time: number
     view_count: number
@@ -24,15 +24,10 @@ interface ContentCardProps {
 }
 
 export function ContentCard({ content }: ContentCardProps) {
-  const category = CATEGORIES[content.category as keyof typeof CATEGORIES]
-
   return (
     <Card className="hover:shadow-lg transition-shadow">
       <CardHeader>
         <div className="flex items-center gap-2 mb-2">
-          <Badge variant="secondary">
-            {category?.icon} {category?.name}
-          </Badge>
           {content.price_type === 'member_only' && (
             <Badge variant="default">会员专享</Badge>
           )}
@@ -43,8 +38,11 @@ export function ContentCard({ content }: ContentCardProps) {
           </h3>
         </Link>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-3">
         <p className="text-muted-foreground line-clamp-3">{content.excerpt}</p>
+        {content.tags && content.tags.length > 0 && (
+          <TagList tags={content.tags} />
+        )}
       </CardContent>
       <CardFooter className="flex items-center justify-between text-sm text-muted-foreground">
         <div className="flex items-center gap-4">
@@ -54,7 +52,7 @@ export function ContentCard({ content }: ContentCardProps) {
           >
             {content.users.full_name || content.users.username}
           </Link>
-          <span>{content.reading_time} 分钟阅读</span>
+          <span>{content.reading_time} 分钟</span>
           <span>{content.view_count} 浏览</span>
         </div>
         <time>

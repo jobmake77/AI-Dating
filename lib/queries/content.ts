@@ -3,14 +3,14 @@ import { createClient } from '@/lib/supabase/server'
 export interface ContentListParams {
   page?: number
   limit?: number
-  category?: string
+  tag?: string
   status?: 'approved' | 'pending' | 'rejected'
   authorId?: string
 }
 
 export async function getContents(params: ContentListParams = {}) {
   const supabase = await createClient()
-  const { page = 1, limit = 12, category, status = 'approved', authorId } = params
+  const { page = 1, limit = 12, tag, status = 'approved', authorId } = params
 
   let query = supabase
     .from('contents')
@@ -26,8 +26,8 @@ export async function getContents(params: ContentListParams = {}) {
     .eq('status', status)
     .order('created_at', { ascending: false })
 
-  if (category) {
-    query = query.eq('category', category)
+  if (tag) {
+    query = query.contains('tags', [tag])
   }
 
   if (authorId) {

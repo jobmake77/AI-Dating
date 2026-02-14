@@ -3,7 +3,7 @@ import { getContents } from '@/lib/queries/content'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ContentModeration } from '@/components/admin/content-moderation'
-import { CATEGORIES } from '@/lib/constants/categories'
+import { TagList } from '@/components/tag/tag-list'
 import Link from 'next/link'
 
 export default async function AdminContentsPage() {
@@ -28,46 +28,42 @@ export default async function AdminContentsPage() {
         </Card>
       ) : (
         <div className="space-y-4">
-          {contents.map((content) => {
-            const category = CATEGORIES[content.category as keyof typeof CATEGORIES]
-
-            return (
-              <Card key={content.id}>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge variant="secondary">
-                          {category?.icon} {category?.name}
-                        </Badge>
-                        {content.price_type === 'member_only' && (
-                          <Badge variant="default">会员专享</Badge>
-                        )}
-                      </div>
-                      <CardTitle className="text-xl mb-2">
-                        <Link
-                          href={`/post/${content.id}`}
-                          className="hover:text-primary transition-colors"
-                          target="_blank"
-                        >
-                          {content.title}
-                        </Link>
-                      </CardTitle>
-                      <p className="text-sm text-muted-foreground">
-                        作者：{content.users.full_name || content.users.username}
-                      </p>
+          {contents.map((content) => (
+            <Card key={content.id}>
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      {content.price_type === 'member_only' && (
+                        <Badge variant="default">会员专享</Badge>
+                      )}
                     </div>
-                    <ContentModeration contentId={content.id} />
+                    <CardTitle className="text-xl mb-2">
+                      <Link
+                        href={`/post/${content.id}`}
+                        className="hover:text-primary transition-colors"
+                        target="_blank"
+                      >
+                        {content.title}
+                      </Link>
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      作者：{content.users.full_name || content.users.username}
+                    </p>
+                    {content.tags && content.tags.length > 0 && (
+                      <TagList tags={content.tags} linkable={false} />
+                    )}
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground line-clamp-2">
-                    {content.excerpt}
-                  </p>
-                </CardContent>
-              </Card>
-            )
-          })}
+                  <ContentModeration contentId={content.id} />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground line-clamp-2">
+                  {content.excerpt}
+                </p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
     </div>

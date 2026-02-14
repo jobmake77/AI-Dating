@@ -35,7 +35,6 @@ export async function createContent(formData: FormData) {
   // Parse and validate form data
   const rawData = {
     title: formData.get('title') as string,
-    category: formData.get('category') as string,
     content: formData.get('content') as string,
     excerpt: formData.get('excerpt') as string,
     price_type: formData.get('price_type') as string,
@@ -48,17 +47,28 @@ export async function createContent(formData: FormData) {
   const slug = generateSlug(validatedData.title)
   const readingTime = calculateReadingTime(validatedData.content)
 
+  // Parse tags: support both #hashtag and comma-separated
+  const parseTags = (tagString: string): string[] => {
+    // Extract hashtags
+    const hashtags = tagString.match(/#[\w\u4e00-\u9fa5]+/g)?.map(tag => tag.slice(1)) || []
+    // Extract comma-separated tags
+    const commaTags = tagString.split(/[,，]/).map(t => t.replace(/#/g, '').trim()).filter(Boolean)
+    // Combine and deduplicate
+    return [...new Set([...hashtags, ...commaTags])]
+  }
+
+  const tags = parseTags(validatedData.tags)
+
   // Insert content
   const { data, error } = await supabase
     .from('contents')
     .insert({
       title: validatedData.title,
       slug,
-      category: validatedData.category,
       content: validatedData.content,
       excerpt: validatedData.excerpt || validatedData.content.substring(0, 200),
       price_type: validatedData.price_type,
-      tags: validatedData.tags ? validatedData.tags.split(',').map(t => t.trim()) : [],
+      tags,
       reading_time: readingTime,
       author_id: user.id,
       status: 'pending', // Default to pending for moderation
@@ -86,7 +96,6 @@ export async function updateContent(id: string, formData: FormData) {
   // Parse and validate form data
   const rawData = {
     title: formData.get('title') as string,
-    category: formData.get('category') as string,
     content: formData.get('content') as string,
     excerpt: formData.get('excerpt') as string,
     price_type: formData.get('price_type') as string,
@@ -98,16 +107,24 @@ export async function updateContent(id: string, formData: FormData) {
   // Calculate reading time
   const readingTime = calculateReadingTime(validatedData.content)
 
+  // Parse tags
+  const parseTags = (tagString: string): string[] => {
+    const hashtags = tagString.match(/#[\w\u4e00-\u9fa5]+/g)?.map(tag => tag.slice(1)) || []
+    const commaTags = tagString.split(/[,，]/).map(t => t.replace(/#/g, '').trim()).filter(Boolean)
+    return [...new Set([...hashtags, ...commaTags])]
+  }
+
+  const tags = parseTags(validatedData.tags)
+
   // Update content
   const { error } = await supabase
     .from('contents')
     .update({
       title: validatedData.title,
-      category: validatedData.category,
       content: validatedData.content,
       excerpt: validatedData.excerpt || validatedData.content.substring(0, 200),
       price_type: validatedData.price_type,
-      tags: validatedData.tags ? validatedData.tags.split(',').map(t => t.trim()) : [],
+      tags,
       reading_time: readingTime,
       updated_at: new Date().toISOString(),
     })
