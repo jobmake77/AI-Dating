@@ -1,4 +1,4 @@
-import { getContents } from "@/lib/queries/content";
+import { getContentsFeed } from "@/lib/queries/content";
 import { ContentList } from "@/components/content/content-list-twitter";
 import { Pagination } from "@/components/content/pagination";
 import { TrendingTags } from "@/components/tag/trending-tags";
@@ -12,7 +12,7 @@ export default async function Home({ searchParams }: HomeProps) {
   const params = await searchParams
   const page = Number(params.page) || 1
 
-  const { contents, totalPages } = await getContents({ page })
+  const { contents, totalPages } = await getContentsFeed({ page })
 
   return (
     <div className="min-h-screen bg-background">

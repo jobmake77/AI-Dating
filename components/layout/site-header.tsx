@@ -8,7 +8,7 @@ import { useAuth } from '@/lib/hooks/use-auth'
 import { Search, ArrowLeft, User } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { useState, FormEvent } from 'react'
 import { useToast } from '@/hooks/use-toast'
 
 export function SiteHeader() {
@@ -17,6 +17,14 @@ export function SiteHeader() {
   const { toast } = useToast()
   const { user, username, isLoading } = useAuth()
   const [isSigningOut, setIsSigningOut] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+
+  const handleSearch = (e: FormEvent) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
+    }
+  }
 
   const handleSignOut = async () => {
     if (isSigningOut) return
@@ -81,7 +89,7 @@ export function SiteHeader() {
             AI-Dating
           </Link>
 
-          <div className="relative w-80 hidden md:block">
+          <form onSubmit={handleSearch} className="relative w-80 hidden md:block">
             <label htmlFor="search-input" className="sr-only">
               搜索内容和标签
             </label>
@@ -91,11 +99,14 @@ export function SiteHeader() {
             />
             <Input
               id="search-input"
+              type="search"
               placeholder="搜索内容、标签..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 h-9 bg-muted/50 border-muted focus-visible:bg-background transition-colors"
               aria-label="搜索"
             />
-          </div>
+          </form>
         </div>
 
         <div className="flex items-center gap-3">

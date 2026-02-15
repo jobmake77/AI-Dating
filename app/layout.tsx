@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "sonner";
 
 export const metadata: Metadata = {
   title: "AI-Dating - AI 开发者社区",
@@ -17,6 +18,7 @@ export default function RootLayout({
       <body>
         {children}
         <Toaster />
+        <Sonner />
       </body>
     </html>
   );

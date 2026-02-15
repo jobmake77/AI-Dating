@@ -4,7 +4,13 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
-export async function updateUserProfile(formData: FormData) {
+interface UpdateProfileData {
+  full_name?: string
+  bio?: string
+  github_username?: string
+}
+
+export async function updateUserProfile(data: UpdateProfileData) {
   const supabase = await createClient()
 
   // Check authentication
@@ -13,15 +19,11 @@ export async function updateUserProfile(formData: FormData) {
     redirect('/login')
   }
 
-  const bio = formData.get('bio') as string
-  const fullName = formData.get('full_name') as string
-
   // Update user profile
   const { error } = await supabase
     .from('users')
     .update({
-      bio,
-      full_name: fullName,
+      ...data,
       updated_at: new Date().toISOString(),
     })
     .eq('id', user.id)
@@ -30,7 +32,7 @@ export async function updateUserProfile(formData: FormData) {
     throw new Error(`Failed to update profile: ${error.message}`)
   }
 
-  // Get username for redirect
+  // Get username for revalidation
   const { data: profile } = await supabase
     .from('users')
     .select('username')
@@ -39,7 +41,6 @@ export async function updateUserProfile(formData: FormData) {
 
   revalidatePath(`/u/${profile?.username}`)
   revalidatePath('/settings')
-  redirect(`/u/${profile?.username}`)
 }
 
 export async function getUserByUsername(username: string) {

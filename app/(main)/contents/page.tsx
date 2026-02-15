@@ -1,4 +1,4 @@
-import { getContents } from '@/lib/queries/content'
+import { getContentsFeed } from '@/lib/queries/content'
 import { ContentList } from '@/components/content/content-list'
 import { Pagination } from '@/components/content/pagination'
 
@@ -10,7 +10,7 @@ export default async function ContentsPage({ searchParams }: ContentsPageProps) 
   const params = await searchParams
   const page = Number(params.page) || 1
 
-  const { contents, totalPages } = await getContents({ page })
+  const { contents, totalPages } = await getContentsFeed({ page })
 
   return (
     <div className="container py-8">
