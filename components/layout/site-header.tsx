@@ -15,7 +15,7 @@ export function SiteHeader() {
   const router = useRouter()
   const pathname = usePathname()
   const { toast } = useToast()
-  const { user, username, isLoading } = useAuth()
+  const { user, username, role, isLoading } = useAuth()
   const [isSigningOut, setIsSigningOut] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -120,6 +120,11 @@ export function SiteHeader() {
               <Button asChild size="sm" className="cursor-pointer">
                 <Link href="/create">发布内容</Link>
               </Button>
+              {role === 'admin' && (
+                <Button asChild size="sm" variant="outline" className="cursor-pointer">
+                  <Link href="/admin/members">管理后台</Link>
+                </Button>
+              )}
               <Button variant="ghost" size="sm" asChild className="cursor-pointer">
                 <Link href={profileLink} aria-label={`查看个人主页`}>
                   {user.user_metadata?.avatar_url ? (

@@ -153,14 +153,26 @@ export function ContentDetail({ content, isAuthenticated, isMember, isAuthor, is
       />
 
       {isPaidContent && !canViewFullContent && (
-        <Alert className="mt-8">
-          <AlertDescription className="flex items-center justify-between">
-            <span>此内容为会员专享，升级会员以查看完整内容</span>
-            <Button asChild>
-              <a href="/pricing">升级会员</a>
-            </Button>
-          </AlertDescription>
-        </Alert>
+        <div className="mt-8 space-y-4">
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent h-32 -mt-32" />
+          </div>
+          <Alert className="border-primary">
+            <AlertDescription>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <p className="font-semibold mb-1">🔒 会员专享内容</p>
+                  <p className="text-sm text-muted-foreground">
+                    升级会员即可查看完整内容，解锁更多优质资源
+                  </p>
+                </div>
+                <Button asChild size="lg">
+                  <Link href="/pricing">查看会员权益</Link>
+                </Button>
+              </div>
+            </AlertDescription>
+          </Alert>
+        </div>
       )}
     </article>
   )

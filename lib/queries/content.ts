@@ -130,6 +130,7 @@ export async function getContentsFeed(params: ContentListParams = {}) {
       if (repost.contents) {
         feedItems.push({
           ...repost.contents,
+          id: `repost-${repost.id}`, // Use repost ID to make it unique
           content_id: repost.contents.id,
           is_repost: true,
           reposted_by: repost.users,
