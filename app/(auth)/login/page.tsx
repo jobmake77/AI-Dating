@@ -4,108 +4,290 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Github } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Github, Mail, Sparkles, Code, Rocket, Zap } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { signInWithEmail, signUpWithEmail, signInWithGitHub } from '@/lib/actions/auth'
 
 export default function LoginPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [checkingAuth, setCheckingAuth] = useState(true)
+  const [warning, setWarning] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
 
   useEffect(() => {
-    // 检查用户是否已登录
-    const checkUser = async () => {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
+    let isMounted = true
+    const supabase = createClient()
 
-      if (user) {
-        router.push('/')
-      } else {
-        setCheckingAuth(false)
+    // 在后台检查 session，不阻塞 UI
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+
+        if (!isMounted) return
+
+        // 如果已登录，静默跳转到首页
+        if (session) {
+          router.push('/')
+        }
+      } catch (error) {
+        console.error('Session check error:', error)
+        // 忽略错误，让用户继续使用登录表单
       }
     }
 
-    checkUser()
+    checkSession()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!isMounted) return
+
+      if (session && event === 'SIGNED_IN') {
+        router.push('/')
+      }
+    })
+
+    return () => {
+      isMounted = false
+      subscription.unsubscribe()
+    }
   }, [router])
+
+  const handleEmailSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+    setSuccess(null)
+
+    const formData = new FormData(e.currentTarget)
+    const result = await signInWithEmail(formData)
+
+    if (result?.error) {
+      setError(result.error)
+      setLoading(false)
+    }
+    // Success will redirect automatically
+  }
+
+  const handleEmailSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+    setWarning(null)
+    setSuccess(null)
+
+    const formData = new FormData(e.currentTarget)
+    const result = await signUpWithEmail(formData)
+
+    if (result?.error) {
+      setError(result.error)
+      if (result?.warning) {
+        setWarning(result.warning)
+      }
+      setLoading(false)
+    } else if (result?.success) {
+      setSuccess(result.message || '注册成功！')
+      if (result?.redirect) {
+        // 如果不需要邮箱验证，直接跳转
+        setTimeout(() => {
+          router.push('/')
+        }, 1000)
+      } else {
+        setLoading(false)
+      }
+    }
+  }
 
   const handleGitHubLogin = async () => {
     setLoading(true)
     setError(null)
 
-    try {
-      const supabase = createClient()
+    const result = await signInWithGitHub()
 
-      const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
-        provider: 'github',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      })
-
-      if (oauthError) {
-        console.error('OAuth 错误:', oauthError)
-        setError(`登录失败: ${oauthError.message}`)
-        setLoading(false)
-        return
-      }
-
-      if (data.url) {
-        // 跳转到 GitHub OAuth
-        window.location.href = data.url
-      } else {
-        setError('未获取到 OAuth URL')
-        setLoading(false)
-      }
-    } catch (err) {
-      console.error('异常:', err)
-      setError(`发生错误: ${err instanceof Error ? err.message : String(err)}`)
+    if (result?.error) {
+      setError(result.error)
       setLoading(false)
     }
+    // Success will redirect automatically
   }
 
-  if (checkingAuth) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">检查登录状态...</p>
-      </div>
-    )
-  }
-
+  // 直接显示登录表单，不显示加载页面
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-950 dark:to-neutral-900 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold">
-            欢迎来到 AI-Dating
-          </CardTitle>
-          <CardDescription>
-            使用 GitHub 账号登录，加入 AI 开发者社区
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+      <div className="w-full max-w-md space-y-6">
+        <Card className="relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-pink-500/10 to-yellow-500/10 rounded-full blur-3xl" />
 
-          <Button
-            onClick={handleGitHubLogin}
-            disabled={loading}
-            className="w-full"
-            size="lg"
-          >
-            <Github className="mr-2 h-5 w-5" />
-            {loading ? '正在跳转...' : '使用 GitHub 登录'}
-          </Button>
+          <CardHeader className="text-center relative">
+            <div className="flex justify-center mb-4">
+              <div className="relative">
+                <Zap className="h-12 w-12 text-primary animate-pulse" />
+                <Sparkles className="h-6 w-6 text-yellow-500 absolute -top-1 -right-1 animate-bounce" />
+              </div>
+            </div>
+            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
+              欢迎来到 AI-Dating
+            </CardTitle>
+            <CardDescription className="text-base mt-2">
+              选择你喜欢的方式登录或注册
+            </CardDescription>
+          </CardHeader>
 
-          <p className="text-center text-sm text-muted-foreground">
-            登录即表示你同意我们的服务条款和隐私政策
-          </p>
-        </CardContent>
-      </Card>
+          <CardContent className="space-y-4 relative">
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            {warning && (
+              <Alert>
+                <AlertDescription className="text-yellow-600 dark:text-yellow-500">
+                  ⚠️ {warning}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {success && (
+              <Alert>
+                <AlertDescription>{success}</AlertDescription>
+              </Alert>
+            )}
+
+            <Tabs defaultValue="signin" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="signin">登录</TabsTrigger>
+                <TabsTrigger value="signup">注册</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="signin" className="space-y-4">
+                <form onSubmit={handleEmailSignIn} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="signin-email">邮箱</Label>
+                    <Input
+                      id="signin-email"
+                      name="email"
+                      type="email"
+                      placeholder="your@email.com"
+                      required
+                      disabled={loading}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="signin-password">密码</Label>
+                    <Input
+                      id="signin-password"
+                      name="password"
+                      type="password"
+                      placeholder="••••••••"
+                      required
+                      disabled={loading}
+                    />
+                  </div>
+
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={loading}
+                  >
+                    <Mail className="mr-2 h-4 w-4" />
+                    {loading ? '登录中...' : '邮箱登录'}
+                  </Button>
+                </form>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      或
+                    </span>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={handleGitHubLogin}
+                  disabled={loading}
+                  variant="outline"
+                  className="w-full group"
+                >
+                  <Github className="mr-2 h-4 w-4 group-hover:rotate-12 transition-transform" />
+                  {loading ? '跳转中...' : '使用 GitHub 登录'}
+                </Button>
+              </TabsContent>
+
+              <TabsContent value="signup" className="space-y-4">
+                <form onSubmit={handleEmailSignUp} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-email">邮箱</Label>
+                    <Input
+                      id="signup-email"
+                      name="email"
+                      type="email"
+                      placeholder="your@email.com"
+                      required
+                      disabled={loading}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-password">密码</Label>
+                    <Input
+                      id="signup-password"
+                      name="password"
+                      type="password"
+                      placeholder="至少 6 个字符"
+                      required
+                      minLength={6}
+                      disabled={loading}
+                    />
+                  </div>
+
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={loading}
+                  >
+                    <Mail className="mr-2 h-4 w-4" />
+                    {loading ? '注册中...' : '邮箱注册'}
+                  </Button>
+                </form>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      或
+                    </span>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={handleGitHubLogin}
+                  disabled={loading}
+                  variant="outline"
+                  className="w-full group"
+                >
+                  <Github className="mr-2 h-4 w-4 group-hover:rotate-12 transition-transform" />
+                  {loading ? '跳转中...' : '使用 GitHub 注册'}
+                </Button>
+              </TabsContent>
+            </Tabs>
+
+            <p className="text-center text-sm text-muted-foreground">
+              登录即表示你同意我们的服务条款和隐私政策
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }

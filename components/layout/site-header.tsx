@@ -4,106 +4,21 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { createClient } from '@/lib/supabase/client'
+import { useAuth } from '@/lib/hooks/use-auth'
 import { Search, ArrowLeft, User } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useToast } from '@/hooks/use-toast'
-import type { User as SupabaseUser } from '@supabase/supabase-js'
-
-interface UserProfile {
-  username: string
-}
 
 export function SiteHeader() {
   const router = useRouter()
   const pathname = usePathname()
   const { toast } = useToast()
-
-  // State management
-  const [user, setUser] = useState<SupabaseUser | null>(null)
-  const [username, setUsername] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const { user, username, isLoading } = useAuth()
   const [isSigningOut, setIsSigningOut] = useState(false)
-  const [error, setError] = useState<Error | null>(null)
-
-  useEffect(() => {
-    const supabase = createClient()
-
-    // Get initial user with error handling
-    const initializeAuth = async () => {
-      try {
-        setIsLoading(true)
-        const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-        if (authError) {
-          throw authError
-        }
-
-        setUser(user)
-
-        if (user) {
-          // Get username with error handling
-          const { data, error: profileError } = await supabase
-            .from('users')
-            .select('username')
-            .eq('id', user.id)
-            .single()
-
-          if (profileError) {
-            console.error('Failed to fetch username:', profileError)
-            // Don't throw - username is not critical for header display
-            setUsername(null)
-          } else {
-            setUsername(data?.username || null)
-          }
-        }
-      } catch (err) {
-        const error = err instanceof Error ? err : new Error('Failed to load user')
-        console.error('Auth initialization error:', error)
-        setError(error)
-        // Don't show toast on initial load - just log
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    initializeAuth()
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setUser(session?.user || null)
-
-      if (session?.user) {
-        try {
-          const { data, error: profileError } = await supabase
-            .from('users')
-            .select('username')
-            .eq('id', session.user.id)
-            .single()
-
-          if (profileError) {
-            console.error('Failed to fetch username:', profileError)
-            setUsername(null)
-          } else {
-            setUsername(data?.username || null)
-          }
-        } catch (err) {
-          console.error('Error fetching username:', err)
-          setUsername(null)
-        }
-      } else {
-        setUsername(null)
-      }
-    })
-
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [])
 
   const handleSignOut = async () => {
-    // Prevent multiple clicks
     if (isSigningOut) return
 
     try {
@@ -111,11 +26,8 @@ export function SiteHeader() {
       const supabase = createClient()
       const { error } = await supabase.auth.signOut()
 
-      if (error) {
-        throw error
-      }
+      if (error) throw error
 
-      // Success feedback
       toast({
         title: '已退出登录',
         description: '您已成功退出账号',
@@ -127,7 +39,6 @@ export function SiteHeader() {
       const error = err instanceof Error ? err : new Error('退出登录失败')
       console.error('Sign out error:', error)
 
-      // Show error to user
       toast({
         variant: 'destructive',
         title: '退出失败',
@@ -139,6 +50,15 @@ export function SiteHeader() {
   }
 
   const showBackButton = pathname !== '/' && !pathname.startsWith('/login')
+
+  // 显示名称优先级: GitHub 用户名 > 数据库 username > 邮箱前缀 > "用户"
+  const displayName = user?.user_metadata?.user_name ||
+                      username ||
+                      user?.email?.split('@')[0] ||
+                      '用户'
+
+  // 头像链接: 如果有 username 去个人主页,否则去设置页
+  const profileLink = username ? `/u/${username}` : '/settings'
 
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
@@ -179,29 +99,28 @@ export function SiteHeader() {
         </div>
 
         <div className="flex items-center gap-4">
-          {/* Loading State - Only show when no data */}
-          {isLoading && !user ? (
+          {isLoading ? (
             <div className="flex items-center gap-4">
               <Skeleton className="h-10 w-24" />
               <Skeleton className="h-10 w-20" />
             </div>
-          ) : user && username ? (
+          ) : user ? (
             <>
               <Button asChild>
                 <Link href="/create">发布内容</Link>
               </Button>
               <Button variant="ghost" asChild>
-                <Link href={`/u/${username}`} aria-label={`查看 ${username} 的主页`}>
+                <Link href={profileLink} aria-label={`查看个人主页`}>
                   {user.user_metadata?.avatar_url ? (
                     <img
                       src={user.user_metadata.avatar_url}
-                      alt={`${username} 的头像`}
+                      alt={`${displayName} 的头像`}
                       className="w-6 h-6 rounded-full mr-2"
                     />
                   ) : (
                     <User className="w-6 h-6 mr-2" aria-hidden="true" />
                   )}
-                  {user.user_metadata?.user_name || username}
+                  {displayName}
                 </Link>
               </Button>
               <Button
