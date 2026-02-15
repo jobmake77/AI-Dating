@@ -1,40 +1,60 @@
 'use client'
 
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { contentSchema, type ContentFormData } from '@/lib/validations/content'
+import { useState, useRef, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import { createContent } from '@/lib/actions/content'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { RichTextEditor } from './rich-text-editor'
-import { Lock, Globe } from 'lucide-react'
+import { TagInput } from '@/components/tags/tag-input'
+import { Lock, Globe, Smile } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import type { EmojiClickData } from 'emoji-picker-react'
+import { TiptapEditor, type TiptapEditorRef } from '@/components/editor/tiptap-editor'
+
+// Dynamically import emoji picker to avoid SSR issues
+const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false })
 
 export function ContentForm() {
+  const router = useRouter()
   const [content, setContent] = useState('')
-  const [priceType, setPriceType] = useState<'free' | 'member_only'>('free')
+  const [tags, setTags] = useState<string[]>([])
+  const [priceType, setPriceType] = useState<'free' | 'member'>('free')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  const emojiPickerRef = useRef<HTMLDivElement>(null)
+  const editorRef = useRef<TiptapEditorRef>(null)
 
-  const {
-    handleSubmit,
-    setValue,
-    formState: { errors },
-  } = useForm<ContentFormData>({
-    resolver: zodResolver(contentSchema),
-    defaultValues: {
-      price_type: 'free',
-    },
-  })
+  // Close emoji picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
+        setShowEmojiPicker(false)
+      }
+    }
 
-  const onSubmit = async (data: ContentFormData) => {
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    // Strip HTML tags to check if there's actual content
+    const textContent = content.replace(/<[^>]*>/g, '').trim()
+    if (!textContent) {
+      setError('请输入内容')
+      return
+    }
+
     setIsSubmitting(true)
     setError(null)
 
     try {
       const formData = new FormData()
-      formData.append('content', data.content)
-      formData.append('price_type', data.price_type)
+      formData.append('content', content)
+      formData.append('price_type', priceType)
+      formData.append('tags', JSON.stringify(tags))
 
       await createContent(formData)
     } catch (err) {
@@ -43,76 +63,112 @@ export function ContentForm() {
     }
   }
 
+  const onEmojiClick = (emojiData: EmojiClickData) => {
+    // Insert emoji at cursor position using editor API
+    if (editorRef.current) {
+      editorRef.current.insertContent(emojiData.emoji)
+    }
+    setShowEmojiPicker(false)
+  }
+
+  const maxLength = 5000
+  const textContent = content.replace(/<[^>]*>/g, '')
+  const remaining = maxLength - textContent.length
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
-      {/* Rich Text Editor */}
-      <RichTextEditor
-        content={content}
-        onChange={(value) => {
-          setContent(value)
-          setValue('content', value)
-        }}
-        placeholder="有什么新想法？支持 #标签、**粗体**、代码块..."
-      />
+      {/* Tiptap Editor */}
+      <div className="space-y-3">
+        <TiptapEditor
+          ref={editorRef}
+          content={content}
+          onChange={setContent}
+          placeholder="分享你的想法..."
+        />
 
-      {errors.content && (
-        <p className="text-sm text-destructive">{errors.content.message}</p>
-      )}
+        {/* Character Count */}
+        <div className="flex items-center justify-between px-2">
+          <span className={`text-sm ${remaining < 100 ? 'text-destructive' : 'text-muted-foreground'}`}>
+            {remaining} 字符剩余
+          </span>
+        </div>
+
+        {/* Tags */}
+        <div className="px-2">
+          <TagInput
+            value={tags}
+            onChange={setTags}
+            placeholder="添加标签..."
+            maxTags={5}
+          />
+        </div>
+      </div>
 
       {/* Action Bar */}
       <div className="flex items-center justify-between pt-4 border-t">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
+          {/* Emoji Picker */}
+          <div className="relative" ref={emojiPickerRef}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              className={showEmojiPicker ? 'text-primary bg-accent' : ''}
+            >
+              <Smile className="h-5 w-5" />
+            </Button>
+            {showEmojiPicker && (
+              <div className="absolute bottom-full left-0 mb-2 z-50">
+                <EmojiPicker
+                  onEmojiClick={onEmojiClick}
+                  width={350}
+                  height={400}
+                  searchPlaceholder="搜索表情..."
+                  previewConfig={{ showPreview: false }}
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="h-6 w-px bg-border mx-2" />
+
           {/* Price Type Toggle */}
           <Button
             type="button"
-            variant={priceType === 'free' ? 'default' : 'outline'}
+            variant={priceType === 'free' ? 'default' : 'ghost'}
             size="sm"
-            onClick={() => {
-              setPriceType('free')
-              setValue('price_type', 'free')
-            }}
+            onClick={() => setPriceType('free')}
           >
             <Globe className="h-4 w-4 mr-1" />
             公开
           </Button>
           <Button
             type="button"
-            variant={priceType === 'member_only' ? 'default' : 'outline'}
+            variant={priceType === 'member' ? 'default' : 'ghost'}
             size="sm"
-            onClick={() => {
-              setPriceType('member_only')
-              setValue('price_type', 'member_only')
-            }}
+            onClick={() => setPriceType('member')}
           >
             <Lock className="h-4 w-4 mr-1" />
-            会员专享
+            会员
           </Button>
         </div>
 
         {/* Submit Button */}
         <Button
           type="submit"
-          disabled={isSubmitting || !content}
+          disabled={isSubmitting || !content.trim()}
           size="lg"
+          className="rounded-full px-6"
         >
           {isSubmitting ? '发布中...' : '发布'}
         </Button>
-      </div>
-
-      {/* Helper Text */}
-      <div className="text-sm text-muted-foreground space-y-1">
-        <p>💡 提示：</p>
-        <ul className="list-disc list-inside space-y-1 ml-2">
-          <li>使用 #标签 来标记主题（如 #GPT-4 #LangChain）</li>
-          <li>标题会自动从内容第一行提取</li>
-          <li>支持粗体、斜体、代码块等格式</li>
-        </ul>
       </div>
     </form>
   )

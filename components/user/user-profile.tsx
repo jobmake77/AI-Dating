@@ -15,9 +15,13 @@ interface UserProfileProps {
     github_username: string | null
   }
   isOwner: boolean
+  currentUserId?: string  // 添加当前用户ID用于额外验证
 }
 
-export function UserProfile({ user, isOwner }: UserProfileProps) {
+export function UserProfile({ user, isOwner, currentUserId }: UserProfileProps) {
+  // 双重验证：确保 isOwner 为 true 且当前用户ID匹配
+  const canEdit = isOwner && currentUserId === user.id
+
   return (
     <Card>
       <CardContent className="pt-6">
@@ -57,7 +61,7 @@ export function UserProfile({ user, isOwner }: UserProfileProps) {
                 </a>
               )}
 
-              {isOwner && (
+              {canEdit && (
                 <Button variant="outline" size="sm" asChild>
                   <Link href="/settings">编辑资料</Link>
                 </Button>

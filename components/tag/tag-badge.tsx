@@ -13,7 +13,7 @@ interface TagBadgeProps {
 
 export function TagBadge({ tag, href, onRemove, variant = 'secondary' }: TagBadgeProps) {
   const content = (
-    <Badge variant={variant} className="gap-1">
+    <Badge variant={variant} className="gap-1 text-xs">
       #{tag}
       {onRemove && (
         <button
@@ -21,7 +21,8 @@ export function TagBadge({ tag, href, onRemove, variant = 'secondary' }: TagBadg
             e.preventDefault()
             onRemove()
           }}
-          className="ml-1 hover:bg-muted rounded-full"
+          className="ml-1 hover:bg-muted rounded-full p-0.5 transition-colors cursor-pointer"
+          aria-label={`移除标签 ${tag}`}
         >
           <X className="h-3 w-3" />
         </button>
@@ -31,7 +32,7 @@ export function TagBadge({ tag, href, onRemove, variant = 'secondary' }: TagBadg
 
   if (href) {
     return (
-      <Link href={href} className="hover:opacity-80 transition-opacity">
+      <Link href={href} className="hover:opacity-80 transition-opacity cursor-pointer">
         {content}
       </Link>
     )

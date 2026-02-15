@@ -40,35 +40,35 @@ export async function TrendingTags() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg flex items-center gap-2">
-          <TrendingUp className="h-5 w-5" />
+    <Card className="border-border rounded-xl bg-card/50 backdrop-blur-sm shadow-sm">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base flex items-center gap-2">
+          <TrendingUp className="h-4 w-4" />
           热门标签
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
+      <CardContent className="space-y-3">
+        <div className="space-y-1.5">
           {trendingTags.map(({ tag, count }, index) => (
-            <div key={tag} className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-muted-foreground w-6">
+            <div key={tag} className="flex items-center justify-between py-1.5 hover:bg-muted/50 rounded-md px-2 -mx-2 transition-colors cursor-pointer">
+              <div className="flex items-center gap-2.5">
+                <span className="text-xs font-medium text-muted-foreground w-5 text-center">
                   {index + 1}
                 </span>
                 <TagBadge tag={tag} href={`/tag/${encodeURIComponent(tag)}`} />
               </div>
-              <span className="text-sm text-muted-foreground">{count}</span>
+              <span className="text-xs text-muted-foreground font-medium">{count}</span>
             </div>
           ))}
         </div>
 
-        <div className="pt-4 border-t space-y-2">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Edit className="h-4 w-4" />
+        <div className="pt-3 border-t space-y-1.5">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Edit className="h-3.5 w-3.5" />
             <span>创作时最常用</span>
           </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Search className="h-4 w-4" />
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Search className="h-3.5 w-3.5" />
             <span>搜索最多（即将推出）</span>
           </div>
         </div>

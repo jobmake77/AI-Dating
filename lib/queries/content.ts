@@ -4,13 +4,14 @@ export interface ContentListParams {
   page?: number
   limit?: number
   tag?: string
+  category?: string
   status?: 'approved' | 'pending' | 'rejected'
   authorId?: string
 }
 
 export async function getContents(params: ContentListParams = {}) {
   const supabase = await createClient()
-  const { page = 1, limit = 12, tag, status = 'approved', authorId } = params
+  const { page = 1, limit = 12, tag, category, status = 'approved', authorId } = params
 
   let query = supabase
     .from('contents')
@@ -28,6 +29,10 @@ export async function getContents(params: ContentListParams = {}) {
 
   if (tag) {
     query = query.contains('tags', [tag])
+  }
+
+  if (category) {
+    query = query.eq('category', category)
   }
 
   if (authorId) {

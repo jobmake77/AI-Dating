@@ -9,20 +9,24 @@ import { updateUserProfile } from '@/lib/actions/user'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) {
+  // 第一层验证：检查认证状态
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    console.log('Settings page: User not authenticated, redirecting to login')
     redirect('/login')
   }
 
-  // Get user profile
-  const { data: profile } = await supabase
+  // 第二层验证：检查用户记录是否存在
+  const { data: profile, error: profileError } = await supabase
     .from('users')
     .select('*')
     .eq('id', user.id)
     .single()
 
-  if (!profile) {
+  if (profileError || !profile) {
+    console.error('Settings page: Failed to fetch user profile:', profileError)
     redirect('/login')
   }
 

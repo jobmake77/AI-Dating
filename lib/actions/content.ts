@@ -75,10 +75,13 @@ export async function createContent(formData: FormData) {
 
   const validatedData = contentSchema.parse(rawData)
 
-  // Auto-extract metadata from content
+  // Parse tags from form data
+  const tagsJson = formData.get('tags') as string
+  const userTags: string[] = tagsJson ? JSON.parse(tagsJson) : []
+
+  // Auto-generate title and excerpt from HTML content
   const title = extractTitle(validatedData.content)
   const excerpt = extractExcerpt(validatedData.content)
-  const tags = extractTags(validatedData.content)
   const slug = generateSlug(title)
   const readingTime = calculateReadingTime(validatedData.content)
 
@@ -91,10 +94,9 @@ export async function createContent(formData: FormData) {
       content: validatedData.content,
       excerpt,
       price_type: validatedData.price_type,
-      tags,
       reading_time: readingTime,
       author_id: user.id,
-      status: 'approved', // MVP: Auto-approve content (skip moderation)
+      status: 'approved', // 直接批准，不需要审核
     })
     .select()
     .single()
@@ -103,7 +105,14 @@ export async function createContent(formData: FormData) {
     throw new Error(`Failed to create content: ${error.message}`)
   }
 
+  // Add tags to content
+  if (userTags.length > 0) {
+    const { addTagsToContent } = await import('./tags')
+    await addTagsToContent(data.id, userTags)
+  }
+
   revalidatePath('/contents')
+  revalidatePath('/')
   redirect(`/post/${data.id}`)
 }
 
@@ -118,15 +127,17 @@ export async function updateContent(id: string, formData: FormData) {
 
   // Parse and validate form data
   const rawData = {
+    title: formData.get('title') as string,
+    category: formData.get('category') as string,
     content: formData.get('content') as string,
+    excerpt: formData.get('excerpt') as string || '',
     price_type: formData.get('price_type') as string || 'free',
   }
 
   const validatedData = contentSchema.parse(rawData)
 
   // Auto-extract metadata from content
-  const title = extractTitle(validatedData.content)
-  const excerpt = extractExcerpt(validatedData.content)
+  const excerpt = validatedData.excerpt || extractExcerpt(validatedData.content)
   const tags = extractTags(validatedData.content)
   const readingTime = calculateReadingTime(validatedData.content)
 
@@ -134,7 +145,8 @@ export async function updateContent(id: string, formData: FormData) {
   const { error } = await supabase
     .from('contents')
     .update({
-      title,
+      title: validatedData.title,
+      category: validatedData.category,
       content: validatedData.content,
       excerpt,
       price_type: validatedData.price_type,

@@ -28,7 +28,7 @@ export function ContentCard({ content }: ContentCardProps) {
     <Card className="hover:shadow-lg transition-shadow">
       <CardHeader>
         <div className="flex items-center gap-2 mb-2">
-          {content.price_type === 'member_only' && (
+          {content.price_type === 'member' && (
             <Badge variant="default">会员专享</Badge>
           )}
         </div>

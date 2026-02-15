@@ -62,63 +62,63 @@ export function SiteHeader() {
 
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-      <div className="container max-w-7xl mx-auto flex h-16 items-center justify-between px-4">
-        <div className="flex items-center gap-4">
+      <div className="container max-w-[1280px] mx-auto flex h-14 items-center justify-between px-4">
+        <div className="flex items-center gap-6">
           {showBackButton && (
             <Button
               variant="ghost"
               size="sm"
               onClick={() => router.back()}
-              className="mr-2"
+              className="hover:bg-muted/80 transition-colors"
               aria-label="返回上一页"
             >
-              <ArrowLeft className="h-4 w-4 mr-1" />
+              <ArrowLeft className="h-4 w-4 mr-1.5" />
               返回
             </Button>
           )}
 
-          <Link href="/" className="font-bold text-xl" aria-label="返回首页">
+          <Link href="/" className="font-bold text-lg hover:opacity-80 transition-opacity" aria-label="返回首页">
             AI-Dating
           </Link>
 
-          <div className="relative w-96 hidden md:block">
+          <div className="relative w-80 hidden md:block">
             <label htmlFor="search-input" className="sr-only">
               搜索内容和标签
             </label>
             <Search
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground"
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"
               aria-hidden="true"
             />
             <Input
               id="search-input"
               placeholder="搜索内容、标签..."
-              className="pl-10"
+              className="pl-10 h-9 bg-muted/50 border-muted focus-visible:bg-background transition-colors"
               aria-label="搜索"
             />
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           {isLoading ? (
-            <div className="flex items-center gap-4">
-              <Skeleton className="h-10 w-24" />
-              <Skeleton className="h-10 w-20" />
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-9 w-20" />
+              <Skeleton className="h-9 w-16" />
             </div>
           ) : user ? (
             <>
-              <Button asChild>
+              <Button asChild size="sm" className="cursor-pointer">
                 <Link href="/create">发布内容</Link>
               </Button>
-              <Button variant="ghost" asChild>
+              <Button variant="ghost" size="sm" asChild className="cursor-pointer">
                 <Link href={profileLink} aria-label={`查看个人主页`}>
                   {user.user_metadata?.avatar_url ? (
                     <img
                       src={user.user_metadata.avatar_url}
                       alt={`${displayName} 的头像`}
-                      className="w-6 h-6 rounded-full mr-2"
+                      className="w-6 h-6 rounded-full mr-1.5 object-cover"
                     />
                   ) : (
-                    <User className="w-6 h-6 mr-2" aria-hidden="true" />
+                    <User className="w-5 h-5 mr-1.5" aria-hidden="true" />
                   )}
                   {displayName}
                 </Link>
@@ -129,12 +129,13 @@ export function SiteHeader() {
                 size="sm"
                 disabled={isSigningOut}
                 aria-label="退出登录"
+                className="cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors"
               >
                 {isSigningOut ? '退出中...' : '退出'}
               </Button>
             </>
           ) : (
-            <Button asChild>
+            <Button asChild size="sm" className="cursor-pointer">
               <Link href="/login">登录</Link>
             </Button>
           )}

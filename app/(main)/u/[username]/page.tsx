@@ -21,7 +21,9 @@ export default async function UserPage({ params, searchParams }: UserPageProps) 
     // Check if current user is the profile owner
     const supabase = await createClient()
     const { data: { user: currentUser } } = await supabase.auth.getUser()
-    const isOwner = currentUser?.id === user.id
+
+    // 严格的权限检查：只有当前用户ID与页面用户ID完全匹配时才是所有者
+    const isOwner = !!(currentUser && currentUser.id === user.id)
 
     // Get user's published contents
     const { contents, totalPages } = await getContents({
@@ -33,7 +35,7 @@ export default async function UserPage({ params, searchParams }: UserPageProps) 
     return (
       <div className="container max-w-4xl mx-auto py-8 px-4">
         <div className="space-y-8">
-          <UserProfile user={user} isOwner={isOwner} />
+          <UserProfile user={user} isOwner={isOwner} currentUserId={currentUser?.id} />
           <UserContents
             contents={contents}
             username={username}

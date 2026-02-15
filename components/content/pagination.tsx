@@ -18,9 +18,9 @@ export function Pagination({ currentPage, totalPages, basePath }: PaginationProp
   })
 
   return (
-    <div className="flex items-center justify-center gap-2 mt-8">
+    <div className="flex items-center justify-center gap-1.5 mt-6">
       {currentPage > 1 && (
-        <Button variant="outline" asChild>
+        <Button variant="outline" size="sm" asChild className="cursor-pointer">
           <Link href={`${basePath}?page=${currentPage - 1}`}>上一页</Link>
         </Button>
       )}
@@ -30,11 +30,13 @@ export function Pagination({ currentPage, totalPages, basePath }: PaginationProp
         const showEllipsis = prevPage && page - prevPage > 1
 
         return (
-          <div key={page} className="flex items-center gap-2">
-            {showEllipsis && <span className="text-muted-foreground">...</span>}
+          <div key={page} className="flex items-center gap-1.5">
+            {showEllipsis && <span className="text-muted-foreground px-1">...</span>}
             <Button
               variant={page === currentPage ? 'default' : 'outline'}
+              size="sm"
               asChild={page !== currentPage}
+              className={page !== currentPage ? 'cursor-pointer' : 'cursor-default'}
             >
               {page === currentPage ? (
                 <span>{page}</span>
@@ -47,7 +49,7 @@ export function Pagination({ currentPage, totalPages, basePath }: PaginationProp
       })}
 
       {currentPage < totalPages && (
-        <Button variant="outline" asChild>
+        <Button variant="outline" size="sm" asChild className="cursor-pointer">
           <Link href={`${basePath}?page=${currentPage + 1}`}>下一页</Link>
         </Button>
       )}
