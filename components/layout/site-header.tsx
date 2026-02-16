@@ -24,15 +24,36 @@ export function SiteHeader() {
 
   // 获取未读通知数量
   useEffect(() => {
-    if (user) {
-      getUnreadCount().then(setUnreadCount).catch(console.error)
+    if (!user) {
+      setUnreadCount(0)
+      return
+    }
 
-      // 每30秒刷新一次
-      const interval = setInterval(() => {
-        getUnreadCount().then(setUnreadCount).catch(console.error)
-      }, 30000)
+    // 初始加载
+    let mounted = true
+    getUnreadCount()
+      .then((count) => {
+        if (mounted) setUnreadCount(count)
+      })
+      .catch((error) => {
+        console.error('Failed to fetch unread count:', error)
+        if (mounted) setUnreadCount(0)
+      })
 
-      return () => clearInterval(interval)
+    // 每60秒刷新一次（降低频率以提升性能）
+    const interval = setInterval(() => {
+      getUnreadCount()
+        .then((count) => {
+          if (mounted) setUnreadCount(count)
+        })
+        .catch((error) => {
+          console.error('Failed to fetch unread count:', error)
+        })
+    }, 60000)
+
+    return () => {
+      mounted = false
+      clearInterval(interval)
     }
   }, [user])
 

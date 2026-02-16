@@ -1,11 +1,12 @@
 'use client'
 
 import { ContentCard } from '@/components/content/content-card-twitter'
+import { EmptyState } from '@/components/empty-state'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
-import { User } from 'lucide-react'
+import { User, Search, SearchX } from 'lucide-react'
 
 interface SearchResultsProps {
   contents: any[]
@@ -18,19 +19,24 @@ export function SearchResults({ contents, users, query }: SearchResultsProps) {
 
   if (!query) {
     return (
-      <div className="text-center py-20">
-        <p className="text-muted-foreground">输入关键词开始搜索</p>
+      <div className="py-20">
+        <EmptyState
+          icon={Search}
+          title="输入关键词开始搜索"
+          description="搜索内容、标签或用户"
+        />
       </div>
     )
   }
 
   if (!hasResults) {
     return (
-      <div className="text-center py-20">
-        <p className="text-muted-foreground mb-2">没有找到相关结果</p>
-        <p className="text-sm text-muted-foreground">
-          试试其他关键词或检查拼写
-        </p>
+      <div className="py-20">
+        <EmptyState
+          icon={SearchX}
+          title="没有找到相关结果"
+          description="试试其他关键词或检查拼写"
+        />
       </div>
     )
   }

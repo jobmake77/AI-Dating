@@ -1,7 +1,8 @@
 import { getNotifications, markAllAsRead } from '@/lib/actions/notifications'
 import { NotificationItem } from '@/components/notifications/notification-item'
+import { EmptyState } from '@/components/empty-state'
 import { Button } from '@/components/ui/button'
-import { Bell, CheckCheck } from 'lucide-react'
+import { Bell, CheckCheck, AlertCircle } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
@@ -46,9 +47,12 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
 
           {/* 通知列表 */}
           {notifications.length === 0 ? (
-            <div className="text-center py-20">
-              <Bell className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">暂无通知</p>
+            <div className="py-20">
+              <EmptyState
+                icon={Bell}
+                title="暂无通知"
+                description="当有人点赞、评论或关注你时，你会在这里收到通知"
+              />
             </div>
           ) : (
             <div className="space-y-2">
@@ -84,11 +88,12 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
     return (
       <div className="min-h-screen bg-background">
         <div className="container max-w-2xl mx-auto py-8 px-4">
-          <div className="text-center py-20">
-            <p className="text-muted-foreground">加载通知失败</p>
-            <p className="text-sm text-muted-foreground mt-2">
-              请确保数据库中已创建通知表
-            </p>
+          <div className="py-20">
+            <EmptyState
+              icon={AlertCircle}
+              title="加载通知失败"
+              description="请确保数据库中已创建通知表"
+            />
           </div>
         </div>
       </div>
