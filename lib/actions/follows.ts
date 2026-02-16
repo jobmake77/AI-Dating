@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { createNotification } from './notifications'
 
 export async function toggleFollow(userId: string) {
   const supabase = await createClient()
@@ -47,6 +48,18 @@ export async function toggleFollow(userId: string) {
 
     if (error) {
       throw new Error(`Failed to follow: ${error.message}`)
+    }
+
+    // Create notification for the followed user
+    try {
+      await createNotification({
+        userId: userId,
+        actorId: user.id,
+        type: 'follow',
+      })
+    } catch (error) {
+      console.error('Failed to create follow notification:', error)
+      // Don't throw error, notification failure shouldn't block the follow
     }
   }
 

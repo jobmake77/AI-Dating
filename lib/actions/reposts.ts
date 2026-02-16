@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { createNotification } from './notifications'
 
 export async function toggleRepost(contentId: string) {
   const supabase = await createClient()
@@ -11,6 +12,17 @@ export async function toggleRepost(contentId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     redirect('/login')
+  }
+
+  // Get content author
+  const { data: content } = await supabase
+    .from('contents')
+    .select('author_id')
+    .eq('id', contentId)
+    .single()
+
+  if (!content) {
+    throw new Error('Content not found')
   }
 
   // Check if user already reposted this content
@@ -43,11 +55,25 @@ export async function toggleRepost(contentId: string) {
     if (error) {
       throw new Error(`Failed to repost: ${error.message}`)
     }
+
+    // Create notification for content author
+    try {
+      await createNotification({
+        userId: content.author_id,
+        actorId: user.id,
+        type: 'repost',
+        contentId: contentId,
+      })
+    } catch (error) {
+      console.error('Failed to create repost notification:', error)
+      // Don't throw error, notification failure shouldn't block the repost
+    }
   }
 
   revalidatePath(`/post/${contentId}`)
   revalidatePath('/contents')
   revalidatePath('/')
+}
 }
 
 export async function checkUserReposted(contentId: string, userId: string): Promise<boolean> {

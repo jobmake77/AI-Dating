@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { createNotification } from './notifications'
 
 export async function toggleLike(contentId: string) {
   const supabase = await createClient()
@@ -11,6 +12,17 @@ export async function toggleLike(contentId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     redirect('/login')
+  }
+
+  // Get content author
+  const { data: content } = await supabase
+    .from('contents')
+    .select('author_id')
+    .eq('id', contentId)
+    .single()
+
+  if (!content) {
+    throw new Error('Content not found')
   }
 
   // Check if user already liked this content
@@ -42,6 +54,19 @@ export async function toggleLike(contentId: string) {
 
     if (error) {
       throw new Error(`Failed to like: ${error.message}`)
+    }
+
+    // Create notification for content author
+    try {
+      await createNotification({
+        userId: content.author_id,
+        actorId: user.id,
+        type: 'like',
+        contentId: contentId,
+      })
+    } catch (error) {
+      console.error('Failed to create like notification:', error)
+      // Don't throw error, notification failure shouldn't block the like
     }
   }
 
