@@ -6,7 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/lib/hooks/use-auth'
-import { Search, ArrowLeft, User, Bell } from 'lucide-react'
+import { Search, ArrowLeft, User, Bell, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { useState, FormEvent, useEffect } from 'react'
@@ -136,6 +136,13 @@ export function SiteHeader() {
             <>
               <Button asChild size="sm" className="cursor-pointer">
                 <Link href="/create">发布内容</Link>
+              </Button>
+
+              {/* 热门内容图标 */}
+              <Button variant="ghost" size="sm" asChild className="cursor-pointer">
+                <Link href="/trending" aria-label="查看热门内容">
+                  <TrendingUp className="w-5 h-5" />
+                </Link>
               </Button>
 
               {/* 通知图标 */}

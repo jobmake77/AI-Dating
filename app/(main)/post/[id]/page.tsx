@@ -8,6 +8,7 @@ import { ContentDetail } from '@/components/content/content-detail'
 import { AuthorCard } from '@/components/content/author-card'
 import { CommentForm } from '@/components/comment/comment-form'
 import { CommentList } from '@/components/comment/comment-list'
+import { RelatedContents } from '@/components/content/related-contents'
 import { Separator } from '@/components/ui/separator'
 import { notFound } from 'next/navigation'
 
@@ -93,6 +94,7 @@ export default async function PostPage({ params }: PostPageProps) {
           {/* Sidebar */}
           <aside className="lg:col-span-2 space-y-6">
             <AuthorCard author={content.users} />
+            <RelatedContents contentId={id} />
           </aside>
 
           {/* Right Spacer */}
