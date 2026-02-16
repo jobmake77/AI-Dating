@@ -22,7 +22,7 @@ export function SiteHeader() {
   const [searchQuery, setSearchQuery] = useState('')
   const [unreadCount, setUnreadCount] = useState(0)
 
-  // 获取未读通知数量
+  // 获取未读通知数量 + 实时订阅
   useEffect(() => {
     if (!user) {
       setUnreadCount(0)
@@ -40,7 +40,39 @@ export function SiteHeader() {
         if (mounted) setUnreadCount(0)
       })
 
-    // 每60秒刷新一次（降低频率以提升性能）
+    // 设置 Supabase Realtime 订阅
+    const supabase = createClient()
+    const channel = supabase
+      .channel('notifications-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          // 新通知到达，增加未读数量
+          setUnreadCount((prev) => prev + 1)
+
+          // 显示 toast 提示
+          const notification = payload.new as any
+          let message = '你有新的通知'
+          if (notification.type === 'like') message = '有人赞了你的内容'
+          else if (notification.type === 'comment') message = '有人评论了你的内容'
+          else if (notification.type === 'repost') message = '有人转发了你的内容'
+          else if (notification.type === 'follow') message = '有人关注了你'
+
+          toast({
+            title: '新通知',
+            description: message,
+          })
+        }
+      )
+      .subscribe()
+
+    // 每60秒刷新一次作为备份（防止 Realtime 连接断开）
     const interval = setInterval(() => {
       getUnreadCount()
         .then((count) => {
@@ -54,6 +86,7 @@ export function SiteHeader() {
     return () => {
       mounted = false
       clearInterval(interval)
+      supabase.removeChannel(channel)
     }
   }, [user])
 

@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { updateUserProfile } from '@/lib/actions/user'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { AvatarUpload } from './avatar-upload'
 
 interface UserSettingsFormProps {
   user: {
@@ -25,6 +26,7 @@ export function UserSettingsForm({ user }: UserSettingsFormProps) {
   const [fullName, setFullName] = useState(user.full_name || '')
   const [bio, setBio] = useState(user.bio || '')
   const [githubUsername, setGithubUsername] = useState(user.github_username || '')
+  const [avatar, setAvatar] = useState(user.avatar || '')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const router = useRouter()
 
@@ -37,6 +39,7 @@ export function UserSettingsForm({ user }: UserSettingsFormProps) {
         full_name: fullName,
         bio,
         github_username: githubUsername,
+        avatar,
       })
 
       toast.success('资料已更新')
@@ -57,6 +60,14 @@ export function UserSettingsForm({ user }: UserSettingsFormProps) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <Label>头像</Label>
+            <AvatarUpload
+              currentAvatar={avatar}
+              onUploadSuccess={(url) => setAvatar(url)}
+            />
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="username">用户名</Label>
             <Input

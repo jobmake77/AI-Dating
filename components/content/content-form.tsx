@@ -10,6 +10,7 @@ import { Lock, Globe, Smile } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import type { EmojiClickData } from 'emoji-picker-react'
 import { TiptapEditor, type TiptapEditorRef } from '@/components/editor/tiptap-editor'
+import { CoverImageUpload } from './cover-image-upload'
 
 // Dynamically import emoji picker to avoid SSR issues
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false })
@@ -18,6 +19,7 @@ export function ContentForm() {
   const router = useRouter()
   const [content, setContent] = useState('')
   const [tags, setTags] = useState<string[]>([])
+  const [coverImage, setCoverImage] = useState<string>('')
   const [priceType, setPriceType] = useState<'free' | 'member'>('free')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -55,6 +57,9 @@ export function ContentForm() {
       formData.append('content', content)
       formData.append('price_type', priceType)
       formData.append('tags', JSON.stringify(tags))
+      if (coverImage) {
+        formData.append('cover_image', coverImage)
+      }
 
       await createContent(formData)
     } catch (err) {
@@ -82,6 +87,16 @@ export function ContentForm() {
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
+
+      {/* Cover Image Upload */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium">封面图（可选）</label>
+        <CoverImageUpload
+          currentCover={coverImage}
+          onUploadSuccess={(url) => setCoverImage(url)}
+          onRemove={() => setCoverImage('')}
+        />
+      </div>
 
       {/* Tiptap Editor */}
       <div className="space-y-3">

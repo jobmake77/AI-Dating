@@ -8,6 +8,7 @@ interface UpdateProfileData {
   full_name?: string
   bio?: string
   github_username?: string
+  avatar?: string
 }
 
 export async function updateUserProfile(data: UpdateProfileData) {

@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { uploadToR2, validateImageFile } from '@/lib/cloudflare/r2'
 
-export async function uploadImage(formData: FormData) {
+export async function uploadImage(formData: FormData, folder: string = 'content-images') {
   const supabase = await createClient()
 
   // Check authentication
@@ -30,7 +30,7 @@ export async function uploadImage(formData: FormData) {
     const buffer = Buffer.from(arrayBuffer)
 
     // Upload to R2
-    const result = await uploadToR2(buffer, file.type, 'content-images')
+    const result = await uploadToR2(buffer, file.type, folder)
 
     return { url: result.url, key: result.key }
   } catch (error) {

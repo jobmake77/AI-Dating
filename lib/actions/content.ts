@@ -79,6 +79,9 @@ export async function createContent(formData: FormData) {
   const tagsJson = formData.get('tags') as string
   const userTags: string[] = tagsJson ? JSON.parse(tagsJson) : []
 
+  // Get cover image if provided
+  const coverImage = formData.get('cover_image') as string | null
+
   // Auto-generate title and excerpt from HTML content
   const title = extractTitle(validatedData.content)
   const excerpt = extractExcerpt(validatedData.content)
@@ -97,6 +100,7 @@ export async function createContent(formData: FormData) {
       reading_time: readingTime,
       author_id: user.id,
       status: 'approved', // 直接批准，不需要审核
+      cover_image: coverImage,
     })
     .select()
     .single()
@@ -137,6 +141,9 @@ export async function updateContent(id: string, formData: FormData) {
   const tagsJson = formData.get('tags') as string
   const userTags: string[] = tagsJson ? JSON.parse(tagsJson) : []
 
+  // Get cover image if provided
+  const coverImage = formData.get('cover_image') as string | null
+
   // Auto-generate title and excerpt from HTML content
   const title = extractTitle(validatedData.content)
   const excerpt = extractExcerpt(validatedData.content)
@@ -152,6 +159,7 @@ export async function updateContent(id: string, formData: FormData) {
       price_type: validatedData.price_type,
       reading_time: readingTime,
       updated_at: new Date().toISOString(),
+      cover_image: coverImage,
     })
     .eq('id', id)
     .eq('author_id', user.id) // Ensure user owns the content

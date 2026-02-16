@@ -74,7 +74,6 @@ export async function toggleRepost(contentId: string) {
   revalidatePath('/contents')
   revalidatePath('/')
 }
-}
 
 export async function checkUserReposted(contentId: string, userId: string): Promise<boolean> {
   const supabase = await createClient()

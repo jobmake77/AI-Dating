@@ -4,6 +4,7 @@ import { TagList } from '@/components/tag/tag-list'
 import { formatDistanceToNow } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
 import { Clock, Eye, User } from 'lucide-react'
+import { ContentCardActions } from './content-card-actions'
 
 interface ContentCardProps {
   content: {
@@ -14,6 +15,9 @@ interface ContentCardProps {
     price_type: string
     reading_time: number
     view_count: number
+    likes_count: number
+    reposts_count: number
+    comments_count: number
     created_at: string
     users: {
       username: string
@@ -21,9 +25,10 @@ interface ContentCardProps {
       full_name: string | null
     }
   }
+  isAuthenticated?: boolean
 }
 
-export function ContentCard({ content }: ContentCardProps) {
+export function ContentCard({ content, isAuthenticated = false }: ContentCardProps) {
   return (
     <article className="border-b border-border last:border-b-0 py-4 px-6 hover:bg-muted/30 transition-colors duration-200">
       <div className="flex gap-3">
@@ -101,6 +106,17 @@ export function ContentCard({ content }: ContentCardProps) {
               <Eye className="w-4 h-4" />
               <span>{content.view_count} 浏览</span>
             </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="mt-2">
+            <ContentCardActions
+              contentId={content.id}
+              initialLikesCount={content.likes_count}
+              initialRepostsCount={content.reposts_count}
+              initialCommentsCount={content.comments_count}
+              isAuthenticated={isAuthenticated}
+            />
           </div>
         </div>
       </div>

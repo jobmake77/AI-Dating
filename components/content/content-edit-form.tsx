@@ -10,6 +10,7 @@ import { Lock, Globe, Smile } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import type { EmojiClickData } from 'emoji-picker-react'
 import { TiptapEditor, type TiptapEditorRef } from '@/components/editor/tiptap-editor'
+import { CoverImageUpload } from './cover-image-upload'
 
 // Dynamically import emoji picker to avoid SSR issues
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false })
@@ -20,6 +21,7 @@ interface ContentEditFormProps {
     content: string
     tags: string[] | null
     price_type: string
+    cover_image?: string | null
   }
 }
 
@@ -27,6 +29,7 @@ export function ContentEditForm({ content: initialContent }: ContentEditFormProp
   const router = useRouter()
   const [content, setContent] = useState(initialContent.content)
   const [tags, setTags] = useState<string[]>(initialContent.tags || [])
+  const [coverImage, setCoverImage] = useState<string>(initialContent.cover_image || '')
   const [priceType, setPriceType] = useState<'free' | 'member'>(
     initialContent.price_type as 'free' | 'member'
   )
@@ -66,6 +69,9 @@ export function ContentEditForm({ content: initialContent }: ContentEditFormProp
       formData.append('content', content)
       formData.append('price_type', priceType)
       formData.append('tags', JSON.stringify(tags))
+      if (coverImage) {
+        formData.append('cover_image', coverImage)
+      }
 
       await updateContent(initialContent.id, formData)
     } catch (err) {
@@ -93,6 +99,15 @@ export function ContentEditForm({ content: initialContent }: ContentEditFormProp
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
+
+      {/* Cover Image Upload */}
+      <div className="space-y-2">
+        <CoverImageUpload
+          currentCover={coverImage}
+          onUploadSuccess={(url) => setCoverImage(url)}
+          onRemove={() => setCoverImage('')}
+        />
+      </div>
 
       {/* Tiptap Editor */}
       <div className="space-y-3">

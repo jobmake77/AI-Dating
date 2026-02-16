@@ -3,6 +3,7 @@ import { ContentList } from "@/components/content/content-list-twitter";
 import { Pagination } from "@/components/content/pagination";
 import { TrendingTags } from "@/components/tag/trending-tags";
 import { CategoryNav } from "@/components/category/category-nav";
+import { createClient } from "@/lib/supabase/server";
 
 interface HomeProps {
   searchParams: Promise<{ page?: string }>
@@ -13,6 +14,11 @@ export default async function Home({ searchParams }: HomeProps) {
   const page = Number(params.page) || 1
 
   const { contents, totalPages } = await getContentsFeed({ page })
+
+  // Check authentication
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const isAuthenticated = !!user
 
   return (
     <div className="min-h-screen bg-background">
@@ -43,7 +49,7 @@ export default async function Home({ searchParams }: HomeProps) {
             </div>
 
             {/* Content Feed */}
-            <ContentList contents={contents} />
+            <ContentList contents={contents} isAuthenticated={isAuthenticated} />
 
             {/* Pagination */}
             <div className="mt-6 px-2">
