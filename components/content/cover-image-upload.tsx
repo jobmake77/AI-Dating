@@ -134,7 +134,7 @@ export function CoverImageUpload({ currentCover, onUploadSuccess, onRemove }: Co
           </div>
 
           <p className="text-xs text-muted-foreground">
-            建议尺寸 1200x630，支持 JPG、PNG、GIF、WebP，最大 5MB
+            建议尺寸 1200x630，支持 JPG、PNG、GIF、WebP，最大 10MB
           </p>
         </div>
       )}

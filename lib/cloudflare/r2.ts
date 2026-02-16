@@ -56,10 +56,10 @@ export async function uploadToR2(
  * @returns Error message or null if valid
  */
 export function validateImageFile(file: File): string | null {
-  // Check file size (max 5MB)
-  const MAX_SIZE = 5 * 1024 * 1024
+  // Check file size (max 10MB)
+  const MAX_SIZE = 10 * 1024 * 1024
   if (file.size > MAX_SIZE) {
-    return '图片大小不能超过 5MB'
+    return '图片大小不能超过 10MB'
   }
 
   // Check file type

@@ -73,7 +73,7 @@ export function AvatarUpload({ currentAvatar, onUploadSuccess }: AvatarUploadPro
           </Button>
         </label>
         <p className="text-xs text-muted-foreground mt-2">
-          支持 JPG、PNG、GIF、WebP，最大 5MB
+          支持 JPG、PNG、GIF、WebP，最大 10MB
         </p>
       </div>
     </div>
