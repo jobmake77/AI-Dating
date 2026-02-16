@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { FollowButton } from '@/components/user/follow-button'
+import { MembershipSheet } from '@/components/user/membership-sheet'
 import Link from 'next/link'
 
 interface UserProfileProps {
@@ -13,6 +14,7 @@ interface UserProfileProps {
     full_name: string | null
     bio: string | null
     membership_tier: string
+    membership_expires_at?: string | null
     github_username: string | null
     followers_count?: number
     following_count?: number
@@ -50,9 +52,15 @@ export function UserProfile({ user, isOwner, currentUserId, isFollowing = false,
               </div>
 
               {canEdit ? (
-                <Button variant="outline" size="sm" asChild>
-                  <Link href="/settings">编辑资料</Link>
-                </Button>
+                <div className="flex items-center gap-2">
+                  <MembershipSheet
+                    membershipTier={user.membership_tier}
+                    membershipExpiresAt={user.membership_expires_at || null}
+                  />
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href="/settings">编辑资料</Link>
+                  </Button>
+                </div>
               ) : (
                 <FollowButton
                   userId={user.id}
