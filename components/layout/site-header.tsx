@@ -3,13 +3,15 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Badge } from '@/components/ui/badge'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/lib/hooks/use-auth'
-import { Search, ArrowLeft, User } from 'lucide-react'
+import { Search, ArrowLeft, User, Bell } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
-import { useState, FormEvent } from 'react'
+import { useState, FormEvent, useEffect } from 'react'
 import { useToast } from '@/hooks/use-toast'
+import { getUnreadCount } from '@/lib/actions/notifications'
 
 export function SiteHeader() {
   const router = useRouter()
@@ -18,6 +20,21 @@ export function SiteHeader() {
   const { user, username, role, isLoading } = useAuth()
   const [isSigningOut, setIsSigningOut] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  // 获取未读通知数量
+  useEffect(() => {
+    if (user) {
+      getUnreadCount().then(setUnreadCount).catch(console.error)
+
+      // 每30秒刷新一次
+      const interval = setInterval(() => {
+        getUnreadCount().then(setUnreadCount).catch(console.error)
+      }, 30000)
+
+      return () => clearInterval(interval)
+    }
+  }, [user])
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault()
@@ -120,6 +137,22 @@ export function SiteHeader() {
               <Button asChild size="sm" className="cursor-pointer">
                 <Link href="/create">发布内容</Link>
               </Button>
+
+              {/* 通知图标 */}
+              <Button variant="ghost" size="sm" asChild className="cursor-pointer relative">
+                <Link href="/notifications" aria-label="查看通知">
+                  <Bell className="w-5 h-5" />
+                  {unreadCount > 0 && (
+                    <Badge
+                      variant="destructive"
+                      className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center p-0 text-xs"
+                    >
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </Badge>
+                  )}
+                </Link>
+              </Button>
+
               {role === 'admin' && (
                 <Button asChild size="sm" variant="outline" className="cursor-pointer">
                   <Link href="/admin/members">管理后台</Link>
