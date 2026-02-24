@@ -82,10 +82,19 @@ export async function searchContents(query: string, page: number = 1) {
     new Map(allResults.map(item => [item.id, item])).values()
   )
 
+  // 处理 Supabase 嵌套查询返回的数组
+  const normalizedResults = uniqueResults.map(result => {
+    const users = result.users as any
+    return {
+      ...result,
+      users: Array.isArray(users) ? users[0] : users
+    }
+  })
+
   const totalPages = Math.ceil((count || 0) / pageSize)
 
   return {
-    contents: uniqueResults as SearchResult[],
+    contents: normalizedResults as unknown as SearchResult[],
     totalPages,
     totalResults: count || 0,
   }

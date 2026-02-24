@@ -10,7 +10,7 @@ interface ContentListProps {
 export function ContentList({ contents, isAuthenticated = false }: ContentListProps) {
   if (contents.length === 0) {
     return (
-      <div className="border border-border rounded-xl bg-card/30 p-8">
+      <div className="p-8">
         <EmptyState
           icon={FileText}
           title="暂无内容"
@@ -21,8 +21,8 @@ export function ContentList({ contents, isAuthenticated = false }: ContentListPr
   }
 
   return (
-    <div className="border border-border rounded-xl bg-card overflow-hidden shadow-sm">
-      {contents.map((content, index) => (
+    <div>
+      {contents.map((content) => (
         <ContentCard
           key={content.id}
           content={content}

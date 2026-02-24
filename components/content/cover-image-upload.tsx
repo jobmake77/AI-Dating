@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Upload, X, Image as ImageIcon, ChevronDown, ChevronUp } from 'lucide-react'
 import { toast } from 'sonner'
 import Image from 'next/image'
+import { ImageCropper } from '@/components/ui/image-cropper'
 
 interface CoverImageUploadProps {
   currentCover?: string | null
@@ -17,20 +18,31 @@ export function CoverImageUpload({ currentCover, onUploadSuccess, onRemove }: Co
   const [isUploading, setIsUploading] = useState(false)
   const [previewUrl, setPreviewUrl] = useState(currentCover)
   const [isExpanded, setIsExpanded] = useState(false)
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null)
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // 客户端预览
+    // 读取文件并显示裁剪器
     const reader = new FileReader()
-    reader.onloadend = () => setPreviewUrl(reader.result as string)
+    reader.onloadend = () => {
+      setImageToCrop(reader.result as string)
+    }
     reader.readAsDataURL(file)
+  }
+
+  const handleCropComplete = async (croppedBlob: Blob) => {
+    setImageToCrop(null)
+
+    // 客户端预览
+    const previewUrl = URL.createObjectURL(croppedBlob)
+    setPreviewUrl(previewUrl)
 
     // 上传到 R2
     setIsUploading(true)
     const formData = new FormData()
-    formData.append('file', file)
+    formData.append('file', croppedBlob, 'cover.jpg')
 
     const result = await uploadImage(formData, 'content-covers')
     setIsUploading(false)
@@ -137,6 +149,16 @@ export function CoverImageUpload({ currentCover, onUploadSuccess, onRemove }: Co
             建议尺寸 1200x630，支持 JPG、PNG、GIF、WebP，最大 10MB
           </p>
         </div>
+      )}
+
+      {imageToCrop && (
+        <ImageCropper
+          image={imageToCrop}
+          onCropComplete={handleCropComplete}
+          onCancel={() => setImageToCrop(null)}
+          aspect={16 / 9}
+          shape="rect"
+        />
       )}
     </div>
   )

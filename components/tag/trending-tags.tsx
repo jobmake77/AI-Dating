@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { TagBadge } from './tag-badge'
-import { TrendingUp, Search, Edit } from 'lucide-react'
+import { Search, Edit } from 'lucide-react'
+import Link from 'next/link'
 
 async function getTrendingTags() {
   const supabase = await createClient()
@@ -42,23 +43,26 @@ export async function TrendingTags() {
   return (
     <Card className="border-border rounded-xl bg-card/50 backdrop-blur-sm shadow-sm">
       <CardHeader className="pb-3">
-        <CardTitle className="text-base flex items-center gap-2">
-          <TrendingUp className="h-4 w-4" />
+        <CardTitle className="text-base">
           热门标签
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="space-y-1.5">
           {trendingTags.map(({ tag, count }, index) => (
-            <div key={tag} className="flex items-center justify-between py-1.5 hover:bg-muted/50 rounded-md px-2 -mx-2 transition-colors cursor-pointer">
+            <Link
+              key={tag}
+              href={`/tag/${encodeURIComponent(tag)}`}
+              className="flex items-center justify-between py-1.5 hover:bg-muted/50 rounded-md px-2 -mx-2 transition-colors group"
+            >
               <div className="flex items-center gap-2.5">
                 <span className="text-xs font-medium text-muted-foreground w-5 text-center">
                   {index + 1}
                 </span>
-                <TagBadge tag={tag} href={`/tag/${encodeURIComponent(tag)}`} />
+                <TagBadge tag={tag} />
               </div>
               <span className="text-xs text-muted-foreground font-medium">{count}</span>
-            </div>
+            </Link>
           ))}
         </div>
 

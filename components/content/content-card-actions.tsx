@@ -1,10 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Heart, MessageCircle, Repeat2 } from 'lucide-react'
-import { toggleLike } from '@/lib/actions/likes'
-import { toggleRepost } from '@/lib/actions/reposts'
+import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
@@ -41,20 +40,24 @@ export function ContentCardActions({
     }
 
     setIsLikeLoading(true)
-
-    // Optimistic update
     const newIsLiked = !isLiked
-    const newLikesCount = newIsLiked ? likesCount + 1 : likesCount - 1
     setIsLiked(newIsLiked)
-    setLikesCount(newLikesCount)
+    setLikesCount(newIsLiked ? likesCount + 1 : likesCount - 1)
 
     try {
-      await toggleLike(contentId)
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.push('/login'); return }
+
+      if (newIsLiked) {
+        await supabase.from('likes').insert({ content_id: contentId, user_id: user.id })
+      } else {
+        await supabase.from('likes').delete().eq('content_id', contentId).eq('user_id', user.id)
+      }
       router.refresh()
     } catch (error) {
-      // Revert on error
       setIsLiked(!newIsLiked)
-      setLikesCount(likesCount)
+      setLikesCount(initialLikesCount)
       console.error('Failed to toggle like:', error)
     } finally {
       setIsLikeLoading(false)
@@ -71,21 +74,25 @@ export function ContentCardActions({
     }
 
     setIsRepostLoading(true)
-
-    // Optimistic update
     const newIsReposted = !isReposted
-    const newRepostsCount = newIsReposted ? repostsCount + 1 : repostsCount - 1
     setIsReposted(newIsReposted)
-    setRepostsCount(newRepostsCount)
+    setRepostsCount(newIsReposted ? repostsCount + 1 : repostsCount - 1)
 
     try {
-      await toggleRepost(contentId)
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.push('/login'); return }
+
+      if (newIsReposted) {
+        await supabase.from('reposts').insert({ content_id: contentId, user_id: user.id })
+      } else {
+        await supabase.from('reposts').delete().eq('content_id', contentId).eq('user_id', user.id)
+      }
       toast.success(newIsReposted ? '已转发' : '已取消转发')
       router.refresh()
     } catch (error) {
-      // Revert on error
       setIsReposted(!newIsReposted)
-      setRepostsCount(repostsCount)
+      setRepostsCount(initialRepostsCount)
       console.error('Failed to toggle repost:', error)
       toast.error('操作失败')
     } finally {
@@ -101,7 +108,6 @@ export function ContentCardActions({
 
   return (
     <div className="flex items-center gap-1 -ml-2">
-      {/* Comment Button */}
       <Button
         variant="ghost"
         size="sm"
@@ -112,7 +118,6 @@ export function ContentCardActions({
         <span className="text-sm">{initialCommentsCount}</span>
       </Button>
 
-      {/* Repost Button */}
       <Button
         variant="ghost"
         size="sm"
@@ -128,7 +133,6 @@ export function ContentCardActions({
         <span className="text-sm">{repostsCount}</span>
       </Button>
 
-      {/* Like Button */}
       <Button
         variant="ghost"
         size="sm"

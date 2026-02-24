@@ -13,6 +13,7 @@ import {
   List,
   CheckSquare,
   ImageIcon,
+  Smile,
 } from 'lucide-react'
 import { useEffect, useImperativeHandle, forwardRef, useRef } from 'react'
 import { uploadImage } from '@/lib/actions/upload'
@@ -22,6 +23,9 @@ interface TiptapEditorProps {
   content: string
   onChange: (content: string) => void
   placeholder?: string
+  onEmojiClick?: () => void
+  showEmojiPicker?: boolean
+  emojiPickerElement?: React.ReactNode
 }
 
 export interface TiptapEditorRef {
@@ -30,7 +34,7 @@ export interface TiptapEditorRef {
 }
 
 export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
-  ({ content, onChange, placeholder = '分享你的想法...' }, ref) => {
+  ({ content, onChange, placeholder = '分享你的想法...', onEmojiClick, showEmojiPicker, emojiPickerElement }, ref) => {
     const { toast } = useToast()
     const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -99,12 +103,14 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
         }
 
         // Insert image into editor with proper spacing
-        editor
-          .chain()
-          .focus()
-          .setImage({ src: result.url })
-          .enter() // 添加换行，确保可以在图片后输入
-          .run()
+        if (result.url) {
+          editor
+            .chain()
+            .focus()
+            .setImage({ src: result.url })
+            .enter() // 添加换行，确保可以在图片后输入
+            .run()
+        }
 
         toast({
           title: '上传成功',
@@ -193,6 +199,27 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
             onChange={handleImageUpload}
             className="hidden"
           />
+
+          {/* Emoji Picker */}
+          {onEmojiClick && (
+            <div className="relative">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={onEmojiClick}
+                className={showEmojiPicker ? 'bg-accent' : ''}
+                title="插入表情"
+              >
+                <Smile className="h-4 w-4" />
+              </Button>
+              {showEmojiPicker && emojiPickerElement && (
+                <div className="absolute top-full left-0 mt-2 z-50">
+                  {emojiPickerElement}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Editor Content */}

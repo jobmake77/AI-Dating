@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OG 图片验证 - AI-Dating</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      background: #f5f5f5;
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 30px;
+    }
+    .section {
+      background: white;
+      padding: 30px;
+      margin-bottom: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .section h2 {
+      color: #666;
+      margin-bottom: 20px;
+      font-size: 18px;
+    }
+    .image-preview {
+      border: 2px solid #ddd;
+      padding: 10px;
+      background: #fafafa;
+      margin-bottom: 20px;
+    }
+    .image-preview img {
+      max-width: 100%;
+      display: block;
+    }
+    .info {
+      background: #f0f9ff;
+      border-left: 4px solid #0ea5e9;
+      padding: 15px;
+      margin-top: 20px;
+    }
+    .success {
+      background: #f0fdf4;
+      border-left: 4px solid #22c55e;
+      padding: 15px;
+      margin-top: 20px;
+    }
+    code {
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+    }
+    .meta-tags {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 20px;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.8;
+      overflow-x: auto;
+    }
+    .meta-tags .tag {
+      color: #38bdf8;
+    }
+    .meta-tags .attr {
+      color: #a78bfa;
+    }
+    .meta-tags .value {
+      color: #fbbf24;
+    }
+  </style>
+</head>
+<body>
+  <h1>✅ OG 图片设置验证</h1>
+
+  <div class="section">
+    <h2>📊 OG 图片 (Open Graph Image)</h2>
+    <div class="image-preview">
+      <img src="/og-image.png" alt="OG Image Preview">
+    </div>
+    <div class="info">
+      <strong>尺寸:</strong> 1200 x 630 px<br>
+      <strong>用途:</strong> 社交媒体分享预览（Facebook, Twitter, LinkedIn 等）<br>
+      <strong>路径:</strong> <code>/og-image.png</code>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>🎨 Logo</h2>
+    <div class="image-preview">
+      <img src="/logo.png" alt="Logo Preview" style="max-width: 512px;">
+    </div>
+    <div class="info">
+      <strong>尺寸:</strong> 512 x 512 px<br>
+      <strong>用途:</strong> 网站图标、社交媒体头像<br>
+      <strong>路径:</strong> <code>/logo.png</code>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>📝 HTML Meta 标签</h2>
+    <p>以下是已在 <code>app/layout.tsx</code> 中配置的 meta 标签：</p>
+    <div class="meta-tags">
+<span class="tag">&lt;meta</span> <span class="attr">property</span>=<span class="value">"og:image"</span> <span class="attr">content</span>=<span class="value">"/og-image.png"</span> <span class="tag">/&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">property</span>=<span class="value">"og:image:width"</span> <span class="attr">content</span>=<span class="value">"1200"</span> <span class="tag">/&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">property</span>=<span class="value">"og:image:height"</span> <span class="attr">content</span>=<span class="value">"630"</span> <span class="tag">/&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">name</span>=<span class="value">"twitter:card"</span> <span class="attr">content</span>=<span class="value">"summary_large_image"</span> <span class="tag">/&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">name</span>=<span class="value">"twitter:image"</span> <span class="attr">content</span>=<span class="value">"/og-image.png"</span> <span class="tag">/&gt;</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>🔍 验证工具</h2>
+    <p>部署后，使用以下工具验证 OG 图片是否正确显示：</p>
+    <ul>
+      <li><a href="https://www.opengraph.xyz/" target="_blank">OpenGraph.xyz</a> - OG 图片预览</li>
+      <li><a href="https://cards-dev.twitter.com/validator" target="_blank">Twitter Card Validator</a> - Twitter 卡片验证</li>
+      <li><a href="https://developers.facebook.com/tools/debug/" target="_blank">Facebook Sharing Debugger</a> - Facebook 分享调试</li>
+      <li><a href="https://www.linkedin.com/post-inspector/" target="_blank">LinkedIn Post Inspector</a> - LinkedIn 预览</li>
+    </ul>
+  </div>
+
+  <div class="success">
+    <strong>✅ 设置完成！</strong><br>
+    OG 图片和 Logo 已成功设置。部署后，在社交媒体分享链接时会自动显示这些图片。
+  </div>
+</body>
+</html>

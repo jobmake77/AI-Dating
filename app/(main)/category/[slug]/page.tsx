@@ -21,10 +21,11 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   }
 
   const category = CATEGORIES[slug as CategorySlug]
+  const IconComponent = category.icon
 
   // Fetch contents for this category
+  // Note: Category filtering is removed, showing all contents for now
   const { contents, totalPages } = await getContents({
-    category: slug,
     page,
     limit: 12,
   })
@@ -34,7 +35,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
       {/* Category Header */}
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <span className="text-4xl">{category.icon}</span>
+          <IconComponent className="w-10 h-10 text-primary" />
           <div>
             <h1 className="text-3xl font-bold">{category.name}</h1>
             <p className="text-muted-foreground mt-1">{category.description}</p>
@@ -50,7 +51,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
         <>
           <ContentList contents={contents} />
           {totalPages > 1 && (
-            <Pagination currentPage={page} totalPages={totalPages} />
+            <Pagination currentPage={page} totalPages={totalPages} basePath={`/category/${slug}`} />
           )}
         </>
       ) : (

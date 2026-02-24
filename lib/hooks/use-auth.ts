@@ -24,17 +24,31 @@ export function useAuth() {
     let mounted = true
 
     // 获取初始 session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!mounted) return
+    const initAuth = async () => {
+      try {
+        // 添加超时处理，防止请求挂起
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Session fetch timeout')), 5000)
+        })
 
-      if (session?.user) {
-        // 获取 username 和 role
-        supabase
-          .from('users')
-          .select('username, role')
-          .eq('id', session.user.id)
-          .single()
-          .then(({ data }) => {
+        const sessionPromise = supabase.auth.getSession()
+
+        const { data: { session } } = await Promise.race([
+          sessionPromise,
+          timeoutPromise
+        ]) as any
+
+        if (!mounted) return
+
+        if (session?.user) {
+          // 获取 username 和 role
+          try {
+            const { data } = await supabase
+              .from('users')
+              .select('username, role')
+              .eq('id', session.user.id)
+              .single()
+
             if (!mounted) return
             setState({
               user: session.user,
@@ -42,8 +56,7 @@ export function useAuth() {
               role: data?.role || null,
               isLoading: false,
             })
-          })
-          .catch(() => {
+          } catch (error) {
             if (!mounted) return
             setState({
               user: session.user,
@@ -51,8 +64,18 @@ export function useAuth() {
               role: null,
               isLoading: false,
             })
+          }
+        } else {
+          setState({
+            user: null,
+            username: null,
+            role: null,
+            isLoading: false,
           })
-      } else {
+        }
+      } catch (error) {
+        console.error('[useAuth] Failed to get session:', error)
+        if (!mounted) return
         setState({
           user: null,
           username: null,
@@ -60,38 +83,40 @@ export function useAuth() {
           isLoading: false,
         })
       }
-    })
+    }
+
+    initAuth()
 
     // 监听认证变化
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (!mounted) return
 
       if (session?.user) {
-        supabase
-          .from('users')
-          .select('username, role')
-          .eq('id', session.user.id)
-          .single()
-          .then(({ data }) => {
-            if (!mounted) return
-            setState({
-              user: session.user,
-              username: data?.username || null,
-              role: data?.role || null,
-              isLoading: false,
-            })
+        try {
+          const { data } = await supabase
+            .from('users')
+            .select('username, role')
+            .eq('id', session.user.id)
+            .single()
+
+          if (!mounted) return
+          setState({
+            user: session.user,
+            username: data?.username || null,
+            role: data?.role || null,
+            isLoading: false,
           })
-          .catch(() => {
-            if (!mounted) return
-            setState({
-              user: session.user,
-              username: null,
-              role: null,
-              isLoading: false,
-            })
+        } catch (error) {
+          if (!mounted) return
+          setState({
+            user: session.user,
+            username: null,
+            role: null,
+            isLoading: false,
           })
+        }
       } else {
         setState({
           user: null,

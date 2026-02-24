@@ -63,8 +63,12 @@ export function ContentForm() {
 
       await createContent(formData)
     } catch (err) {
-      setError(err instanceof Error ? err.message : '发布失败，请重试')
+      const errorMessage = err instanceof Error ? err.message : '发布失败，请重试'
+      setError(errorMessage)
       setIsSubmitting(false)
+
+      // 滚动到错误提示位置
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
 
@@ -105,6 +109,21 @@ export function ContentForm() {
           content={content}
           onChange={setContent}
           placeholder="分享你的想法..."
+          onEmojiClick={() => setShowEmojiPicker(!showEmojiPicker)}
+          showEmojiPicker={showEmojiPicker}
+          emojiPickerElement={
+            showEmojiPicker ? (
+              <div ref={emojiPickerRef}>
+                <EmojiPicker
+                  onEmojiClick={onEmojiClick}
+                  width={350}
+                  height={400}
+                  searchPlaceholder="搜索表情..."
+                  previewConfig={{ showPreview: false }}
+                />
+              </div>
+            ) : null
+          }
         />
 
         {/* Character Count */}
@@ -128,32 +147,6 @@ export function ContentForm() {
       {/* Action Bar */}
       <div className="flex items-center justify-between pt-4 border-t">
         <div className="flex items-center gap-1">
-          {/* Emoji Picker */}
-          <div className="relative" ref={emojiPickerRef}>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className={showEmojiPicker ? 'text-primary bg-accent' : ''}
-            >
-              <Smile className="h-5 w-5" />
-            </Button>
-            {showEmojiPicker && (
-              <div className="absolute bottom-full left-0 mb-2 z-50">
-                <EmojiPicker
-                  onEmojiClick={onEmojiClick}
-                  width={350}
-                  height={400}
-                  searchPlaceholder="搜索表情..."
-                  previewConfig={{ showPreview: false }}
-                />
-              </div>
-            )}
-          </div>
-
-          <div className="h-6 w-px bg-border mx-2" />
-
           {/* Price Type Toggle */}
           <Button
             type="button"

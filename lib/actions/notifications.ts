@@ -170,7 +170,6 @@ export async function markAllAsRead() {
   }
 
   revalidatePath('/notifications')
-  return { success: true }
 }
 
 // 删除通知

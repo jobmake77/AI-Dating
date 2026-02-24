@@ -220,7 +220,7 @@ export async function getContentTags(contentId: string): Promise<Tag[]> {
       return []
     }
 
-    return data?.map(item => item.tags).filter(Boolean) || []
+    return data?.map(item => item.tags).filter(Boolean).flat() || []
   } catch (error) {
     console.error('Error in getContentTags:', error)
     return []

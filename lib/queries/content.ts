@@ -4,7 +4,6 @@ export interface ContentListParams {
   page?: number
   limit?: number
   tag?: string
-  category?: string
   status?: 'approved' | 'pending' | 'rejected'
   authorId?: string
 }
@@ -17,7 +16,6 @@ export interface FeedItem {
   content: string
   excerpt: string
   cover_image: string | null
-  category: string | null
   tags: string[] | null
   price_type: string
   status: string
@@ -50,7 +48,7 @@ export interface FeedItem {
 // 获取包含转发的内容时间线
 export async function getContentsFeed(params: ContentListParams = {}) {
   const supabase = await createClient()
-  const { page = 1, limit = 12, tag, category, status = 'approved' } = params
+  const { page = 1, limit = 12, tag, status = 'approved' } = params
 
   // 1. 获取原创内容
   let originalQuery = supabase
@@ -68,10 +66,6 @@ export async function getContentsFeed(params: ContentListParams = {}) {
 
   if (tag) {
     originalQuery = originalQuery.contains('tags', [tag])
-  }
-
-  if (category) {
-    originalQuery = originalQuery.eq('category', category)
   }
 
   const { data: originalContents, error: originalError } = await originalQuery
@@ -116,8 +110,13 @@ export async function getContentsFeed(params: ContentListParams = {}) {
   // 添加原创内容
   if (originalContents) {
     originalContents.forEach((content: any) => {
+      // Normalize users field (Supabase may return array instead of object)
+      const users = content.users as any
+      const normalizedUsers = Array.isArray(users) ? users[0] : users
+
       feedItems.push({
         ...content,
+        users: normalizedUsers,
         content_id: content.id,
         is_repost: false,
       })
@@ -128,12 +127,20 @@ export async function getContentsFeed(params: ContentListParams = {}) {
   if (reposts) {
     reposts.forEach((repost: any) => {
       if (repost.contents) {
+        // Normalize users fields
+        const contentUsers = repost.contents.users as any
+        const normalizedContentUsers = Array.isArray(contentUsers) ? contentUsers[0] : contentUsers
+
+        const repostUsers = repost.users as any
+        const normalizedRepostUsers = Array.isArray(repostUsers) ? repostUsers[0] : repostUsers
+
         feedItems.push({
           ...repost.contents,
+          users: normalizedContentUsers,
           id: `repost-${repost.id}`, // Use repost ID to make it unique
           content_id: repost.contents.id,
           is_repost: true,
-          reposted_by: repost.users,
+          reposted_by: normalizedRepostUsers,
           reposted_at: repost.created_at,
         })
       }
@@ -163,7 +170,7 @@ export async function getContentsFeed(params: ContentListParams = {}) {
 
 export async function getContents(params: ContentListParams = {}) {
   const supabase = await createClient()
-  const { page = 1, limit = 12, tag, category, status = 'approved', authorId } = params
+  const { page = 1, limit = 12, tag, status = 'approved', authorId } = params
 
   let query = supabase
     .from('contents')
@@ -181,10 +188,6 @@ export async function getContents(params: ContentListParams = {}) {
 
   if (tag) {
     query = query.contains('tags', [tag])
-  }
-
-  if (category) {
-    query = query.eq('category', category)
   }
 
   if (authorId) {
@@ -257,4 +260,92 @@ export async function getContentBySlug(slug: string) {
   }
 
   return data
+}
+
+// 获取用户点赞的内容
+export async function getUserLikedContents(userId: string, params: { page?: number; limit?: number } = {}) {
+  const supabase = await createClient()
+  const { page = 1, limit = 12 } = params
+
+  const from = (page - 1) * limit
+  const to = from + limit - 1
+
+  const { data, error, count } = await supabase
+    .from('likes')
+    .select(`
+      id,
+      created_at,
+      contents (
+        *,
+        users:author_id (
+          id,
+          username,
+          avatar,
+          full_name
+        )
+      )
+    `, { count: 'exact' })
+    .eq('user_id', userId)
+    .eq('contents.status', 'approved')
+    .order('created_at', { ascending: false })
+    .range(from, to)
+
+  if (error) {
+    throw new Error(`Failed to fetch liked contents: ${error.message}`)
+  }
+
+  // 提取内容数据
+  const contents = data?.map((like: any) => like.contents).filter(Boolean) || []
+
+  return {
+    contents,
+    total: count || 0,
+    page,
+    limit,
+    totalPages: Math.ceil((count || 0) / limit),
+  }
+}
+
+// 获取用户转发的内容
+export async function getUserRepostedContents(userId: string, params: { page?: number; limit?: number } = {}) {
+  const supabase = await createClient()
+  const { page = 1, limit = 12 } = params
+
+  const from = (page - 1) * limit
+  const to = from + limit - 1
+
+  const { data, error, count } = await supabase
+    .from('reposts')
+    .select(`
+      id,
+      created_at,
+      contents (
+        *,
+        users:author_id (
+          id,
+          username,
+          avatar,
+          full_name
+        )
+      )
+    `, { count: 'exact' })
+    .eq('user_id', userId)
+    .eq('contents.status', 'approved')
+    .order('created_at', { ascending: false })
+    .range(from, to)
+
+  if (error) {
+    throw new Error(`Failed to fetch reposted contents: ${error.message}`)
+  }
+
+  // 提取内容数据
+  const contents = data?.map((repost: any) => repost.contents).filter(Boolean) || []
+
+  return {
+    contents,
+    total: count || 0,
+    page,
+    limit,
+    totalPages: Math.ceil((count || 0) / limit),
+  }
 }

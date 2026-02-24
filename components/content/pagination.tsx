@@ -17,11 +17,17 @@ export function Pagination({ currentPage, totalPages, basePath }: PaginationProp
     return false
   })
 
+  // 智能构建分页链接，处理已包含查询参数的 basePath
+  const buildPageUrl = (page: number) => {
+    const separator = basePath.includes('?') ? '&' : '?'
+    return `${basePath}${separator}page=${page}`
+  }
+
   return (
     <div className="flex items-center justify-center gap-1.5 mt-6">
       {currentPage > 1 && (
         <Button variant="outline" size="sm" asChild className="cursor-pointer">
-          <Link href={`${basePath}?page=${currentPage - 1}`}>上一页</Link>
+          <Link href={buildPageUrl(currentPage - 1)}>上一页</Link>
         </Button>
       )}
 
@@ -41,7 +47,7 @@ export function Pagination({ currentPage, totalPages, basePath }: PaginationProp
               {page === currentPage ? (
                 <span>{page}</span>
               ) : (
-                <Link href={`${basePath}?page=${page}`}>{page}</Link>
+                <Link href={buildPageUrl(page)}>{page}</Link>
               )}
             </Button>
           </div>
@@ -50,7 +56,7 @@ export function Pagination({ currentPage, totalPages, basePath }: PaginationProp
 
       {currentPage < totalPages && (
         <Button variant="outline" size="sm" asChild className="cursor-pointer">
-          <Link href={`${basePath}?page=${currentPage + 1}`}>下一页</Link>
+          <Link href={buildPageUrl(currentPage + 1)}>下一页</Link>
         </Button>
       )}
     </div>

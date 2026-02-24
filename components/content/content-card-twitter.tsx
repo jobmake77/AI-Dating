@@ -30,10 +30,10 @@ interface ContentCardProps {
 
 export function ContentCard({ content, isAuthenticated = false }: ContentCardProps) {
   return (
-    <article className="border-b border-border last:border-b-0 py-4 px-6 hover:bg-muted/30 transition-colors duration-200">
+    <article className="px-4 py-3 border-b border-border hover:bg-accent/30 transition-colors duration-150 cursor-pointer">
       <div className="flex gap-3">
         {/* Avatar */}
-        <Link href={`/u/${content.users.username}`} className="flex-shrink-0 cursor-pointer">
+        <Link href={`/u/${content.users.username}`} className="flex-shrink-0 mt-0.5">
           {content.users.avatar ? (
             <img
               src={content.users.avatar}
@@ -41,7 +41,7 @@ export function ContentCard({ content, isAuthenticated = false }: ContentCardPro
               className="w-10 h-10 rounded-full object-cover hover:opacity-90 transition-opacity"
             />
           ) : (
-            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors">
+            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
               <User className="w-5 h-5 text-muted-foreground" />
             </div>
           )}
@@ -50,41 +50,27 @@ export function ContentCard({ content, isAuthenticated = false }: ContentCardPro
         {/* Content */}
         <div className="flex-1 min-w-0">
           {/* Author and Time */}
-          <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-            <Link
-              href={`/u/${content.users.username}`}
-              className="font-semibold text-sm hover:underline cursor-pointer"
-            >
+          <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
+            <Link href={`/u/${content.users.username}`} className="font-bold text-[15px] hover:underline leading-tight">
               {content.users.full_name || content.users.username}
             </Link>
-            <span className="text-muted-foreground text-sm">@{content.users.username}</span>
-            <span className="text-muted-foreground text-sm">·</span>
-            <time className="text-muted-foreground text-sm">
-              {formatDistanceToNow(new Date(content.created_at), {
-                addSuffix: true,
-                locale: zhCN,
-              })}
+            <span className="text-muted-foreground text-[14px]">@{content.users.username}</span>
+            <span className="text-muted-foreground text-[14px]">·</span>
+            <time className="text-muted-foreground text-[14px]">
+              {formatDistanceToNow(new Date(content.created_at), { addSuffix: true, locale: zhCN })}
             </time>
-            {content.price_type === 'member' && (
-              <>
-                <span className="text-muted-foreground text-sm">·</span>
-                <Badge variant="secondary" className="text-xs h-5">
-                  会员专享
-                </Badge>
-              </>
-            )}
           </div>
 
           {/* Title */}
-          <Link href={`/post/${content.id}`} className="block group cursor-pointer">
-            <h2 className="text-lg font-bold mb-1.5 group-hover:text-primary transition-colors duration-150 line-clamp-2 leading-snug">
+          <Link href={`/post/${content.id}`} className="block group">
+            <h2 className="text-[16px] font-bold mb-1 leading-[1.4] line-clamp-2 group-hover:text-primary transition-colors">
               {content.title}
             </h2>
           </Link>
 
           {/* Excerpt */}
-          <Link href={`/post/${content.id}`} className="block group cursor-pointer">
-            <p className="text-muted-foreground text-[15px] mb-3 line-clamp-2 leading-relaxed group-hover:text-foreground/80 transition-colors duration-150">
+          <Link href={`/post/${content.id}`} className="block">
+            <p className="text-[14px] text-foreground/70 mb-2.5 line-clamp-2 leading-[1.6]">
               {content.excerpt}
             </p>
           </Link>
@@ -96,28 +82,29 @@ export function ContentCard({ content, isAuthenticated = false }: ContentCardPro
             </div>
           )}
 
-          {/* Stats */}
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1.5 hover:text-foreground transition-colors cursor-default">
-              <Clock className="w-4 h-4" />
+          {/* Metadata */}
+          <div className="flex items-center gap-3 text-[13px] text-muted-foreground/60 mb-2">
+            {content.price_type === 'member' && (
+              <Badge variant="secondary" className="text-xs h-4 px-1.5">会员专享</Badge>
+            )}
+            <div className="flex items-center gap-1">
+              <Clock className="w-3 h-3" />
               <span>{content.reading_time} 分钟</span>
             </div>
-            <div className="flex items-center gap-1.5 hover:text-foreground transition-colors cursor-default">
-              <Eye className="w-4 h-4" />
-              <span>{content.view_count} 浏览</span>
+            <div className="flex items-center gap-1">
+              <Eye className="w-3 h-3" />
+              <span>{content.view_count}</span>
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="mt-2">
-            <ContentCardActions
-              contentId={content.id}
-              initialLikesCount={content.likes_count}
-              initialRepostsCount={content.reposts_count}
-              initialCommentsCount={content.comments_count}
-              isAuthenticated={isAuthenticated}
-            />
-          </div>
+          {/* Actions */}
+          <ContentCardActions
+            contentId={content.id}
+            initialLikesCount={content.likes_count}
+            initialRepostsCount={content.reposts_count}
+            initialCommentsCount={content.comments_count}
+            isAuthenticated={isAuthenticated}
+          />
         </div>
       </div>
     </article>

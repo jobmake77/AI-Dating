@@ -1,19 +1,76 @@
 import { getUserByUsername } from '@/lib/actions/user'
-import { getContents } from '@/lib/queries/content'
+import { getContents, getUserLikedContents, getUserRepostedContents } from '@/lib/queries/content'
+import { getUserStats } from '@/lib/queries/user'
 import { checkUserFollowing } from '@/lib/actions/follows'
 import { createClient } from '@/lib/supabase/server'
 import { UserProfile } from '@/components/user/user-profile'
-import { UserContents } from '@/components/user/user-contents'
+import { UserContentTabs } from '@/components/user/user-content-tabs'
 import { notFound } from 'next/navigation'
+import { Metadata } from 'next'
 
 interface UserPageProps {
   params: Promise<{ username: string }>
-  searchParams: Promise<{ page?: string }>
+  searchParams: Promise<{ page?: string; tab?: string }>
+}
+
+export async function generateMetadata({ params }: UserPageProps): Promise<Metadata> {
+  const { username } = await params
+
+  try {
+    const user = await getUserByUsername(username)
+    const stats = await getUserStats(user.id)
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+
+    const displayName = user.full_name || user.username
+    const description = user.bio || `${displayName} 在 AI-Dating 的个人主页。已发布 ${stats.contents_count} 篇内容，获得 ${stats.total_likes} 个赞。`
+
+    return {
+      title: `${displayName} (@${user.username})`,
+      description,
+      openGraph: {
+        type: 'profile',
+        locale: 'zh_CN',
+        url: `${baseUrl}/u/${user.username}`,
+        title: `${displayName} (@${user.username})`,
+        description,
+        siteName: 'AI-Dating',
+        images: user.avatar
+          ? [
+              {
+                url: user.avatar,
+                width: 400,
+                height: 400,
+                alt: displayName,
+              },
+            ]
+          : [
+              {
+                url: '/og-image.png',
+                width: 1200,
+                height: 630,
+                alt: displayName,
+              },
+            ],
+        username: user.username,
+      },
+      twitter: {
+        card: 'summary',
+        title: `${displayName} (@${user.username})`,
+        description,
+        images: user.avatar ? [user.avatar] : ['/og-image.png'],
+      },
+    }
+  } catch (error) {
+    return {
+      title: '用户未找到',
+      description: '该用户不存在',
+    }
+  }
 }
 
 export default async function UserPage({ params, searchParams }: UserPageProps) {
   const { username } = await params
-  const { page: pageParam } = await searchParams
+  const { page: pageParam, tab = 'published' } = await searchParams
   const page = Number(pageParam) || 1
 
   try {
@@ -32,12 +89,25 @@ export default async function UserPage({ params, searchParams }: UserPageProps) 
       isFollowing = await checkUserFollowing(user.id, currentUser.id)
     }
 
-    // Get user's published contents
-    const { contents, totalPages } = await getContents({
-      page,
-      authorId: user.id,
-      status: 'approved',
-    })
+    // Get user stats
+    const stats = await getUserStats(user.id)
+
+    // 根据当前标签获取对应的内容
+    let publishedContents: any = { contents: [], totalPages: 0 }
+    let likedContents: any = { contents: [], totalPages: 0 }
+    let repostedContents: any = { contents: [], totalPages: 0 }
+
+    if (tab === 'published') {
+      publishedContents = await getContents({
+        page,
+        authorId: user.id,
+        status: 'approved',
+      })
+    } else if (tab === 'liked') {
+      likedContents = await getUserLikedContents(user.id, { page })
+    } else if (tab === 'reposted') {
+      repostedContents = await getUserRepostedContents(user.id, { page })
+    }
 
     return (
       <div className="container max-w-4xl mx-auto py-8 px-4">
@@ -48,12 +118,27 @@ export default async function UserPage({ params, searchParams }: UserPageProps) 
             currentUserId={currentUser?.id}
             isFollowing={isFollowing}
             isAuthenticated={!!currentUser}
+            stats={stats}
           />
-          <UserContents
-            contents={contents}
+          <UserContentTabs
             username={username}
-            currentPage={page}
-            totalPages={totalPages}
+            contents={{
+              published: {
+                items: publishedContents.contents,
+                currentPage: tab === 'published' ? page : 1,
+                totalPages: publishedContents.totalPages,
+              },
+              liked: {
+                items: likedContents.contents,
+                currentPage: tab === 'liked' ? page : 1,
+                totalPages: likedContents.totalPages,
+              },
+              reposted: {
+                items: repostedContents.contents,
+                currentPage: tab === 'reposted' ? page : 1,
+                totalPages: repostedContents.totalPages,
+              },
+            }}
           />
         </div>
       </div>

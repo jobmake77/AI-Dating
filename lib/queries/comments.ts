@@ -38,5 +38,14 @@ export async function getCommentsByContentId(contentId: string): Promise<Comment
     return []
   }
 
-  return data as Comment[]
+  // 处理 Supabase 嵌套查询返回的数组
+  const normalizedData = data?.map(comment => {
+    const user = comment.user as any
+    return {
+      ...comment,
+      user: Array.isArray(user) ? user[0] : user
+    }
+  }) || []
+
+  return normalizedData as unknown as Comment[]
 }

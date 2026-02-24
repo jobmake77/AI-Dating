@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { nanoid } from 'nanoid'
 import { contentSchema } from '@/lib/validations/content'
+import { moderateHTMLContent, formatModerationError } from '@/lib/tencent/moderation'
 
 // Calculate reading time based on word count (300 words per minute)
 function calculateReadingTime(content: string): number {
@@ -75,6 +76,13 @@ export async function createContent(formData: FormData) {
 
   const validatedData = contentSchema.parse(rawData)
 
+  // 腾讯云天御内容安全检测
+  const moderationResult = await moderateHTMLContent(validatedData.content)
+  if (!moderationResult.isSafe) {
+    const errorMessage = formatModerationError(moderationResult)
+    throw new Error(errorMessage)
+  }
+
   // Parse tags from form data
   const tagsJson = formData.get('tags') as string
   const userTags: string[] = tagsJson ? JSON.parse(tagsJson) : []
@@ -99,7 +107,7 @@ export async function createContent(formData: FormData) {
       price_type: validatedData.price_type,
       reading_time: readingTime,
       author_id: user.id,
-      status: 'approved', // 直接批准，不需要审核
+      status: 'approved', // 通过敏感词检测后直接发布
       cover_image: coverImage,
     })
     .select()

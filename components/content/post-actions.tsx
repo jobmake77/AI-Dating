@@ -9,8 +9,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Heart, Repeat2, Share2, Link2, Check } from 'lucide-react'
-import { toggleLike } from '@/lib/actions/likes'
-import { toggleRepost } from '@/lib/actions/reposts'
+import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
@@ -42,26 +41,27 @@ export function PostActions({
   const router = useRouter()
 
   const handleToggleLike = async () => {
-    if (!isAuthenticated) {
-      router.push('/login')
-      return
-    }
+    if (!isAuthenticated) { router.push('/login'); return }
 
     setIsLikeLoading(true)
-
-    // Optimistic update
     const newIsLiked = !isLiked
-    const newLikesCount = newIsLiked ? likesCount + 1 : likesCount - 1
     setIsLiked(newIsLiked)
-    setLikesCount(newLikesCount)
+    setLikesCount(newIsLiked ? likesCount + 1 : likesCount - 1)
 
     try {
-      await toggleLike(contentId)
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.push('/login'); return }
+
+      if (newIsLiked) {
+        await supabase.from('likes').insert({ content_id: contentId, user_id: user.id })
+      } else {
+        await supabase.from('likes').delete().eq('content_id', contentId).eq('user_id', user.id)
+      }
       router.refresh()
     } catch (error) {
-      // Revert on error
       setIsLiked(!newIsLiked)
-      setLikesCount(likesCount)
+      setLikesCount(initialLikesCount)
       console.error('Failed to toggle like:', error)
     } finally {
       setIsLikeLoading(false)
@@ -69,27 +69,28 @@ export function PostActions({
   }
 
   const handleToggleRepost = async () => {
-    if (!isAuthenticated) {
-      router.push('/login')
-      return
-    }
+    if (!isAuthenticated) { router.push('/login'); return }
 
     setIsRepostLoading(true)
-
-    // Optimistic update
     const newIsReposted = !isReposted
-    const newRepostsCount = newIsReposted ? repostsCount + 1 : repostsCount - 1
     setIsReposted(newIsReposted)
-    setRepostsCount(newRepostsCount)
+    setRepostsCount(newIsReposted ? repostsCount + 1 : repostsCount - 1)
 
     try {
-      await toggleRepost(contentId)
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.push('/login'); return }
+
+      if (newIsReposted) {
+        await supabase.from('reposts').insert({ content_id: contentId, user_id: user.id })
+      } else {
+        await supabase.from('reposts').delete().eq('content_id', contentId).eq('user_id', user.id)
+      }
       toast.success(newIsReposted ? '已转发' : '已取消转发')
       router.refresh()
     } catch (error) {
-      // Revert on error
       setIsReposted(!newIsReposted)
-      setRepostsCount(repostsCount)
+      setRepostsCount(initialRepostsCount)
       console.error('Failed to toggle repost:', error)
       toast.error('操作失败')
     } finally {
@@ -102,69 +103,38 @@ export function PostActions({
     try {
       await navigator.clipboard.writeText(url)
       toast.success('链接已复制到剪贴板')
-    } catch (error) {
-      console.error('Failed to copy link:', error)
+    } catch {
       toast.error('复制失败')
     }
   }
 
   const handleShare = async () => {
     const url = `${window.location.origin}/post/${contentId}`
-
-    // Try Web Share API first (mobile)
     if (navigator.share) {
-      try {
-        await navigator.share({
-          url,
-        })
-      } catch (error) {
-        // User cancelled or error occurred
-        console.log('Share cancelled or failed:', error)
-      }
+      try { await navigator.share({ url }) } catch { /* cancelled */ }
     } else {
-      // Fallback to copy link
       handleCopyLink()
     }
   }
 
   return (
     <div className="flex items-center gap-2 pt-4 border-t">
-      {/* Comment Button */}
       <Button
         variant="ghost"
         size="sm"
         className="gap-2 text-muted-foreground hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950"
-        onClick={() => {
-          // Scroll to comments section
-          const commentsSection = document.getElementById('comments-section')
-          commentsSection?.scrollIntoView({ behavior: 'smooth' })
-        }}
+        onClick={() => document.getElementById('comments-section')?.scrollIntoView({ behavior: 'smooth' })}
       >
-        <svg
-          className="h-4 w-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-          />
+        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
         </svg>
         <span className="text-sm">{initialCommentsCount}</span>
       </Button>
 
-      {/* Repost Button */}
       <Button
         variant="ghost"
         size="sm"
-        className={`gap-2 ${
-          isReposted
-            ? 'text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950'
-            : 'text-muted-foreground hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-950'
-        }`}
+        className={`gap-2 ${isReposted ? 'text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950' : 'text-muted-foreground hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-950'}`}
         onClick={handleToggleRepost}
         disabled={isRepostLoading}
       >
@@ -172,15 +142,10 @@ export function PostActions({
         <span className="text-sm">{repostsCount}</span>
       </Button>
 
-      {/* Like Button */}
       <Button
         variant="ghost"
         size="sm"
-        className={`gap-2 ${
-          isLiked
-            ? 'text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950'
-            : 'text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950'
-        }`}
+        className={`gap-2 ${isLiked ? 'text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950' : 'text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950'}`}
         onClick={handleToggleLike}
         disabled={isLikeLoading}
       >
@@ -188,14 +153,9 @@ export function PostActions({
         <span className="text-sm">{likesCount}</span>
       </Button>
 
-      {/* Share Button */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-2 text-muted-foreground hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950"
-          >
+          <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950">
             <Share2 className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
@@ -204,7 +164,7 @@ export function PostActions({
             <Link2 className="h-4 w-4 mr-2" />
             复制链接
           </DropdownMenuItem>
-          {navigator.share && (
+          {typeof navigator !== 'undefined' && 'share' in navigator && (
             <DropdownMenuItem onClick={handleShare}>
               <Share2 className="h-4 w-4 mr-2" />
               分享
