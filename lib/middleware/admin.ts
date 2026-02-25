@@ -9,7 +9,6 @@ export async function requireAdmin() {
     redirect('/login')
   }
 
-  // Check if user is admin
   const { data: profile } = await supabase
     .from('users')
     .select('role')
@@ -17,7 +16,7 @@ export async function requireAdmin() {
     .single()
 
   if (!profile || profile.role !== 'admin') {
-    throw new Error('Unauthorized: Admin access required')
+    redirect('/')
   }
 
   return user

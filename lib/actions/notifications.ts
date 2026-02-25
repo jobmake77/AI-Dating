@@ -149,6 +149,18 @@ export async function markAsRead(notificationId: string) {
   return { success: true }
 }
 
+// 标记所有通知为已读（不触发 revalidate，供 Server Component 渲染时调用）
+export async function markAllAsReadSilent() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+  await supabase
+    .from('notifications')
+    .update({ is_read: true })
+    .eq('user_id', user.id)
+    .eq('is_read', false)
+}
+
 // 标记所有通知为已读
 export async function markAllAsRead() {
   const supabase = await createClient()

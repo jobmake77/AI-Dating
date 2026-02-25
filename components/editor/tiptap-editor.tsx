@@ -14,10 +14,13 @@ import {
   CheckSquare,
   ImageIcon,
   Smile,
+  Video,
 } from 'lucide-react'
 import { useEffect, useImperativeHandle, forwardRef, useRef } from 'react'
 import { uploadImage } from '@/lib/actions/upload'
 import { useToast } from '@/hooks/use-toast'
+import { VideoExtension } from './video-extension'
+import { useVideoUpload } from './video-upload'
 
 interface TiptapEditorProps {
   content: string
@@ -57,6 +60,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
           inline: false,
           allowBase64: false,
         }),
+        VideoExtension,
       ],
       content,
       editorProps: {
@@ -66,6 +70,16 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
       },
       onUpdate: ({ editor }) => {
         onChange(editor.getHTML())
+      },
+    })
+
+    const { fileInputRef: videoInputRef, uploading: videoUploading, progress: videoProgress, handleFileChange: handleVideoFileChange } = useVideoUpload({
+      onUploadSuccess: (url) => {
+        ;(editor as any)?.chain().focus().setVideo({ src: url }).run()
+        toast({ title: '上传成功', description: '视频已插入到内容中' })
+      },
+      onError: (message) => {
+        toast({ variant: 'destructive', title: '上传失败', description: message })
       },
     })
 
@@ -197,6 +211,29 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
             type="file"
             accept="image/*"
             onChange={handleImageUpload}
+            className="hidden"
+          />
+
+          {/* Video Upload */}
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => videoInputRef.current?.click()}
+            disabled={videoUploading}
+            title="插入视频"
+          >
+            {videoUploading ? (
+              <span className="text-xs tabular-nums">{videoProgress}%</span>
+            ) : (
+              <Video className="h-4 w-4" />
+            )}
+          </Button>
+          <input
+            ref={videoInputRef}
+            type="file"
+            accept="video/mp4,video/quicktime,video/webm,video/x-msvideo"
+            onChange={handleVideoFileChange}
             className="hidden"
           />
 

@@ -1,21 +1,38 @@
 import { getPendingContents, getModerationStats } from '@/lib/actions/moderation'
 import { ModerationList } from '@/components/admin/moderation-list'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { FileText, CheckCircle, XCircle, Clock } from 'lucide-react'
+import { FileText, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react'
 
 export default async function ModerationPage() {
-  const [contents, stats] = await Promise.all([
-    getPendingContents(),
-    getModerationStats(),
-  ])
+  let contents: any[] = []
+  let stats = { pending: 0, approved: 0, rejected: 0 }
+  let error: string | null = null
+
+  try {
+    ;[contents, stats] = await Promise.all([
+      getPendingContents(),
+      getModerationStats(),
+    ])
+  } catch (e) {
+    error = e instanceof Error ? e.message : '加载失败'
+  }
+
+  if (error) {
+    return (
+      <div className="p-8">
+        <div className="flex items-center gap-3 text-destructive">
+          <AlertCircle className="w-5 h-5" />
+          <p>加载失败：{error}</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="container max-w-7xl mx-auto py-8 px-4">
+    <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">内容审核</h1>
-        <p className="text-muted-foreground">
-          审核用户提交的内容，确保社区内容质量
-        </p>
+        <h1 className="text-2xl font-bold mb-1">内容审核</h1>
+        <p className="text-muted-foreground">审核用户提交的内容</p>
       </div>
 
       {/* 统计卡片 */}

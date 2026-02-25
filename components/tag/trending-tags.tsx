@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { TagBadge } from './tag-badge'
-import { Search, Edit } from 'lucide-react'
 import Link from 'next/link'
 
 async function getTrendingTags() {
@@ -66,15 +65,8 @@ export async function TrendingTags() {
           ))}
         </div>
 
-        <div className="pt-3 border-t space-y-1.5">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Edit className="h-3.5 w-3.5" />
-            <span>创作时最常用</span>
-          </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Search className="h-3.5 w-3.5" />
-            <span>搜索最多（即将推出）</span>
-          </div>
+        <div className="pt-3 border-t">
+          <p className="text-xs text-muted-foreground">按搜索量排序</p>
         </div>
       </CardContent>
     </Card>

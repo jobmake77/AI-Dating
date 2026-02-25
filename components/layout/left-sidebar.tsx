@@ -2,11 +2,12 @@
 
 import { NavLink } from './nav-link'
 import { CommunityNavItem } from './community-nav-item'
-import { Home, MessageCircle, Users, Bell, PenSquare, ChevronDown, ChevronRight } from 'lucide-react'
+import { Home, MessageCircle, Users, Bell, PenSquare, ChevronDown, ChevronRight, Calendar, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
 import { Separator } from '@/components/ui/separator'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { usePathname } from 'next/navigation'
 
 interface Community {
   id: string
@@ -19,6 +20,7 @@ interface UserData {
   username: string | null
   avatar: string | null
   full_name: string | null
+  role: string | null
 }
 
 export function LeftSidebar() {
@@ -28,6 +30,14 @@ export function LeftSidebar() {
   const [unreadMessages, setUnreadMessages] = useState(0)
   const [unreadNotifications, setUnreadNotifications] = useState(0)
   const [communitiesOpen, setCommunitiesOpen] = useState(true)
+  const pathname = usePathname()
+
+  // 进入通知页面时清除红点
+  useEffect(() => {
+    if (pathname === '/notifications') {
+      setUnreadNotifications(0)
+    }
+  }, [pathname])
 
   useEffect(() => {
     async function loadData() {
@@ -45,7 +55,7 @@ export function LeftSidebar() {
 
       const { data: userInfo } = await supabase
         .from('users')
-        .select('username, avatar, full_name')
+        .select('username, avatar, full_name, role')
         .eq('id', authUser.id)
         .single()
       setUserData(userInfo)
@@ -112,6 +122,11 @@ export function LeftSidebar() {
         <NavLink href="/messages" icon={MessageCircle} badge={unreadMessages}>消息</NavLink>
         <NavLink href="/communities" icon={Users}>社区</NavLink>
         <NavLink href="/notifications" icon={Bell} badge={unreadNotifications}>通知</NavLink>
+        <NavLink href="/events" icon={Calendar}>活动</NavLink>
+
+        {userData?.role === 'admin' && (
+          <NavLink href="/admin" icon={ShieldCheck}>管理后台</NavLink>
+        )}
 
         {user && (
           <div className="pt-2 pb-1">

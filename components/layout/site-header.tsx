@@ -2,14 +2,14 @@
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import { MobileNav } from '@/components/layout/mobile-nav'
 import { createClient } from '@/lib/supabase/client'
-import { Search, User, Bell } from 'lucide-react'
+import { Search, User } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { useState, FormEvent, useEffect } from 'react'
 import { useToast } from '@/hooks/use-toast'
+import { NotificationDropdown } from '@/components/notifications/notification-dropdown'
 
 interface ServerUser {
   id: string
@@ -173,25 +173,11 @@ export function SiteHeader({ serverUser }: SiteHeaderProps) {
         <div className="flex items-center gap-1.5 flex-shrink-0">
           {user ? (
             <>
-              {/* 发布按钮 - 桌面端 */}
-              <Button asChild size="sm" className="hidden sm:flex">
-                <Link href="/create">发布内容</Link>
-              </Button>
-
-              {/* 通知图标 */}
-              <Button variant="ghost" size="sm" asChild className="relative">
-                <Link href="/notifications" aria-label={`查看通知${unreadCount > 0 ? ` (${unreadCount} 条未读)` : ''}`}>
-                  <Bell className="w-5 h-5" />
-                  {unreadCount > 0 && (
-                    <Badge
-                      variant="destructive"
-                      className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center p-0 text-xs"
-                    >
-                      {unreadCount > 99 ? '99+' : unreadCount}
-                    </Badge>
-                  )}
-                </Link>
-              </Button>
+              {/* 通知下拉 */}
+              <NotificationDropdown
+                unreadCount={unreadCount}
+                onRead={() => setUnreadCount(0)}
+              />
 
               {/* 管理员入口 */}
               {role === 'admin' && (

@@ -80,13 +80,17 @@ export async function approveContent(contentId: string) {
     throw new Error(`Failed to approve content: ${error.message}`)
   }
 
-  // Log moderation action
+  // Log moderation action（忽略失败，不影响主流程）
   const { data: { user } } = await supabase.auth.getUser()
-  await supabase.from('moderation_logs').insert({
-    content_id: contentId,
-    moderator_id: user!.id,
-    action: 'approve',
-  })
+  try {
+    await supabase.from('moderation_logs').insert({
+      content_id: contentId,
+      moderator_id: user!.id,
+      action: 'approve',
+    })
+  } catch {
+    // moderation_logs 表不存在时忽略
+  }
 
   revalidatePath('/admin/moderation')
   revalidatePath('/')
@@ -111,14 +115,18 @@ export async function rejectContent(contentId: string, reason: string) {
     throw new Error(`Failed to reject content: ${error.message}`)
   }
 
-  // Log moderation action
+  // Log moderation action（忽略失败，不影响主流程）
   const { data: { user } } = await supabase.auth.getUser()
-  await supabase.from('moderation_logs').insert({
-    content_id: contentId,
-    moderator_id: user!.id,
-    action: 'reject',
-    reason,
-  })
+  try {
+    await supabase.from('moderation_logs').insert({
+      content_id: contentId,
+      moderator_id: user!.id,
+      action: 'reject',
+      reason,
+    })
+  } catch {
+    // moderation_logs 表不存在时忽略
+  }
 
   revalidatePath('/admin/moderation')
   revalidatePath('/')

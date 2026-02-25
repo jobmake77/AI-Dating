@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Badge } from '@/components/ui/badge'
 
 interface NavLinkProps {
   href: string
@@ -26,16 +25,13 @@ export function NavLink({ href, icon: Icon, children, badge }: NavLinkProps) {
         isActive && "bg-accent text-accent-foreground"
       )}
     >
-      <Icon className="h-5 w-5 flex-shrink-0" />
+      <div className="relative flex-shrink-0">
+        <Icon className="h-5 w-5" />
+        {badge !== undefined && badge > 0 && (
+          <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-500 border border-background" />
+        )}
+      </div>
       <span className="flex-1">{children}</span>
-      {badge !== undefined && badge > 0 && (
-        <Badge
-          variant="destructive"
-          className="h-5 min-w-5 flex items-center justify-center p-0 px-1.5 text-xs"
-        >
-          {badge > 99 ? '99+' : badge}
-        </Badge>
-      )}
     </Link>
   )
 }

@@ -31,7 +31,7 @@ export async function getAllUsers() {
 
   const { data, error } = await supabase
     .from('users')
-    .select('id, username, full_name, email, membership_tier, member_expire_at, role, created_at')
+    .select('id, username, full_name, email, avatar, membership_tier, member_expire_at, role, created_at')
     .order('created_at', { ascending: false })
 
   if (error) {

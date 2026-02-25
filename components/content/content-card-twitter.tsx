@@ -1,10 +1,22 @@
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { TagList } from '@/components/tag/tag-list'
-import { formatDistanceToNow } from 'date-fns'
-import { zhCN } from 'date-fns/locale'
 import { Clock, Eye, User } from 'lucide-react'
 import { ContentCardActions } from './content-card-actions'
+
+function formatTime(dateStr: string): string {
+  const now = new Date()
+  const date = new Date(dateStr)
+  const diffMs = now.getTime() - date.getTime()
+  const diffH = diffMs / (1000 * 60 * 60)
+  if (diffH < 24) {
+    const h = Math.max(1, Math.floor(diffH))
+    return `${h}h前`
+  }
+  const m = date.getMonth() + 1
+  const d = date.getDate()
+  return `${m}月${d}日`
+}
 
 interface ContentCardProps {
   content: {
@@ -54,10 +66,9 @@ export function ContentCard({ content, isAuthenticated = false }: ContentCardPro
             <Link href={`/u/${content.users.username}`} className="font-bold text-[15px] hover:underline leading-tight">
               {content.users.full_name || content.users.username}
             </Link>
-            <span className="text-muted-foreground text-[14px]">@{content.users.username}</span>
             <span className="text-muted-foreground text-[14px]">·</span>
             <time className="text-muted-foreground text-[14px]">
-              {formatDistanceToNow(new Date(content.created_at), { addSuffix: true, locale: zhCN })}
+              {formatTime(content.created_at)}
             </time>
           </div>
 
