@@ -6,14 +6,14 @@ import { checkUserMembership } from '@/lib/actions/membership'
 import { createClient } from '@/lib/supabase/server'
 import { incrementViewCount } from '@/lib/actions/content'
 import { ContentDetail } from '@/components/content/content-detail'
-import { AuthorCard } from '@/components/content/author-card'
 import { CommentForm } from '@/components/comment/comment-form'
 import { CommentList } from '@/components/comment/comment-list'
 import { Paywall } from '@/components/membership/paywall'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Clock, XCircle } from 'lucide-react'
+import { Clock, XCircle, User } from 'lucide-react'
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
+import Link from 'next/link'
 
 interface PostPageProps {
   params: Promise<{ id: string }>
@@ -112,15 +112,13 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
 
     return (
       <div className="min-h-screen bg-background">
-        <div className="container max-w-[1280px] mx-auto px-4 py-4">
+        <div className="container max-w-3xl mx-auto px-4 py-4">
           {/* 待审核提示 */}
           {content.status === 'pending' && (
             <Alert className="mb-4">
               <Clock className="h-4 w-4" />
               <AlertTitle>内容待审核</AlertTitle>
-              <AlertDescription>
-                你的内容已提交，正在等待管理员审核。审核通过后将自动发布。
-              </AlertDescription>
+              <AlertDescription>你的内容已提交，正在等待管理员审核。审核通过后将自动发布。</AlertDescription>
             </Alert>
           )}
 
@@ -129,60 +127,69 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
             <Alert variant="destructive" className="mb-4">
               <XCircle className="h-4 w-4" />
               <AlertTitle>内容未通过审核</AlertTitle>
-              <AlertDescription>
-                {content.reject_reason || '你的内容未通过审核，请修改后重新提交。'}
-              </AlertDescription>
+              <AlertDescription>{content.reject_reason || '你的内容未通过审核，请修改后重新提交。'}</AlertDescription>
             </Alert>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Left Sidebar - Author Card */}
-            <aside className="hidden lg:block lg:col-span-3">
-              <div className="sticky top-[72px]">
-                <AuthorCard author={content.users} />
-              </div>
-            </aside>
-
-            {/* Main Content */}
-            <main className="lg:col-span-9">
-              <ContentDetail
-                content={content}
-                isAuthenticated={!!user}
-                isMember={isMember}
-                isAuthor={user?.id === content.author_id}
-                isLiked={isLiked}
-                isReposted={isReposted}
-                contentId={id}
+          {/* 作者信息 */}
+          <Link
+            href={`/u/${content.users.username}`}
+            className="flex items-center gap-2.5 mb-4 group"
+          >
+            {content.users.avatar ? (
+              <img
+                src={content.users.avatar}
+                alt={content.users.full_name || content.users.username}
+                className="w-9 h-9 rounded-full object-cover"
               />
+            ) : (
+              <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
+                <User className="w-4 h-4 text-muted-foreground" />
+              </div>
+            )}
+            <div>
+              <p className="text-sm font-semibold group-hover:underline leading-tight">
+                {content.users.full_name || content.users.username}
+              </p>
+              <p className="text-xs text-muted-foreground">@{content.users.username}</p>
+            </div>
+          </Link>
 
-              {/* 付费墙 */}
-              {needsPaywall && (
-                <div className="mt-8">
-                  <Paywall contentType="article" />
-                </div>
-              )}
+          {/* 主内容 */}
+          <ContentDetail
+            content={content}
+            isAuthenticated={!!user}
+            isMember={isMember}
+            isAuthor={user?.id === content.author_id}
+            isLiked={isLiked}
+            isReposted={isReposted}
+            contentId={id}
+          />
 
-              {/* Comments Section - 只有非付费墙内容才显示评论 */}
-              {!needsPaywall && (
-                <div id="comments-section" className="border-t border-border/50 px-4 py-6">
-                  <h2 className="text-xl font-bold mb-6">
-                    评论 ({content.comments_count || 0})
-                  </h2>
-                  <div className="space-y-6">
-                    <CommentForm
-                      contentId={id}
-                      isAuthenticated={!!user}
-                    />
-                    <CommentList
-                      comments={comments}
-                      currentUserId={user?.id}
-                      contentId={id}
-                    />
-                  </div>
-                </div>
-              )}
-            </main>
-          </div>
+          {/* 付费墙 */}
+          {needsPaywall && (
+            <div className="mt-8">
+              <Paywall contentType="article" />
+            </div>
+          )}
+
+          {/* 评论区 */}
+          {!needsPaywall && (
+            <div id="comments-section" className="border-t border-border/50 mt-6 pt-6">
+              <h2 className="text-lg font-bold mb-4">
+                评论 ({content.comments_count || 0})
+              </h2>
+              <div className="space-y-6">
+                <CommentForm contentId={id} isAuthenticated={!!user} />
+                <CommentList
+                  comments={comments}
+                  currentUserId={user?.id}
+                  contentId={id}
+                  isAuthenticated={!!user}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     )

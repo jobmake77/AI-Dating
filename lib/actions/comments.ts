@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createNotification } from './notifications'
 
-export async function createComment(contentId: string, content: string) {
+export async function createComment(contentId: string, content: string, parentId?: string) {
   const supabase = await createClient()
 
   // Check authentication
@@ -41,6 +41,7 @@ export async function createComment(contentId: string, content: string) {
       content_id: contentId,
       user_id: user.id,
       content: content.trim(),
+      ...(parentId ? { parent_id: parentId } : {}),
     })
     .select('id')
     .single()
