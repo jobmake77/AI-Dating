@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server'
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
+  const next = requestUrl.searchParams.get('next') || '/'
 
   // Use configured site URL to prevent Host Header injection
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || requestUrl.origin
@@ -17,25 +18,37 @@ export async function GET(request: Request) {
     }
 
     if (data.user) {
-      const { error: upsertError } = await supabase
+      // 先检查用户是否已存在
+      const { data: existingUser } = await supabase
         .from('users')
-        .upsert({
+        .select('id, role')
+        .eq('id', data.user.id)
+        .single()
+
+      if (existingUser) {
+        // 已存在：只更新非敏感字段，不覆盖 role
+        await supabase
+          .from('users')
+          .update({
+            username: data.user.user_metadata.user_name || data.user.email?.split('@')[0] || 'user',
+            email: data.user.email,
+            avatar: data.user.user_metadata.avatar_url,
+            github_url: data.user.user_metadata.html_url,
+          })
+          .eq('id', data.user.id)
+      } else {
+        // 首次登录：插入完整记录，role 默认 'user'
+        await supabase.from('users').insert({
           id: data.user.id,
           username: data.user.user_metadata.user_name || data.user.email?.split('@')[0] || 'user',
           email: data.user.email,
           avatar: data.user.user_metadata.avatar_url,
           github_url: data.user.user_metadata.html_url,
           role: 'user',
-        }, {
-          onConflict: 'id',
-          ignoreDuplicates: false
         })
-
-      if (upsertError) {
-        console.error('Error upserting user record')
       }
     }
   }
 
-  return NextResponse.redirect(`${siteUrl}/`)
+  return NextResponse.redirect(`${siteUrl}${next}`)
 }

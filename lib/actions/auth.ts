@@ -120,6 +120,29 @@ export async function signUpWithEmail(formData: FormData) {
   return { success: true, message: '注册成功！' }
 }
 
+export async function sendPasswordReset(formData: FormData) {
+  const supabase = await createClient()
+  const email = formData.get('email') as string
+
+  if (!email) return { error: '请输入邮箱' }
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/reset-password`,
+  })
+
+  if (error) {
+    const msg = error.message
+    if (msg.includes('rate limit') || msg.includes('over_email_send_rate_limit')) {
+      return { error: '邮件发送过于频繁，请稍后再试' }
+    }
+    if (msg.includes('Error sending') || msg.includes('smtp') || msg.includes('email')) {
+      return { error: 'SMTP 未配置，邮件无法发送。请在 Supabase Dashboard → Project Settings → Auth → SMTP 配置邮件服务，或联系管理员。', hint: 'smtp_error' }
+    }
+    return { error: msg }
+  }
+  return { success: true, message: '重置链接已发送，请检查邮箱（含垃圾邮件）' }
+}
+
 export async function signInWithGitHub() {
   const supabase = await createClient()
 

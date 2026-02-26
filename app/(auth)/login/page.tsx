@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Github, Mail, Sparkles, Code, Rocket, Zap } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { signInWithEmail, signUpWithEmail, signInWithGitHub } from '@/lib/actions/auth'
+import { signInWithEmail, signUpWithEmail, signInWithGitHub, sendPasswordReset } from '@/lib/actions/auth'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -18,6 +18,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [warning, setWarning] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
 
   useEffect(() => {
     let isMounted = true
@@ -114,6 +115,17 @@ export default function LoginPage() {
     // Success will redirect automatically
   }
 
+  const handleForgotPassword = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+    setSuccess(null)
+    const result = await sendPasswordReset(new FormData(e.currentTarget))
+    setLoading(false)
+    if (result?.error) setError(result.error)
+    else setSuccess(result.message || '重置链接已发送')
+  }
+
   // 直接显示登录表单，不显示加载页面
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-950 dark:to-neutral-900 p-4">
@@ -158,68 +170,97 @@ export default function LoginPage() {
               </Alert>
             )}
 
-            <Tabs defaultValue="signin" className="w-full">
+            <Tabs defaultValue="signin" className="w-full" onValueChange={() => { setError(null); setSuccess(null); setShowForgotPassword(false) }}>
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="signin">登录</TabsTrigger>
                 <TabsTrigger value="signup">注册</TabsTrigger>
               </TabsList>
 
               <TabsContent value="signin" className="space-y-4">
-                <form onSubmit={handleEmailSignIn} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-email">邮箱</Label>
-                    <Input
-                      id="signin-email"
-                      name="email"
-                      type="email"
-                      placeholder="your@email.com"
-                      required
-                      disabled={loading}
-                    />
-                  </div>
+                {!showForgotPassword ? (
+                  <form onSubmit={handleEmailSignIn} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="signin-email">邮箱</Label>
+                      <Input
+                        id="signin-email"
+                        name="email"
+                        type="email"
+                        placeholder="your@email.com"
+                        required
+                        disabled={loading}
+                      />
+                    </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-password">密码</Label>
-                    <Input
-                      id="signin-password"
-                      name="password"
-                      type="password"
-                      placeholder="••••••••"
-                      required
-                      disabled={loading}
-                    />
-                  </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="signin-password">密码</Label>
+                        <button
+                          type="button"
+                          onClick={() => { setShowForgotPassword(true); setError(null); setSuccess(null) }}
+                          className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                        >
+                          忘记密码？
+                        </button>
+                      </div>
+                      <Input
+                        id="signin-password"
+                        name="password"
+                        type="password"
+                        placeholder="••••••••"
+                        required
+                        disabled={loading}
+                      />
+                    </div>
 
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={loading}
-                  >
-                    <Mail className="mr-2 h-4 w-4" />
-                    {loading ? '登录中...' : '邮箱登录'}
-                  </Button>
-                </form>
+                    <Button type="submit" className="w-full" disabled={loading}>
+                      <Mail className="mr-2 h-4 w-4" />
+                      {loading ? '登录中...' : '邮箱登录'}
+                    </Button>
+                  </form>
+                ) : (
+                  <form onSubmit={handleForgotPassword} className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      输入注册邮箱，我们将发送密码重置链接。GitHub 登录的用户也可以通过此方式设置密码。
+                    </p>
+                    <div className="space-y-2">
+                      <Label htmlFor="reset-email">邮箱</Label>
+                      <Input
+                        id="reset-email"
+                        name="email"
+                        type="email"
+                        placeholder="your@email.com"
+                        required
+                        disabled={loading}
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button type="button" variant="outline" className="flex-1" onClick={() => setShowForgotPassword(false)}>
+                        返回
+                      </Button>
+                      <Button type="submit" className="flex-1" disabled={loading}>
+                        {loading ? '发送中...' : '发送重置链接'}
+                      </Button>
+                    </div>
+                  </form>
+                )}
 
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">
-                      或
-                    </span>
-                  </div>
-                </div>
+                {!showForgotPassword && (
+                  <>
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-background px-2 text-muted-foreground">或</span>
+                      </div>
+                    </div>
 
-                <Button
-                  onClick={handleGitHubLogin}
-                  disabled={loading}
-                  variant="outline"
-                  className="w-full group"
-                >
-                  <Github className="mr-2 h-4 w-4 group-hover:rotate-12 transition-transform" />
-                  {loading ? '跳转中...' : '使用 GitHub 登录'}
-                </Button>
+                    <Button onClick={handleGitHubLogin} disabled={loading} variant="outline" className="w-full group">
+                      <Github className="mr-2 h-4 w-4 group-hover:rotate-12 transition-transform" />
+                      {loading ? '跳转中...' : '使用 GitHub 登录'}
+                    </Button>
+                  </>
+                )}
               </TabsContent>
 
               <TabsContent value="signup" className="space-y-4">
