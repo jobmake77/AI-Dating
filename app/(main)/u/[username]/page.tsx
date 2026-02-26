@@ -2,6 +2,7 @@ import { getUserByUsername } from '@/lib/actions/user'
 import { getContents, getUserLikedContents, getUserRepostedContents } from '@/lib/queries/content'
 import { getUserStats } from '@/lib/queries/user'
 import { checkUserFollowing } from '@/lib/actions/follows'
+import { getUserAgents } from '@/lib/actions/agents'
 import { createClient } from '@/lib/supabase/server'
 import { UserProfile } from '@/components/user/user-profile'
 import { UserContentTabs } from '@/components/user/user-content-tabs'
@@ -92,6 +93,9 @@ export default async function UserPage({ params, searchParams }: UserPageProps) 
     // Get user stats
     const stats = await getUserStats(user.id)
 
+    // 只有本人才加载 agents
+    const agents = isOwner ? await getUserAgents() : []
+
     // 根据当前标签获取对应的内容
     let publishedContents: any = { contents: [], totalPages: 0 }
     let likedContents: any = { contents: [], totalPages: 0 }
@@ -122,6 +126,8 @@ export default async function UserPage({ params, searchParams }: UserPageProps) 
           />
           <UserContentTabs
             username={username}
+            isOwner={isOwner}
+            agents={agents}
             contents={{
               published: {
                 items: publishedContents.contents,

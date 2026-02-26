@@ -3,11 +3,14 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ContentList } from '@/components/content/content-list'
 import { Pagination } from '@/components/content/pagination'
+import { AgentTab } from '@/components/user/agent-tab'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { FileText, Heart, Repeat2 } from 'lucide-react'
+import { FileText, Heart, Repeat2, Bot } from 'lucide-react'
 
 interface UserContentTabsProps {
   username: string
+  isOwner: boolean
+  agents?: any[]
   contents: {
     published: {
       items: any[]
@@ -27,7 +30,7 @@ interface UserContentTabsProps {
   }
 }
 
-export function UserContentTabs({ username, contents }: UserContentTabsProps) {
+export function UserContentTabs({ username, isOwner, agents = [], contents }: UserContentTabsProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const currentTab = searchParams.get('tab') || 'published'
@@ -41,7 +44,7 @@ export function UserContentTabs({ username, contents }: UserContentTabsProps) {
 
   return (
     <Tabs value={currentTab} onValueChange={handleTabChange} className="w-full">
-      <TabsList className="grid w-full grid-cols-3">
+      <TabsList className={`grid w-full ${isOwner ? 'grid-cols-4' : 'grid-cols-3'}`}>
         <TabsTrigger value="published" className="flex items-center gap-2">
           <FileText className="h-4 w-4" />
           <span>内容</span>
@@ -54,6 +57,12 @@ export function UserContentTabs({ username, contents }: UserContentTabsProps) {
           <Repeat2 className="h-4 w-4" />
           <span>转发</span>
         </TabsTrigger>
+        {isOwner && (
+          <TabsTrigger value="agents" className="flex items-center gap-2">
+            <Bot className="h-4 w-4" />
+            <span>Agent</span>
+          </TabsTrigger>
+        )}
       </TabsList>
 
       <TabsContent value="published" className="mt-6 space-y-6">
@@ -115,6 +124,12 @@ export function UserContentTabs({ username, contents }: UserContentTabsProps) {
           </div>
         )}
       </TabsContent>
+
+      {isOwner && (
+        <TabsContent value="agents" className="mt-6">
+          <AgentTab initialAgents={agents} />
+        </TabsContent>
+      )}
     </Tabs>
   )
 }
