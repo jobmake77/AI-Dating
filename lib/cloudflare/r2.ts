@@ -51,21 +51,41 @@ export async function uploadToR2(
 }
 
 /**
- * Validate image file
+ * Validate image file (client-side pre-check)
  * @param file File to validate
  * @returns Error message or null if valid
  */
 export function validateImageFile(file: File): string | null {
-  // Check file size (max 10MB)
   const MAX_SIZE = 10 * 1024 * 1024
   if (file.size > MAX_SIZE) {
     return '图片大小不能超过 10MB'
   }
 
-  // Check file type
   const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
   if (!ALLOWED_TYPES.includes(file.type)) {
     return '只支持 JPG、PNG、GIF、WebP 格式的图片'
+  }
+
+  return null
+}
+
+/**
+ * Server-side magic bytes validation for image buffers.
+ * Prevents MIME type spoofing by checking actual file signatures.
+ */
+export function validateImageBuffer(buffer: Buffer): string | null {
+  if (buffer.length < 4) return '文件内容无效'
+
+  const isJpeg = buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff
+  const isPng = buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4e && buffer[3] === 0x47
+  const isGif = buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x38
+  const isWebp =
+    buffer.length >= 12 &&
+    buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46 &&
+    buffer[8] === 0x57 && buffer[9] === 0x45 && buffer[10] === 0x42 && buffer[11] === 0x50
+
+  if (!isJpeg && !isPng && !isGif && !isWebp) {
+    return '文件内容与声明的类型不符，请上传真实的图片文件'
   }
 
   return null

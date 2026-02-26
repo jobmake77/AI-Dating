@@ -4,24 +4,19 @@ import { NextResponse } from 'next/server'
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
-  const origin = requestUrl.origin
 
-  console.log('Auth callback received, code:', code ? 'present' : 'missing')
+  // Use configured site URL to prevent Host Header injection
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || requestUrl.origin
 
   if (code) {
     const supabase = await createClient()
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (error) {
-      console.error('Error exchanging code for session:', error)
-      return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error.message)}`)
+      return NextResponse.redirect(`${siteUrl}/login?error=${encodeURIComponent(error.message)}`)
     }
 
     if (data.user) {
-      console.log('User authenticated:', data.user.id)
-
-      // 使用 upsert 创建或更新用户记录
-      console.log('Upserting user record')
       const { error: upsertError } = await supabase
         .from('users')
         .upsert({
@@ -37,14 +32,10 @@ export async function GET(request: Request) {
         })
 
       if (upsertError) {
-        console.error('Error upserting user:', upsertError)
-      } else {
-        console.log('User record upserted successfully')
+        console.error('Error upserting user record')
       }
     }
   }
 
-  // 重定向到首页
-  console.log('Redirecting to home page')
-  return NextResponse.redirect(`${origin}/`)
+  return NextResponse.redirect(`${siteUrl}/`)
 }

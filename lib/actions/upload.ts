@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { uploadToR2, validateImageFile } from '@/lib/cloudflare/r2'
+import { uploadToR2, validateImageFile, validateImageBuffer } from '@/lib/cloudflare/r2'
 
 export async function uploadImage(formData: FormData, folder: string = 'content-images') {
   const supabase = await createClient()
@@ -28,6 +28,12 @@ export async function uploadImage(formData: FormData, folder: string = 'content-
     // Convert file to buffer
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
+
+    // Server-side magic bytes validation (prevents MIME spoofing)
+    const bufferError = validateImageBuffer(buffer)
+    if (bufferError) {
+      return { error: bufferError }
+    }
 
     // Upload to R2
     const result = await uploadToR2(buffer, file.type, folder)

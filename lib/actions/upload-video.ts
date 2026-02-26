@@ -24,6 +24,14 @@ const ALLOWED_VIDEO_TYPES = [
   'video/x-msvideo',
 ]
 
+// Map contentType -> allowed extensions
+const TYPE_EXT_MAP: Record<string, string[]> = {
+  'video/mp4': ['mp4'],
+  'video/quicktime': ['mov'],
+  'video/webm': ['webm'],
+  'video/x-msvideo': ['avi'],
+}
+
 export async function getVideoUploadUrl(filename: string, contentType: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -35,7 +43,13 @@ export async function getVideoUploadUrl(filename: string, contentType: string) {
     return { error: '只支持 MP4、MOV、WebM、AVI 格式的视频' }
   }
 
-  const ext = filename.split('.').pop() || 'mp4'
+  // Validate that file extension matches the declared contentType
+  const ext = filename.split('.').pop()?.toLowerCase() || ''
+  const allowedExts = TYPE_EXT_MAP[contentType] ?? []
+  if (!allowedExts.includes(ext)) {
+    return { error: '文件扩展名与视频类型不匹配' }
+  }
+
   const key = `videos/${Date.now()}-${nanoid(8)}.${ext}`
 
   const command = new PutObjectCommand({
