@@ -181,12 +181,6 @@ export function SiteHeader({ serverUser }: SiteHeaderProps) {
               {/* 管理员入口 */}
               {role === 'admin' && (
                 <>
-                  <Button asChild size="sm" variant="outline" className="hidden lg:flex">
-                    <Link href="/admin/moderation">审核</Link>
-                  </Button>
-                  <Button asChild size="sm" variant="outline" className="hidden lg:flex">
-                    <Link href="/admin/users">用户</Link>
-                  </Button>
                 </>
               )}
 

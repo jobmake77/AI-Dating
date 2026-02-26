@@ -121,7 +121,7 @@ export function LeftSidebar() {
       </div>
 
       {/* 主导航 */}
-      <nav className="flex-1 px-3 space-y-4">
+      <nav className="flex-1 px-3 space-y-2">
         <div className="space-y-1.5">
           <NavLink href="/" icon={Home}>首页</NavLink>
           <NavLink href="/messages" icon={MessageCircle} badge={unreadMessages}>消息</NavLink>
@@ -135,7 +135,7 @@ export function LeftSidebar() {
         </div>
 
         {user && (
-          <div className="pt-1">
+          <div className="pt-0.5">
             <Link
               href="/create"
               className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
@@ -148,7 +148,7 @@ export function LeftSidebar() {
 
         {/* 我的社区 */}
         {user && (
-          <div className="pt-1">
+          <div className="pt-0.5">
             <button
               onClick={() => setCommunitiesOpen(!communitiesOpen)}
               className="flex items-center justify-between w-full px-2 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors rounded-md hover:bg-accent"

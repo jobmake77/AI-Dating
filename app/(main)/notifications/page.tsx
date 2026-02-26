@@ -44,50 +44,50 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
 
     return (
       <div className="min-h-screen bg-background">
-        {/* 页面头部 */}
-        <div className="sticky top-[56px] z-10 bg-background/95 backdrop-blur border-b border-border px-4 py-3">
-          <h1 className="text-xl font-bold">通知</h1>
-        </div>
-
-        {notifications.length === 0 ? (
-          <div className="py-20">
-            <EmptyState
-              icon={Bell}
-              title="暂无通知"
-              description="当有人点赞、评论或关注你时，你会在这里收到通知"
-            />
+        <div className="mx-auto w-full max-w-[620px]">
+          {/* 页面头部 */}
+          <div className="sticky top-[56px] z-10 bg-background/95 backdrop-blur border-b border-border px-6 py-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Inbox</p>
+                <h1 className="text-lg font-semibold">通知</h1>
+              </div>
+              <span className="text-xs text-muted-foreground">按时间排序</span>
+            </div>
           </div>
-        ) : (
-          <div>
-            {notifications.map((n) => {
-              const actorName = n.actor.full_name || n.actor.username
-              const href = n.type === 'follow'
-                ? `/u/${n.actor.username}`
-                : n.content_id ? `/post/${n.content_id}` : '#'
 
-              let actionText = ''
-              switch (n.type) {
-                case 'like': actionText = '赞了你的内容'; break
-                case 'comment': actionText = '评论了你的内容'; break
-                case 'repost': actionText = '转发了你的内容'; break
-                case 'follow': actionText = '关注了你'; break
-              }
+          {notifications.length === 0 ? (
+            <div className="py-20 px-6">
+              <EmptyState
+                icon={Bell}
+                title="暂无通知"
+                description="当有人点赞、评论或关注你时，你会在这里收到通知"
+              />
+            </div>
+          ) : (
+            <div>
+              {notifications.map((n) => {
+                const actorName = n.actor.full_name || n.actor.username
+                const href = n.type === 'follow'
+                  ? `/u/${n.actor.username}`
+                  : n.content_id ? `/post/${n.content_id}` : '#'
 
-              return (
-                <Link
-                  key={n.id}
-                  href={href}
-                  className="flex gap-3 px-4 py-3 border-b border-border hover:bg-accent/30 transition-colors duration-150"
-                >
-                  {/* 类型图标列 */}
-                  <div className="flex flex-col items-center w-10 flex-shrink-0 pt-1">
-                    <TypeIcon type={n.type} />
-                  </div>
+                let actionText = ''
+                switch (n.type) {
+                  case 'like': actionText = '赞了你的内容'; break
+                  case 'comment': actionText = '评论了你的内容'; break
+                  case 'repost': actionText = '转发了你的内容'; break
+                  case 'follow': actionText = '关注了你'; break
+                }
 
-                  {/* 内容 */}
-                  <div className="flex-1 min-w-0">
-                    {/* 头像 */}
-                    <div className="mb-2">
+                return (
+                  <Link
+                    key={n.id}
+                    href={href}
+                    className="flex gap-4 px-4 py-3 border-b border-border hover:bg-accent/30 transition-colors duration-150"
+                  >
+                    {/* 左侧：头像 */}
+                    <div className="w-12 flex-shrink-0 pt-0.5">
                       {n.actor.avatar ? (
                         <img
                           src={n.actor.avatar}
@@ -101,47 +101,53 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
                       )}
                     </div>
 
-                    {/* 文字 */}
-                    <p className="text-[15px] leading-snug">
-                      <span className="font-bold">{actorName}</span>
-                      {' '}
-                      <span className="text-foreground/80">{actionText}</span>
-                    </p>
+                    {/* 右侧：内容 */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-2">
+                          <TypeIcon type={n.type} />
+                          <p className="text-[14px] leading-snug">
+                            <span className="font-semibold">{actorName}</span>
+                            {' '}
+                            <span className="text-foreground/80">{actionText}</span>
+                          </p>
+                        </div>
+                        <span className="text-[12px] text-muted-foreground whitespace-nowrap">
+                          {formatTime(n.created_at)}
+                        </span>
+                      </div>
 
-                    {n.content && (
-                      <p className="text-[14px] text-muted-foreground mt-1 line-clamp-2">
-                        {n.content.title}
-                      </p>
-                    )}
+                      {n.content && (
+                        <p className="text-[13px] text-muted-foreground mt-1 line-clamp-2">
+                          {n.content.title}
+                        </p>
+                      )}
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          )}
 
-                    <p className="text-[13px] text-muted-foreground mt-1">
-                      {formatTime(n.created_at)}
-                    </p>
-                  </div>
-                </Link>
-              )
-            })}
-          </div>
-        )}
-
-        {/* 分页 */}
-        {totalPages > 1 && (
-          <div className="flex justify-center gap-2 py-6">
-            {page > 1 && (
-              <Button asChild variant="outline" size="sm">
-                <a href={`/notifications?page=${page - 1}`}>上一页</a>
-              </Button>
-            )}
-            <span className="flex items-center px-4 text-sm text-muted-foreground">
-              {page} / {totalPages}
-            </span>
-            {page < totalPages && (
-              <Button asChild variant="outline" size="sm">
-                <a href={`/notifications?page=${page + 1}`}>下一页</a>
-              </Button>
-            )}
-          </div>
-        )}
+          {/* 分页 */}
+          {totalPages > 1 && (
+            <div className="flex justify-center gap-2 py-6">
+              {page > 1 && (
+                <Button asChild variant="outline" size="sm">
+                  <a href={`/notifications?page=${page - 1}`}>上一页</a>
+                </Button>
+              )}
+              <span className="flex items-center px-4 text-sm text-muted-foreground">
+                {page} / {totalPages}
+              </span>
+              {page < totalPages && (
+                <Button asChild variant="outline" size="sm">
+                  <a href={`/notifications?page=${page + 1}`}>下一页</a>
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     )
   } catch (error) {

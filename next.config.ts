@@ -24,8 +24,8 @@ const securityHeaders = [
       // Next.js requires unsafe-inline/unsafe-eval for hydration; tighten with nonces in future
       "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https:",
-      "media-src 'self' blob: https:",
+      "img-src 'self' data: blob: https://*.supabase.co https://*.r2.dev https://*.cloudflare.com",
+      "media-src 'self' blob: https://*.supabase.co https://*.r2.dev",
       // Supabase realtime + REST
       "connect-src 'self' https://*.supabase.co wss://*.supabase.co https:",
       "font-src 'self' data:",

@@ -1,10 +1,58 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+// 内存限流：IP -> { count, resetAt }
+// 注意：多实例部署时需换用 Redis
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
+
+const RATE_LIMITS: Record<string, { max: number; windowMs: number }> = {
+  'POST:/api/agent/posts': { max: 10, windowMs: 60_000 },
+  'GET:/api/agent/posts':  { max: 60, windowMs: 60_000 },
+  'POST:/api/admin':       { max: 20, windowMs: 60_000 },
+}
+const DEFAULT_API_LIMIT = { max: 60, windowMs: 60_000 }
+
+function getRateLimit(method: string, pathname: string) {
+  for (const [pattern, limit] of Object.entries(RATE_LIMITS)) {
+    if (`${method}:${pathname}`.startsWith(pattern)) return limit
+  }
+  return DEFAULT_API_LIMIT
+}
+
+function checkRateLimit(ip: string, method: string, pathname: string): boolean {
+  const limit = getRateLimit(method, pathname)
+  const mapKey = `${ip}:${method}:${pathname}`
+  const now = Date.now()
+  const entry = rateLimitMap.get(mapKey)
+
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(mapKey, { count: 1, resetAt: now + limit.windowMs })
+    return true
+  }
+  if (entry.count >= limit.max) return false
+  entry.count++
+  return true
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Admin route: enforce auth + role at the edge before any page renders
+  // API 路由限流
+  if (pathname.startsWith('/api/')) {
+    const ip =
+      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+      request.headers.get('x-real-ip') ??
+      'unknown'
+
+    if (!checkRateLimit(ip, request.method, pathname)) {
+      return NextResponse.json(
+        { error: 'Too many requests, please try again later.' },
+        { status: 429, headers: { 'Retry-After': '60' } }
+      )
+    }
+  }
+
+  // Admin 路由：边缘鉴权
   if (pathname.startsWith('/admin')) {
     let response = NextResponse.next({ request })
 
@@ -49,7 +97,7 @@ export async function proxy(request: NextRequest) {
     return response
   }
 
-  // All other routes: refresh Supabase session so server components can read it
+  // 其他路由：刷新 Supabase session
   let response = NextResponse.next({ request })
 
   const supabase = createServerClient(

@@ -83,29 +83,29 @@ export function NotificationItem({ notification }: NotificationItemProps) {
 
   return (
     <Link href={getLink()} onClick={handleClick}>
-      <Card className={`p-4 hover:bg-muted/50 transition-colors cursor-pointer ${
+      <Card className={`px-6 py-5 hover:bg-muted/50 transition-colors cursor-pointer ${
         !notification.is_read ? 'bg-primary/5 border-primary/20' : ''
       }`}>
-        <div className="flex items-start gap-3">
+        <div className="flex items-center gap-4">
           {/* 图标 */}
-          <div className="flex-shrink-0 mt-1">
+          <div className="flex-shrink-0">
             {getIcon()}
           </div>
 
           {/* 头像 */}
-          <Avatar className="h-10 w-10 flex-shrink-0">
+          <Avatar className="h-12 w-12 flex-shrink-0">
             <AvatarImage
               src={notification.actor.avatar || undefined}
               alt={notification.actor.full_name || notification.actor.username}
             />
             <AvatarFallback>
-              <User className="w-5 h-5" />
+              <User className="w-6 h-6" />
             </AvatarFallback>
           </Avatar>
 
           {/* 内容 */}
           <div className="flex-1 min-w-0">
-            <p className="text-sm">
+            <p className="text-base">
               <span className="font-semibold">
                 {notification.actor.full_name || notification.actor.username}
               </span>
@@ -116,12 +116,12 @@ export function NotificationItem({ notification }: NotificationItemProps) {
             </p>
 
             {notification.content && (
-              <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
+              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                 {notification.content.title}
               </p>
             )}
 
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground mt-2">
               {formatDistanceToNow(new Date(notification.created_at), {
                 addSuffix: true,
                 locale: zhCN,
@@ -130,14 +130,14 @@ export function NotificationItem({ notification }: NotificationItemProps) {
           </div>
 
           {/* 未读标识和删除按钮 */}
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-3 flex-shrink-0">
             {!notification.is_read && (
-              <div className="w-2 h-2 rounded-full bg-primary" />
+              <div className="w-2.5 h-2.5 rounded-full bg-primary" />
             )}
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+              className="h-9 w-9 p-0 hover:bg-destructive/10 hover:text-destructive"
               onClick={handleDelete}
             >
               <X className="w-4 h-4" />

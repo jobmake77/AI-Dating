@@ -3,7 +3,6 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
-import { redirect } from 'next/navigation'
 
 const createEventSchema = z.object({
   title: z.string().min(2).max(100),
@@ -74,4 +73,36 @@ export async function createEvent(formData: FormData) {
     }
     return { success: false, error: '创建活动失败' }
   }
+}
+
+export async function joinEvent(eventId: string) {
+  const supabase = await createClient()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  if (authError || !user) return { success: false, error: '请先登录' }
+
+  const { error } = await supabase
+    .from('event_participants')
+    .insert({ event_id: eventId, user_id: user.id })
+
+  if (error) return { success: false, error: error.message }
+
+  revalidatePath(`/events/${eventId}`)
+  return { success: true }
+}
+
+export async function leaveEvent(eventId: string) {
+  const supabase = await createClient()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  if (authError || !user) return { success: false, error: '请先登录' }
+
+  const { error } = await supabase
+    .from('event_participants')
+    .delete()
+    .eq('event_id', eventId)
+    .eq('user_id', user.id)
+
+  if (error) return { success: false, error: error.message }
+
+  revalidatePath(`/events/${eventId}`)
+  return { success: true }
 }

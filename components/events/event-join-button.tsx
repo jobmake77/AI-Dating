@@ -3,9 +3,9 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Users } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { joinEvent, leaveEvent } from '@/lib/actions/events'
 
 interface EventJoinButtonProps {
   eventId: string
@@ -32,40 +32,26 @@ export function EventJoinButton({
     }
 
     setIsLoading(true)
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      router.push('/login')
-      setIsLoading(false)
-      return
-    }
-
     try {
-      if (isJoined) {
-        const { error } = await supabase
-          .from('event_participants')
-          .delete()
-          .eq('event_id', eventId)
-          .eq('user_id', user.id)
+      const result = isJoined
+        ? await leaveEvent(eventId)
+        : await joinEvent(eventId)
 
-        if (error) throw error
+      if (!result.success) {
+        toast.error(result.error || '操作失败，请重试')
+        return
+      }
+
+      if (isJoined) {
         setIsJoined(false)
-        setCount(c => Math.max(c - 1, 0))
+        setCount((c) => Math.max(c - 1, 0))
         toast.success('已取消参与')
       } else {
-        const { error } = await supabase
-          .from('event_participants')
-          .insert({ event_id: eventId, user_id: user.id })
-
-        if (error) throw error
         setIsJoined(true)
-        setCount(c => c + 1)
+        setCount((c) => c + 1)
         toast.success('报名成功！')
       }
-      router.refresh()
-    } catch (error) {
-      console.error('参与活动失败:', error)
+    } catch {
       toast.error('操作失败，请重试')
     } finally {
       setIsLoading(false)
