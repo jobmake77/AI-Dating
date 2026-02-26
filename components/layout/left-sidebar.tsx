@@ -115,24 +115,30 @@ export function LeftSidebar() {
   const profileLink = username ? `/u/${username}` : '/settings'
 
   return (
-    <aside className="hidden lg:flex w-[220px] flex-col border-r border-border bg-background h-[calc(100vh-56px)] sticky top-[56px] overflow-y-auto flex-shrink-0">
-      {/* 主导航 */}
-      <nav className="flex-1 py-2 px-2 space-y-0.5">
-        <NavLink href="/" icon={Home}>首页</NavLink>
-        <NavLink href="/messages" icon={MessageCircle} badge={unreadMessages}>消息</NavLink>
-        <NavLink href="/communities" icon={Users}>社区</NavLink>
-        <NavLink href="/notifications" icon={Bell} badge={unreadNotifications}>通知</NavLink>
-        <NavLink href="/events" icon={Calendar}>活动</NavLink>
+    <aside className="hidden lg:flex w-[240px] flex-col border-r border-border bg-background h-[calc(100vh-56px)] sticky top-[56px] overflow-y-auto flex-shrink-0">
+      <div className="px-3 pt-4 pb-3">
+        <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">导航</p>
+      </div>
 
-        {userData?.role === 'admin' && (
-          <NavLink href="/admin" icon={ShieldCheck}>管理后台</NavLink>
-        )}
+      {/* 主导航 */}
+      <nav className="flex-1 px-3 space-y-4">
+        <div className="space-y-1.5">
+          <NavLink href="/" icon={Home}>首页</NavLink>
+          <NavLink href="/messages" icon={MessageCircle} badge={unreadMessages}>消息</NavLink>
+          <NavLink href="/communities" icon={Users}>社区</NavLink>
+          <NavLink href="/notifications" icon={Bell} badge={unreadNotifications}>通知</NavLink>
+          <NavLink href="/events" icon={Calendar}>活动</NavLink>
+
+          {userData?.role === 'admin' && (
+            <NavLink href="/admin" icon={ShieldCheck}>管理后台</NavLink>
+          )}
+        </div>
 
         {user && (
-          <div className="pt-2 pb-1">
+          <div className="pt-1">
             <Link
               href="/create"
-              className="flex items-center justify-center gap-2 w-full py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
             >
               <PenSquare className="h-4 w-4" />
               发布内容
@@ -142,11 +148,10 @@ export function LeftSidebar() {
 
         {/* 我的社区 */}
         {user && (
-          <>
-            <Separator className="my-2" />
+          <div className="pt-1">
             <button
               onClick={() => setCommunitiesOpen(!communitiesOpen)}
-              className="flex items-center justify-between w-full px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors rounded-md hover:bg-accent"
+              className="flex items-center justify-between w-full px-2 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors rounded-md hover:bg-accent"
             >
               <span>我的社区</span>
               {communitiesOpen
@@ -156,7 +161,7 @@ export function LeftSidebar() {
             </button>
 
             {communitiesOpen && (
-              <div className="space-y-0.5">
+              <div className="mt-2 space-y-1.5">
                 {userCommunities.length > 0 ? (
                   <>
                     {userCommunities.map((community) => (
@@ -179,25 +184,25 @@ export function LeftSidebar() {
                 )}
               </div>
             )}
-          </>
+          </div>
         )}
       </nav>
 
       {/* 用户信息 */}
       {user && (
-        <div className="border-t border-border p-2">
+        <div className="border-t border-border px-3 py-4">
           <Link
             href={profileLink}
-            className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-accent transition-colors"
+            className="flex items-center gap-3 bg-background p-3 hover:bg-accent/40 transition-colors"
           >
             {avatarUrl ? (
               <img
                 src={avatarUrl}
                 alt={displayName}
-                className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                className="w-9 h-9 rounded-full object-cover flex-shrink-0"
               />
             ) : (
-              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+              <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
                 <span className="text-sm font-semibold">
                   {displayName.charAt(0).toUpperCase()}
                 </span>

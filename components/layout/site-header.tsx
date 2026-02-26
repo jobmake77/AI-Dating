@@ -153,20 +153,19 @@ export function SiteHeader({ serverUser }: SiteHeaderProps) {
         </div>
 
         {/* 中间：搜索框（桌面端） */}
-        <form onSubmit={handleSearch} className="relative w-full max-w-[280px] hidden md:block">
+        <form onSubmit={handleSearch} className="relative hidden md:block">
           <label htmlFor="search-input" className="sr-only">搜索内容和标签</label>
-          <Search
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none"
-            aria-hidden="true"
-          />
-          <Input
-            id="search-input"
-            type="search"
-            placeholder="搜索内容、标签..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-9 text-sm bg-muted/60 border-transparent focus-visible:bg-background focus-visible:border-border transition-colors rounded-full"
-          />
+          <div className="flex items-center gap-2 border border-border/80 px-3 py-1.5 bg-background">
+            <Search className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+            <Input
+              id="search-input"
+              type="search"
+              placeholder="搜索内容、标签..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-8 w-[220px] border-0 bg-transparent px-0 text-sm shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+            />
+          </div>
         </form>
 
         {/* 右侧：操作区 */}

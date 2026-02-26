@@ -24,8 +24,14 @@ export function LoadingSpinner({ size = 'md', text }: LoadingSpinnerProps) {
 
 export function PageLoader() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <LoadingSpinner size="lg" text="加载中..." />
+    <div className="flex min-h-screen w-full bg-background">
+      <div className="flex w-full justify-center">
+        <div className="relative flex w-full max-w-[1060px] bg-background">
+          <main className="flex-1 min-h-screen max-w-[620px] border-r border-border flex items-center justify-center">
+            <LoadingSpinner size="lg" text="加载中..." />
+          </main>
+        </div>
+      </div>
     </div>
   )
 }
