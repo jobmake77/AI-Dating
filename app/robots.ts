@@ -8,10 +8,8 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
+        // Only disallow user-facing private pages; do NOT list API/admin paths here
         disallow: [
-          '/api/',
-          '/admin/',
-          '/(auth)/',
           '/settings',
           '/create',
           '/edit/',
