@@ -40,3 +40,4 @@ yarn-error.log*
 next-env.d.ts
 
 .worktrees/
+scripts/pentest/.admin-auth.json
