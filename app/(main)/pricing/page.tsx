@@ -1,10 +1,14 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Check } from 'lucide-react'
+import { ProgressCheckpoint } from '@/components/onboarding/progress-checkpoint'
 
 export default function PricingPage() {
   return (
     <div className="container max-w-6xl mx-auto py-12 px-4">
+      {/* 查看会员页面检查点 */}
+      <ProgressCheckpoint step="checked_membership" />
+
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold mb-4">会员权益</h1>
         <p className="text-xl text-muted-foreground">

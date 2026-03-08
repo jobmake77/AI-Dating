@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { MobileNav } from '@/components/layout/mobile-nav'
+import { MobileSearchModal } from '@/components/search/mobile-search-modal'
 import { createClient } from '@/lib/supabase/client'
 import { Search, User } from 'lucide-react'
 import Link from 'next/link'
@@ -31,6 +32,7 @@ export function SiteHeader({ serverUser }: SiteHeaderProps) {
   const [isSigningOut, setIsSigningOut] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [unreadCount, setUnreadCount] = useState(0)
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
 
   const user = serverUser
   const username = serverUser?.username
@@ -170,6 +172,17 @@ export function SiteHeader({ serverUser }: SiteHeaderProps) {
 
         {/* 右侧：操作区 */}
         <div className="flex items-center gap-1.5 flex-shrink-0">
+          {/* 移动端搜索按钮 */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setMobileSearchOpen(true)}
+            className="md:hidden"
+            aria-label="搜索"
+          >
+            <Search className="w-5 h-5" />
+          </Button>
+
           {user ? (
             <>
               {/* 通知下拉 */}
@@ -217,6 +230,12 @@ export function SiteHeader({ serverUser }: SiteHeaderProps) {
           )}
         </div>
       </div>
+
+      {/* 移动端搜索模态框 */}
+      <MobileSearchModal
+        open={mobileSearchOpen}
+        onOpenChange={setMobileSearchOpen}
+      />
     </header>
   )
 }

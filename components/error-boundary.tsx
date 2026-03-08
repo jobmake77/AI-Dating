@@ -3,30 +3,64 @@
 import { Component, ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, RefreshCw, ArrowLeft } from 'lucide-react'
+import { logClientError } from '@/lib/utils/error-logger'
+import { getFriendlyErrorMessage } from '@/lib/utils/error-handler'
 
 interface Props {
   children: ReactNode
   fallback?: ReactNode
+  onError?: (error: Error, errorInfo: any) => void
+  showDetails?: boolean
 }
 
 interface State {
   hasError: boolean
   error?: Error
+  errorCount: number
 }
 
+/**
+ * 错误边界组件
+ * 捕获子组件树中的 JavaScript 错误，显示友好的错误 UI
+ */
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props)
-    this.state = { hasError: false }
+    this.state = { hasError: false, errorCount: 0 }
   }
 
   static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error }
+    return { hasError: true, error, errorCount: 0 }
   }
 
   componentDidCatch(error: Error, errorInfo: any) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo)
+    // 记录错误
+    logClientError(error, {
+      component: 'ErrorBoundary',
+      metadata: errorInfo,
+    })
+
+    // 调用自定义错误处理器
+    if (this.props.onError) {
+      this.props.onError(error, errorInfo)
+    }
+  }
+
+  handleReset = () => {
+    const newErrorCount = this.state.errorCount + 1
+
+    // 如果错误次数过多，建议刷新页面
+    if (newErrorCount >= 3) {
+      window.location.reload()
+      return
+    }
+
+    this.setState({
+      hasError: false,
+      error: undefined,
+      errorCount: newErrorCount,
+    })
   }
 
   render() {
@@ -34,6 +68,12 @@ export class ErrorBoundary extends Component<Props, State> {
       if (this.props.fallback) {
         return this.props.fallback
       }
+
+      const friendlyMessage = this.state.error
+        ? getFriendlyErrorMessage(this.state.error)
+        : '页面加载时出现了问题'
+
+      const showDetails = this.props.showDetails ?? process.env.NODE_ENV === 'development'
 
       return (
         <Card className="max-w-2xl mx-auto my-8">
@@ -45,31 +85,35 @@ export class ErrorBoundary extends Component<Props, State> {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-muted-foreground">
-              抱歉，页面加载时出现了问题。
+              {friendlyMessage}
             </p>
-            {this.state.error && (
+            {this.state.errorCount >= 2 && (
+              <p className="text-sm text-amber-600">
+                多次尝试失败，建议刷新页面或返回上一页
+              </p>
+            )}
+            {showDetails && this.state.error && (
               <details className="text-sm">
                 <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
                   查看错误详情
                 </summary>
                 <pre className="mt-2 p-4 bg-muted rounded-lg overflow-auto text-xs">
                   {this.state.error.message}
+                  {this.state.error.stack && `\n\n${this.state.error.stack}`}
                 </pre>
               </details>
             )}
             <div className="flex gap-2">
-              <Button
-                onClick={() => {
-                  this.setState({ hasError: false, error: undefined })
-                  window.location.reload()
-                }}
-              >
-                刷新页面
+              <Button onClick={this.handleReset} className="gap-2">
+                <RefreshCw className="w-4 h-4" />
+                {this.state.errorCount >= 2 ? '刷新页面' : '重试'}
               </Button>
               <Button
                 variant="outline"
                 onClick={() => window.history.back()}
+                className="gap-2"
               >
+                <ArrowLeft className="w-4 h-4" />
                 返回上一页
               </Button>
             </div>

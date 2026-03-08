@@ -1,4 +1,5 @@
 'use server'
+import { logger } from '@/lib/utils/logger'
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
@@ -40,7 +41,7 @@ export async function sendMessage(conversationId: string, content: string) {
     .single()
 
   if (error) {
-    console.error('Send message error:', error)
+    logger.error('Send message error:', error)
     return { error: '发送失败，请重试' }
   }
 
@@ -64,7 +65,7 @@ export async function markConversationAsRead(conversationId: string) {
     .eq('user_id', user.id)
 
   if (error) {
-    console.error('Mark as read error:', error)
+    logger.error('Mark as read error:', error)
     return { error: '操作失败' }
   }
 
@@ -126,7 +127,7 @@ export async function createConversationWithUser(otherUserId: string) {
     .single()
 
   if (conversationError) {
-    console.error('Create conversation error:', conversationError)
+    logger.error('Create conversation error:', conversationError)
     return { error: '创建会话失败' }
   }
 
@@ -139,7 +140,7 @@ export async function createConversationWithUser(otherUserId: string) {
     ])
 
   if (participantsError) {
-    console.error('Add participants error:', participantsError)
+    logger.error('Add participants error:', participantsError)
     return { error: '添加参与者失败' }
   }
 

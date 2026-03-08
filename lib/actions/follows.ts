@@ -1,4 +1,5 @@
 'use server'
+import { logger } from '@/lib/utils/logger'
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
@@ -58,7 +59,7 @@ export async function toggleFollow(userId: string) {
         type: 'follow',
       })
     } catch (error) {
-      console.error('Failed to create follow notification:', error)
+      logger.error('Failed to create follow notification:', error)
       // Don't throw error, notification failure shouldn't block the follow
     }
   }
@@ -99,7 +100,7 @@ export async function getFollowers(userId: string) {
     .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('Failed to fetch followers:', error)
+    logger.error('Failed to fetch followers:', error)
     return []
   }
 
@@ -126,7 +127,7 @@ export async function getFollowing(userId: string) {
     .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('Failed to fetch following:', error)
+    logger.error('Failed to fetch following:', error)
     return []
   }
 

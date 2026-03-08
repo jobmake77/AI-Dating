@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { trackEvent } from '@/lib/analytics/events'
 
 // 检查是否为管理员
 export async function checkIsAdmin(): Promise<boolean> {
@@ -74,6 +75,19 @@ export async function updateUserMembership(
     throw new Error(`Failed to update membership: ${error.message}`)
   }
 
+  // 追踪会员状态变更事件
+  if (membershipTier === 'premium') {
+    await trackEvent('membership_purchased', {
+      user_id: userId,
+      plan_type: 'premium',
+      expire_at: expireAt,
+    })
+  } else {
+    await trackEvent('membership_cancelled', {
+      user_id: userId,
+    })
+  }
+
   revalidatePath('/admin/members')
 }
 
@@ -99,6 +113,13 @@ export async function updateUserRole(
 
   if (error) {
     throw new Error(`Failed to update role: ${error.message}`)
+  }
+
+  // 追踪角色升级事件
+  if (role === 'creator') {
+    await trackEvent('user_upgraded_to_creator', {
+      user_id: userId,
+    })
   }
 
   revalidatePath('/admin/members')

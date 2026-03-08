@@ -1,4 +1,5 @@
 'use server'
+import { logger } from '@/lib/utils/logger'
 
 import { createClient } from '@/lib/supabase/server'
 
@@ -44,7 +45,7 @@ export async function getRelatedContents(contentId: string, limit: number = 5) {
       .limit(limit * 2) // 获取更多，然后按相关度排序
 
     if (error) {
-      console.error('Get related contents error:', error)
+      logger.error('Get related contents error:', error)
       return []
     }
 
@@ -70,7 +71,7 @@ export async function getRelatedContents(contentId: string, limit: number = 5) {
       .sort((a, b) => b.score - a.score)
       .slice(0, limit)
   } catch (error) {
-    console.error('Get related contents error:', error)
+    logger.error('Get related contents error:', error)
     return []
   }
 }
@@ -133,7 +134,7 @@ export async function getTrendingContents(params: {
     const { data, error } = await query.limit(limit * 2)
 
     if (error) {
-      console.error('Get trending contents error:', {
+      logger.error('Get trending contents error:', {
         message: error.message,
         details: error.details,
         hint: error.hint,
@@ -178,7 +179,7 @@ export async function getTrendingContents(params: {
       .sort((a, b) => b.score - a.score)
       .slice(0, limit)
   } catch (error) {
-    console.error('Get trending contents error:', error)
+    logger.error('Get trending contents error:', error)
     // 发生任何错误时返回空数组，让 UI 优雅降级
     return []
   }
@@ -242,7 +243,7 @@ export async function getRecommendedContents(limit: number = 10) {
       .limit(limit * 2)
 
     if (error) {
-      console.error('Get recommended contents error:', error)
+      logger.error('Get recommended contents error:', error)
       return getTrendingContents({ limit })
     }
 
@@ -274,7 +275,7 @@ export async function getRecommendedContents(limit: number = 10) {
       .sort((a, b) => b.score - a.score)
       .slice(0, limit)
   } catch (error) {
-    console.error('Get recommended contents error:', error)
+    logger.error('Get recommended contents error:', error)
     // 发生错误时降级到热门内容
     return getTrendingContents({ limit })
   }

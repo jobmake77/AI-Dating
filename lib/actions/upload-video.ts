@@ -1,4 +1,5 @@
 'use server'
+import { logger } from '@/lib/utils/logger'
 
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
@@ -63,7 +64,7 @@ export async function getVideoUploadUrl(filename: string, contentType: string) {
     const publicUrl = `${PUBLIC_URL}/${key}`
     return { uploadUrl, publicUrl, key }
   } catch (error) {
-    console.error('Failed to generate presigned URL:', error)
+    logger.error('Failed to generate presigned URL:', error)
     return { error: '生成上传链接失败，请重试' }
   }
 }

@@ -6,6 +6,8 @@ import { redirect } from 'next/navigation'
 import { nanoid } from 'nanoid'
 import { contentSchema } from '@/lib/validations/content'
 import { moderateHTMLContent, formatModerationError } from '@/lib/tencent/moderation'
+import { updateOnboardingProgress } from './onboarding'
+import { trackEvent } from '@/lib/analytics/events'
 
 // Calculate reading time based on word count (300 words per minute)
 function calculateReadingTime(content: string): number {
@@ -121,6 +123,36 @@ export async function createContent(formData: FormData) {
   if (userTags.length > 0) {
     const { addTagsToContent } = await import('./tags')
     await addTagsToContent(data.id, userTags)
+  }
+
+  // 检查是否为首次发布
+  const { count: contentCount } = await supabase
+    .from('contents')
+    .select('*', { count: 'exact', head: true })
+    .eq('author_id', user.id)
+
+  // 追踪事件
+  if (contentCount === 1) {
+    await trackEvent('first_post_published', {
+      content_id: data.id,
+      content_title: title,
+      author_id: user.id,
+    })
+  }
+
+  await trackEvent('post_published', {
+    content_id: data.id,
+    content_title: title,
+    author_id: user.id,
+    price_type: validatedData.price_type,
+  })
+
+  // 标记用户已发布第一篇内容
+  try {
+    await updateOnboardingProgress({ first_post_published: true })
+  } catch (error) {
+    // 忽略错误，不影响内容发布
+    console.error('Failed to update onboarding progress:', error)
   }
 
   revalidatePath('/contents')

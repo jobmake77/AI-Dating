@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { Tag } from '@/lib/types/tag'
+import { logger } from '@/lib/utils/logger'
 
 /**
  * 创建或获取标签
@@ -37,13 +38,13 @@ export async function createOrGetTag(name: string): Promise<{ tag: Tag | null; e
       .single()
 
     if (createError) {
-      console.error('Error creating tag:', createError)
+      logger.error('Error creating tag:', createError)
       return { tag: null, error: '创建标签失败' }
     }
 
     return { tag: newTag, error: null }
   } catch (error) {
-    console.error('Error in createOrGetTag:', error)
+    logger.error('Error in createOrGetTag:', error)
     return { tag: null, error: '操作失败' }
   }
 }
@@ -97,14 +98,14 @@ export async function addTagsToContent(contentId: string, tagNames: string[]): P
       .insert(contentTags)
 
     if (insertError) {
-      console.error('Error adding tags to content:', insertError)
+      logger.error('Error adding tags to content:', insertError)
       return { error: '添加标签失败' }
     }
 
     revalidatePath(`/post/${contentId}`)
     return { error: null }
   } catch (error) {
-    console.error('Error in addTagsToContent:', error)
+    logger.error('Error in addTagsToContent:', error)
     return { error: '操作失败' }
   }
 }
@@ -140,14 +141,14 @@ export async function removeTagFromContent(contentId: string, tagId: string): Pr
       .eq('tag_id', tagId)
 
     if (deleteError) {
-      console.error('Error removing tag from content:', deleteError)
+      logger.error('Error removing tag from content:', deleteError)
       return { error: '移除标签失败' }
     }
 
     revalidatePath(`/post/${contentId}`)
     return { error: null }
   } catch (error) {
-    console.error('Error in removeTagFromContent:', error)
+    logger.error('Error in removeTagFromContent:', error)
     return { error: '操作失败' }
   }
 }
@@ -166,13 +167,13 @@ export async function getPopularTags(limit: number = 20): Promise<Tag[]> {
       .limit(limit)
 
     if (error) {
-      console.error('Error fetching popular tags:', error)
+      logger.error('Error fetching popular tags:', error)
       return []
     }
 
     return data || []
   } catch (error) {
-    console.error('Error in getPopularTags:', error)
+    logger.error('Error in getPopularTags:', error)
     return []
   }
 }
@@ -192,13 +193,13 @@ export async function searchTags(query: string, limit: number = 10): Promise<Tag
       .limit(limit)
 
     if (error) {
-      console.error('Error searching tags:', error)
+      logger.error('Error searching tags:', error)
       return []
     }
 
     return data || []
   } catch (error) {
-    console.error('Error in searchTags:', error)
+    logger.error('Error in searchTags:', error)
     return []
   }
 }
@@ -216,13 +217,13 @@ export async function getContentTags(contentId: string): Promise<Tag[]> {
       .eq('content_id', contentId)
 
     if (error) {
-      console.error('Error fetching content tags:', error)
+      logger.error('Error fetching content tags:', error)
       return []
     }
 
     return data?.map(item => item.tags).filter(Boolean).flat() || []
   } catch (error) {
-    console.error('Error in getContentTags:', error)
+    logger.error('Error in getContentTags:', error)
     return []
   }
 }

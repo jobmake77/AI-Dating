@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createNotification } from './notifications'
+import { trackEvent } from '@/lib/analytics/events'
 
 export async function toggleLike(contentId: string) {
   const supabase = await createClient()
@@ -43,6 +44,12 @@ export async function toggleLike(contentId: string) {
     if (error) {
       throw new Error(`Failed to unlike: ${error.message}`)
     }
+
+    // 追踪取消点赞事件
+    await trackEvent('post_unliked', {
+      content_id: contentId,
+      user_id: user.id,
+    })
   } else {
     // Like: insert a new like
     const { error } = await supabase
@@ -55,6 +62,13 @@ export async function toggleLike(contentId: string) {
     if (error) {
       throw new Error(`Failed to like: ${error.message}`)
     }
+
+    // 追踪点赞事件
+    await trackEvent('post_liked', {
+      content_id: contentId,
+      user_id: user.id,
+      author_id: content.author_id,
+    })
 
     // Create notification for content author
     try {

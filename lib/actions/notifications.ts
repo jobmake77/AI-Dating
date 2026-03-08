@@ -1,9 +1,10 @@
 'use server'
+import { logger } from '@/lib/utils/logger'
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-export type NotificationType = 'like' | 'comment' | 'repost' | 'follow'
+export type NotificationType = 'like' | 'comment' | 'repost' | 'follow' | 'event_reminder' | 'community_invite'
 
 export interface Notification {
   id: string
@@ -12,6 +13,8 @@ export interface Notification {
   type: NotificationType
   content_id: string | null
   comment_id: string | null
+  event_id: string | null
+  community_id: string | null
   is_read: boolean
   created_at: string
   actor: {
@@ -33,6 +36,8 @@ export async function createNotification(params: {
   type: NotificationType
   contentId?: string
   commentId?: string
+  eventId?: string
+  communityId?: string
 }) {
   const supabase = await createClient()
 
@@ -47,14 +52,39 @@ export async function createNotification(params: {
     type: params.type,
     content_id: params.contentId || null,
     comment_id: params.commentId || null,
+    event_id: params.eventId || null,
+    community_id: params.communityId || null,
   })
 
   if (error) {
-    console.error('Create notification error:', error)
+    logger.error('Create notification error:', error)
     throw new Error('创建通知失败')
   }
 
   return { success: true }
+}
+
+// 创建活动提醒通知
+export async function createEventReminder(eventId: string, userId: string) {
+  const supabase = await createClient()
+
+  // 获取活动信息
+  const { data: event } = await supabase
+    .from('events')
+    .select('creator_id')
+    .eq('id', eventId)
+    .single()
+
+  if (!event) {
+    return { success: false, error: '活动不存在' }
+  }
+
+  return createNotification({
+    userId,
+    actorId: event.creator_id,
+    type: 'event_reminder',
+    eventId,
+  })
 }
 
 // 获取用户的通知列表
@@ -89,7 +119,7 @@ export async function getNotifications(page: number = 1, limit: number = 20) {
     .range(from, to)
 
   if (error) {
-    console.error('Get notifications error:', error)
+    logger.error('Get notifications error:', error)
     throw new Error('获取通知失败')
   }
 
@@ -118,7 +148,7 @@ export async function getUnreadCount() {
     .eq('is_read', false)
 
   if (error) {
-    console.error('Get unread count error:', error)
+    logger.error('Get unread count error:', error)
     return 0
   }
 
@@ -141,7 +171,7 @@ export async function markAsRead(notificationId: string) {
     .eq('user_id', user.id)
 
   if (error) {
-    console.error('Mark as read error:', error)
+    logger.error('Mark as read error:', error)
     throw new Error('标记已读失败')
   }
 
@@ -177,7 +207,7 @@ export async function markAllAsRead() {
     .eq('is_read', false)
 
   if (error) {
-    console.error('Mark all as read error:', error)
+    logger.error('Mark all as read error:', error)
     throw new Error('标记全部已读失败')
   }
 
@@ -200,7 +230,7 @@ export async function deleteNotification(notificationId: string) {
     .eq('user_id', user.id)
 
   if (error) {
-    console.error('Delete notification error:', error)
+    logger.error('Delete notification error:', error)
     throw new Error('删除通知失败')
   }
 

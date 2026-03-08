@@ -6,8 +6,10 @@ import { getUserAgents } from '@/lib/actions/agents'
 import { createClient } from '@/lib/supabase/server'
 import { UserProfile } from '@/components/user/user-profile'
 import { UserContentTabs } from '@/components/user/user-content-tabs'
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
+import { getPersonSchema, getBreadcrumbSchema } from '@/lib/seo/structured-data'
 
 interface UserPageProps {
   params: Promise<{ username: string }>
@@ -25,6 +27,8 @@ export async function generateMetadata({ params }: UserPageProps): Promise<Metad
     const displayName = user.full_name || user.username
     const description = user.bio || `${displayName} 在 AI-Dating 的个人主页。已发布 ${stats.contents_count} 篇内容，获得 ${stats.total_likes} 个赞。`
 
+    const ogImageUrl = `${baseUrl}/api/og?type=user&name=${encodeURIComponent(displayName)}&username=${encodeURIComponent(user.username)}&bio=${encodeURIComponent(user.bio || '')}&contents=${stats.contents_count}&followers=${user.followers_count || 0}`
+
     return {
       title: `${displayName} (@${user.username})`,
       description,
@@ -35,30 +39,21 @@ export async function generateMetadata({ params }: UserPageProps): Promise<Metad
         title: `${displayName} (@${user.username})`,
         description,
         siteName: 'AI-Dating',
-        images: user.avatar
-          ? [
-              {
-                url: user.avatar,
-                width: 400,
-                height: 400,
-                alt: displayName,
-              },
-            ]
-          : [
-              {
-                url: '/og-image.png',
-                width: 1200,
-                height: 630,
-                alt: displayName,
-              },
-            ],
+        images: [
+          {
+            url: ogImageUrl,
+            width: 1200,
+            height: 630,
+            alt: displayName,
+          },
+        ],
         username: user.username,
       },
       twitter: {
-        card: 'summary',
+        card: 'summary_large_image',
         title: `${displayName} (@${user.username})`,
         description,
-        images: user.avatar ? [user.avatar] : ['/og-image.png'],
+        images: [ogImageUrl],
       },
     }
   } catch (error) {
@@ -113,8 +108,45 @@ export default async function UserPage({ params, searchParams }: UserPageProps) 
       repostedContents = await getUserRepostedContents(user.id, { page })
     }
 
+    // Generate structured data
+    const personSchema = getPersonSchema({
+      name: user.full_name || user.username,
+      username: user.username,
+      bio: user.bio,
+      image: user.avatar,
+    })
+
+    const breadcrumbSchema = getBreadcrumbSchema([
+      { name: '首页', url: '/' },
+      { name: '用户', url: '/u' },
+      { name: user.full_name || user.username, url: `/u/${user.username}` },
+    ])
+
     return (
       <div className="container max-w-4xl mx-auto py-8 px-4">
+        {/* Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
+
+        {/* Breadcrumb Navigation */}
+        <Breadcrumb className="mb-6">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/">首页</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{user.full_name || user.username}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+
         <div className="space-y-8">
           <UserProfile
             user={user}

@@ -266,3 +266,501 @@
 ---
 
 **下次更新**: 完成 Day 1 任务后
+
+---
+
+## 产品优化阶段（2026-03-08 开始）
+
+**基于**: 产品评价报告（`docs/product-evaluation-report.md`）
+**路线图**: `docs/product-optimization-roadmap.md`
+**当前评分**: 7.5/10
+
+---
+
+## Phase 1: 基础加固（1-2 月）🔴 高优先级
+
+### 1.1 可访问性改进
+
+**目标**: 提升 WCAG 2.1 AA 合规性，扩大用户群体
+
+- [ ] 为所有交互元素添加 ARIA 标签
+  - [ ] 按钮和链接
+  - [ ] 表单输入
+  - [ ] 模态框和对话框
+  - [ ] 导航菜单
+- [ ] 实现键盘导航支持
+  - [ ] Tab 键导航
+  - [ ] Enter/Space 键激活
+  - [ ] Esc 键关闭模态框
+  - [ ] 方向键导航列表
+- [ ] 添加跳转链接（Skip Links）
+- [ ] 添加焦点指示器（Focus Indicators）
+- [ ] 使用 NVDA/JAWS 屏幕阅读器测试
+- [ ] 使用 axe DevTools 进行自动化扫描
+- [ ] 确保颜色对比度符合标准
+
+**验证标准**:
+- [ ] axe DevTools 扫描无严重错误
+- [ ] 键盘可完成所有核心操作
+- [ ] 屏幕阅读器可正确朗读内容
+
+**涉及文件**:
+- `components/` - 所有交互组件
+- `app/` - 所有页面组件
+
+---
+
+### 1.2 移动端搜索
+
+**目标**: 提升移动端内容发现率 30%+
+
+- [ ] 在移动端 header 添加搜索图标
+- [ ] 实现移动优化的搜索 UI（全屏模态）
+- [ ] 添加搜索历史功能
+- [ ] 添加搜索建议（热门搜索）
+- [ ] 考虑语音搜索功能
+- [ ] 添加高级筛选（按标签、作者、日期）
+
+**验证标准**:
+- [ ] 移动端可轻松访问搜索
+- [ ] 搜索响应时间 < 500ms
+- [ ] 搜索结果相关性高
+
+**涉及文件**:
+- `components/layout/mobile-nav.tsx`
+- `app/(main)/search/page.tsx`
+- 新建 `components/search/mobile-search-modal.tsx`
+
+---
+
+### 1.3 错误边界和重试机制
+
+**目标**: 提升用户体验，减少流失率
+
+- [ ] 添加全局错误页面
+  - [ ] 创建 `app/error.tsx`
+  - [ ] 创建 `app/global-error.tsx`
+- [ ] 增强错误边界组件
+  - [ ] 更新 `components/error-boundary.tsx`
+- [ ] 实现自动重试机制（网络请求）
+- [ ] 添加离线状态检测
+- [ ] 友好的错误提示（避免技术术语）
+- [ ] 错误日志收集（考虑 Sentry）
+- [ ] 统一错误处理模式
+
+**验证标准**:
+- [ ] 所有错误都有友好提示
+- [ ] 网络错误自动重试 3 次
+- [ ] 错误率 < 1%
+
+**涉及文件**:
+- `app/error.tsx` (新建)
+- `app/global-error.tsx` (新建)
+- `components/error-boundary.tsx` (增强)
+- 所有 Server Actions (`lib/actions/`)
+
+---
+
+### 1.4 性能监控
+
+**目标**: 提升加载速度 40%+，改善 SEO
+
+- [ ] 添加 Core Web Vitals 追踪
+  - [ ] 在 `app/layout.tsx` 添加 Web Vitals
+  - [ ] 创建 `lib/analytics/performance.ts`
+- [ ] 实现图片懒加载
+- [ ] 优化 bundle 大小（代码分割）
+  - [ ] 更新 `next.config.js`
+- [ ] 添加性能预算
+- [ ] 实现 Service Worker（PWA）
+- [ ] 优化首屏加载时间
+- [ ] 添加性能监控仪表板
+
+**验证标准**:
+- [ ] Lighthouse 分数 > 90
+- [ ] LCP < 2.5s
+- [ ] FID < 100ms
+- [ ] CLS < 0.1
+
+**涉及文件**:
+- `app/layout.tsx`
+- `next.config.js`
+- 所有图片组件
+- 新建 `lib/analytics/performance.ts`
+
+---
+
+### 1.5 测试覆盖（基础）
+
+**目标**: 提升代码质量，减少 bug
+
+- [ ] 设置 Vitest 测试框架
+  - [ ] 安装依赖
+  - [ ] 创建 `vitest.config.ts`
+  - [ ] 更新 `package.json` 脚本
+- [ ] 为核心功能添加单元测试
+  - [ ] 认证流程测试
+  - [ ] 内容发布测试
+  - [ ] 评论系统测试
+  - [ ] 点赞/转发测试
+- [ ] 设置 Playwright E2E 测试
+  - [ ] 安装 Playwright
+  - [ ] 创建 `playwright.config.ts`
+- [ ] 添加关键用户流程测试
+  - [ ] 注册/登录流程
+  - [ ] 发布内容流程
+  - [ ] 社交互动流程
+- [ ] 设置 CI/CD 自动测试
+
+**验证标准**:
+- [ ] 单元测试覆盖率 > 50%
+- [ ] E2E 测试覆盖核心流程
+- [ ] CI 自动运行测试
+
+**涉及文件**:
+- 新建 `__tests__/` 目录
+- 新建 `e2e/` 目录
+- 更新 `package.json`
+- 新建 `vitest.config.ts`
+- 新建 `playwright.config.ts`
+
+---
+
+## Phase 2: 商业化（2-3 月）🔴 高优先级
+
+### 2.1 会员系统自动化
+
+**目标**: 实现收入增长，减少管理成本
+
+- [ ] 集成支付网关
+  - [ ] Stripe（国际）
+    - [ ] 创建 Stripe 账户
+    - [ ] 配置产品和价格
+    - [ ] 实现 Checkout Session
+  - [ ] 支付宝（国内）
+  - [ ] 微信支付（国内）
+- [ ] 实现自动订阅管理
+  - [ ] 创建 `lib/actions/payments.ts`
+  - [ ] 订阅创建
+  - [ ] 订阅更新
+  - [ ] 订阅取消
+- [ ] 添加 Webhook 处理
+  - [ ] 创建 `app/api/webhooks/stripe/route.ts`
+  - [ ] 处理支付成功事件
+  - [ ] 处理订阅更新事件
+  - [ ] 处理订阅取消事件
+- [ ] 添加发票生成功能
+- [ ] 自动续费提醒
+- [ ] 会员权益详细说明页面
+- [ ] 订阅管理页面（用户端）
+  - [ ] 创建 `app/(main)/(dashboard)/billing/page.tsx`
+- [ ] 退款处理流程
+
+**验证标准**:
+- [ ] 支付成功率 > 95%
+- [ ] 自动续费成功率 > 90%
+- [ ] 退款处理时间 < 24h
+
+**涉及文件**:
+- 新建 `lib/actions/payments.ts`
+- 新建 `app/api/webhooks/stripe/route.ts`
+- 新建 `app/api/webhooks/alipay/route.ts`
+- 更新 `app/(main)/pricing/page.tsx`
+- 新建 `app/(main)/(dashboard)/billing/page.tsx`
+
+---
+
+### 2.2 结构化数据嵌入（SEO）
+
+**目标**: 提升 SEO 排名，增加自然流量 20%+
+
+- [ ] 在内容详情页嵌入 Article schema
+  - [ ] 更新 `app/(main)/post/[id]/page.tsx`
+- [ ] 在用户主页嵌入 Person/ProfilePage schema
+  - [ ] 更新 `app/(main)/u/[username]/page.tsx`
+- [ ] 在活动页面嵌入 Event schema
+  - [ ] 更新 `app/(main)/events/[id]/page.tsx`
+- [ ] 在社区页面嵌入 Organization schema
+  - [ ] 更新 `app/(main)/communities/[slug]/page.tsx`
+- [ ] 添加面包屑导航 schema
+- [ ] 使用 Google Rich Results 测试验证
+- [ ] 监控 Google Search Console
+
+**验证标准**:
+- [ ] Google Rich Results 测试通过
+- [ ] 搜索结果显示富文本片段
+- [ ] 自然流量增长 > 20%
+
+**涉及文件**:
+- `app/(main)/post/[id]/page.tsx`
+- `app/(main)/u/[username]/page.tsx`
+- `app/(main)/events/[id]/page.tsx`
+- `app/(main)/communities/[slug]/page.tsx`
+- 使用 `lib/seo/structured-data.ts`
+
+---
+
+### 2.3 分析隐私合规
+
+**目标**: GDPR 合规，避免法律风险
+
+- [ ] 添加 Cookie 同意横幅
+  - [ ] 创建 `components/privacy/cookie-consent.tsx`
+- [ ] 实现 GDPR 合规
+  - [ ] 用户数据导出功能
+  - [ ] 用户数据删除功能
+  - [ ] 隐私政策页面
+  - [ ] Cookie 政策页面
+- [ ] 添加隐私设置页面
+  - [ ] 创建 `app/(main)/(dashboard)/settings/privacy/page.tsx`
+- [ ] 实现分析追踪的用户控制
+- [ ] 添加数据处理协议
+
+**验证标准**:
+- [ ] GDPR 合规检查通过
+- [ ] 用户可导出/删除数据
+- [ ] Cookie 同意率 > 70%
+
+**涉及文件**:
+- 新建 `components/privacy/cookie-consent.tsx`
+- 新建 `app/(main)/privacy/page.tsx`
+- 新建 `app/(main)/cookies/page.tsx`
+- 新建 `app/(main)/(dashboard)/settings/privacy/page.tsx`
+- 更新 `lib/analytics/events.ts`
+
+---
+
+### 2.4 用户反馈系统
+
+**目标**: 减少支持成本 30%，提升满意度
+
+- [ ] 添加工具提示（Tooltips）
+  - [ ] 创建 `components/help/tooltip.tsx`
+- [ ] 实现应用内帮助系统
+- [ ] 添加用户反馈小部件
+  - [ ] 创建 `components/feedback/widget.tsx`
+- [ ] 创建帮助文档中心
+  - [ ] 创建 `app/(main)/help/page.tsx`
+- [ ] 添加 FAQ 页面
+  - [ ] 创建 `app/(main)/faq/page.tsx`
+- [ ] 实现反馈收集和分类
+  - [ ] 创建 `lib/actions/feedback.ts`
+- [ ] 添加功能请求投票系统
+
+**验证标准**:
+- [ ] 支持请求减少 30%
+- [ ] 用户满意度 > 80%
+- [ ] 反馈响应时间 < 48h
+
+**涉及文件**:
+- 新建 `components/help/tooltip.tsx`
+- 新建 `components/feedback/widget.tsx`
+- 新建 `app/(main)/help/page.tsx`
+- 新建 `app/(main)/faq/page.tsx`
+- 新建 `lib/actions/feedback.ts`
+
+---
+
+## Phase 3: 功能深化（3-6 月）🟡 中优先级
+
+### 3.1 社区增强 ✅ 已完成
+
+**目标**: 提升社区活跃度 40%+
+
+#### Phase 3 核心功能（已完成）
+- [x] 社区推荐算法
+  - [x] 创建推荐算法文件 `lib/algorithms/community-recommendations.ts`
+  - [x] 实现基于兴趣标签的推荐逻辑
+  - [x] 实现热门社区排行算法
+  - [x] 创建 API 端点 `/api/communities/recommendations`
+- [x] 社区活动功能
+  - [x] 创建活动日历视图组件 `components/community/activity-calendar.tsx`
+  - [x] 实现活动提醒通知系统（集成现有通知系统）
+  - [x] 创建活动签到功能和 API
+  - [x] 创建数据库迁移文件
+- [x] 社区管理工具
+  - [x] 创建成员管理页面 `/communities/[id]/members`
+  - [x] 实现踢出/禁言功能
+  - [x] 创建内容审核队列组件
+  - [x] 创建社区统计数据仪表板
+- [x] 文档和报告
+  - [x] 创建功能文档 `docs/community-enhancement-report.md`
+
+#### 未来增强功能
+- [ ] 社区角色细分（owner/admin/moderator/member）
+- [ ] 社区规则/公告功能
+- [ ] 社区徽章系统
+- [ ] 社区排行榜
+
+**已创建文件**:
+- `lib/algorithms/community-recommendations.ts`
+- `app/api/communities/recommendations/route.ts`
+- `components/community/activity-calendar.tsx`
+- `components/community/member-management-table.tsx`
+- `components/community/community-stats-card.tsx`
+- `components/community/content-moderation-queue.tsx`
+- `lib/actions/community-moderation.ts`
+- `app/(main)/communities/[id]/members/page.tsx`
+- `supabase/migrations/030_community_enhancements.sql`
+- `docs/community-enhancement-report.md`
+
+**已更新文件**:
+- `lib/actions/notifications.ts`
+- `lib/actions/events.ts`
+
+---
+
+### 3.2 内容增强 ✅ 已完成
+
+**目标**: 提升内容创作体验
+
+#### 富文本编辑器升级
+- [x] TipTap 编辑器已集成
+- [x] 图片上传功能
+- [x] 视频上传功能
+- [x] 代码高亮（lowlight 已安装）
+- [x] 拖拽上传图片
+- [x] 粘贴图片支持
+- [x] YouTube/Bilibili 视频嵌入
+- [x] Link 扩展
+
+#### 内容协作功能
+- [x] 草稿自动保存（localStorage + 数据库）
+- [x] 内容版本历史表
+- [x] 版本历史记录（自动触发器）
+- [x] 版本预览组件
+- [x] 版本对比功能
+- [x] 版本恢复功能
+
+#### 内容推荐系统
+- [x] 推荐算法文件
+- [x] 阅读历史追踪
+- [x] 相关内容推荐
+- [x] 个性化 Feed API
+- [x] 热门内容推荐
+
+#### 测试和文档
+- [x] 单元测试（drafts, recommendations）
+- [x] 功能文档
+
+**已创建文件**:
+- `components/editor/embed-extension.ts`
+- `lib/actions/drafts.ts`
+- `lib/actions/content-versions.ts`
+- `lib/algorithms/content-recommendations.ts`
+- `app/api/recommendations/route.ts`
+- `components/content/version-history.tsx`
+- `hooks/use-auto-save.ts`
+- `supabase/migrations/030_create_content_enhancement.sql`
+- `__tests__/lib/actions/drafts.test.ts`
+- `__tests__/lib/algorithms/recommendations.test.ts`
+- `docs/content-enhancement-report.md`
+
+**已更新文件**:
+- `components/editor/tiptap-editor.tsx`
+
+---
+
+### 3.3 高级功能
+
+**目标**: 提升高级用户体验
+
+- [ ] 键盘快捷键
+- [ ] 深色模式切换 UI（系统已存在）
+- [ ] 可定制主题
+- [ ] 内容书签功能
+- [ ] 阅读列表
+- [ ] 内容推荐算法优化
+- [ ] 个性化首页
+
+**涉及文件**:
+- 新建 `components/settings/theme-toggle.tsx`
+- 新建 `lib/actions/bookmarks.ts`
+- 新建 `lib/actions/reading-list.ts`
+
+---
+
+### 3.4 国际化
+
+**目标**: 扩大全球用户群
+
+- [ ] 添加 i18n 框架（next-intl）
+- [ ] 支持英文翻译
+- [ ] 基于语言环境的路由
+- [ ] 多语言内容支持
+- [ ] 翻译管理系统
+- [ ] 语言切换 UI
+
+**涉及文件**:
+- 新建 `i18n/` 目录
+- 更新所有页面和组件
+- 更新 `next.config.js`
+
+---
+
+## Phase 4: 规模化（6-12 月）🟢 低优先级
+
+### 4.1 缓存策略优化
+
+- [ ] 实现 Redis 缓存
+- [ ] 边缘缓存（Vercel Edge）
+- [ ] 使用 React Query/SWR
+- [ ] 优化数据库查询
+- [ ] 实现 CDN 集成
+
+---
+
+### 4.2 数据库优化
+
+- [ ] 整合数据库迁移文件
+- [ ] 添加数据库监控
+- [ ] 优化慢查询
+- [ ] 实现读写分离
+- [ ] 添加数据库备份策略
+
+---
+
+### 4.3 可观测性
+
+- [ ] 集成 Sentry 错误追踪
+- [ ] 添加日志聚合（Datadog/LogRocket）
+- [ ] 实现 APM 监控
+- [ ] 添加告警系统
+- [ ] 创建运维仪表板
+
+---
+
+## 成功指标
+
+### Phase 1 成功标准
+- [ ] Lighthouse 分数 > 90
+- [ ] 移动端搜索使用率 > 30%
+- [ ] 错误率 < 1%
+- [ ] 测试覆盖率 > 50%
+
+### Phase 2 成功标准
+- [ ] 会员自动转化率 > 5%
+- [ ] 自然流量增长 > 20%
+- [ ] GDPR 合规检查通过
+- [ ] 支持请求减少 30%
+
+### Phase 3 成功标准
+- [ ] 社区活跃度增长 > 40%
+- [ ] 内容创作效率提升 > 30%
+- [ ] 用户留存率提升 > 20%
+
+### Phase 4 成功标准
+- [ ] 支持 10 万+ 用户
+- [ ] P95 响应时间 < 500ms
+- [ ] 系统可用性 > 99.9%
+
+---
+
+## 参考文档
+
+- **产品评价报告**: `docs/product-evaluation-report.md`
+- **优化路线图**: `docs/product-optimization-roadmap.md`
+
+---
+
+**最后更新**: 2026-03-08

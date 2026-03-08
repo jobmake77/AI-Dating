@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/utils/logger'
 
 export interface ContentListParams {
   page?: number
@@ -71,7 +72,12 @@ export async function getContentsFeed(params: ContentListParams = {}) {
   const { data: originalContents, error: originalError } = await originalQuery
 
   if (originalError) {
-    throw new Error(`Failed to fetch original contents: ${originalError.message}`)
+    logger.error('Failed to fetch original contents:', originalError)
+    // 返回空数据而不是抛出错误
+    return {
+      contents: [],
+      totalPages: 0,
+    }
   }
 
   // 2. 获取转发内容
@@ -200,7 +206,8 @@ export async function getContents(params: ContentListParams = {}) {
   const { data, error, count } = await query.range(from, to)
 
   if (error) {
-    throw new Error(`Failed to fetch contents: ${error.message}`)
+    logger.error("Failed to fetch contents:", error)
+    return { contents: [], totalPages: 0 }
   }
 
   return {
@@ -231,7 +238,8 @@ export async function getContentById(id: string) {
     .single()
 
   if (error) {
-    throw new Error(`Failed to fetch content: ${error.message}`)
+    logger.error("Failed to fetch content:", error)
+    return null
   }
 
   return data
@@ -256,7 +264,8 @@ export async function getContentBySlug(slug: string) {
     .single()
 
   if (error) {
-    throw new Error(`Failed to fetch content: ${error.message}`)
+    logger.error("Failed to fetch content:", error)
+    return null
   }
 
   return data
@@ -291,7 +300,8 @@ export async function getUserLikedContents(userId: string, params: { page?: numb
     .range(from, to)
 
   if (error) {
-    throw new Error(`Failed to fetch liked contents: ${error.message}`)
+    logger.error("Failed to fetch liked contents:", error)
+    return { contents: [], totalPages: 0 }
   }
 
   // 提取内容数据
@@ -335,7 +345,8 @@ export async function getUserRepostedContents(userId: string, params: { page?: n
     .range(from, to)
 
   if (error) {
-    throw new Error(`Failed to fetch reposted contents: ${error.message}`)
+    logger.error("Failed to fetch reposted contents:", error)
+    return { contents: [], totalPages: 0 }
   }
 
   // 提取内容数据

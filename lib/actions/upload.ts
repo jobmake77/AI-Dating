@@ -1,4 +1,5 @@
 'use server'
+import { logger } from '@/lib/utils/logger'
 
 import { createClient } from '@/lib/supabase/server'
 import { uploadToR2, validateImageFile, validateImageBuffer } from '@/lib/cloudflare/r2'
@@ -40,7 +41,7 @@ export async function uploadImage(formData: FormData, folder: string = 'content-
 
     return { url: result.url, key: result.key }
   } catch (error) {
-    console.error('Image upload error:', error)
+    logger.error('Image upload error:', error)
     return { error: '图片上传失败，请重试' }
   }
 }

@@ -1,4 +1,5 @@
 'use server'
+import { logger } from '@/lib/utils/logger'
 
 import { createClient } from '@/lib/supabase/server'
 
@@ -41,7 +42,7 @@ export async function searchContents(query: string, page: number = 1, limit: num
     .range((page - 1) * limit, page * limit - 1)
 
   if (error) {
-    console.error('Search contents error:', error)
+    logger.error('Search contents error:', error)
     throw new Error('搜索失败')
   }
 
@@ -78,7 +79,7 @@ export async function searchUsers(query: string, page: number = 1, limit: number
     .range((page - 1) * limit, page * limit - 1)
 
   if (error) {
-    console.error('Search users error:', error)
+    logger.error('Search users error:', error)
     throw new Error('搜索失败')
   }
 

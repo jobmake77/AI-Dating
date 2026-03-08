@@ -38,6 +38,10 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean
+  "aria-label"?: string
+  "aria-pressed"?: boolean
+  "aria-expanded"?: boolean
+  "aria-haspopup"?: boolean | "dialog" | "menu" | "listbox" | "tree" | "grid"
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(

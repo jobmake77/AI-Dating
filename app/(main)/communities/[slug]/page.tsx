@@ -6,9 +6,63 @@ import { getCommunityPosts } from '@/lib/queries/community-posts'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import Link from 'next/link'
 import { Users, Settings, Plus, Lock } from 'lucide-react'
 import { joinCommunity, leaveCommunity } from '@/lib/actions/communities'
+import { Metadata } from 'next'
+import { getOrganizationSchema, getBreadcrumbSchema } from '@/lib/seo/structured-data'
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params
+
+  try {
+    const { data: community } = await getCommunityBySlug(slug)
+    if (!community) {
+      return {
+        title: '社区未找到',
+        description: '该社区不存在',
+      }
+    }
+
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    const ogImageUrl = `${baseUrl}/api/og?type=community&name=${encodeURIComponent(community.name)}&desc=${encodeURIComponent(community.description || '')}&members=${community.members_count}`
+
+    return {
+      title: `${community.name} - AI-Dating 社区`,
+      description: community.description || `${community.name} 社区，${community.members_count} 位成员`,
+      keywords: ['社区', 'AI', community.name],
+      openGraph: {
+        type: 'website',
+        locale: 'zh_CN',
+        url: `${baseUrl}/communities/${community.slug}`,
+        title: community.name,
+        description: community.description || `${community.name} 社区`,
+        siteName: 'AI-Dating',
+        images: [
+          {
+            url: ogImageUrl,
+            width: 1200,
+            height: 630,
+            alt: community.name,
+          },
+        ],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: community.name,
+        description: community.description || `${community.name} 社区`,
+        images: [ogImageUrl],
+      },
+    }
+  } catch (error) {
+    return {
+      title: '社区未找到',
+      description: '该社区不存在',
+    }
+  }
+}
+
 
 async function handleJoin(communityId: string): Promise<void> {
   'use server'
@@ -216,11 +270,53 @@ export default async function CommunityPage({
     }
   }
 
+  // Generate structured data
+  const organizationSchema = getOrganizationSchema({
+    name: community.name,
+    description: community.description,
+    url: `/communities/${community.slug}`,
+    logo: community.icon_url,
+    memberCount: community.members_count,
+  })
+
+  const breadcrumbSchema = getBreadcrumbSchema([
+    { name: '首页', url: '/' },
+    { name: '社区', url: '/communities' },
+    { name: community.name, url: `/communities/${community.slug}` },
+  ])
+
   return (
     <div>
+      {/* Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+
       <CommunityHeader slug={slug} />
 
       <div className="container max-w-6xl py-8">
+        {/* Breadcrumb Navigation */}
+        <Breadcrumb className="mb-6">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/">首页</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/communities">社区</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{community.name}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+
         <Tabs defaultValue="latest" className="w-full">
           <TabsList>
             <TabsTrigger value="latest">最新</TabsTrigger>

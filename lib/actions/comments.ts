@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createNotification } from './notifications'
+import { trackEvent } from '@/lib/analytics/events'
 
 export async function createComment(contentId: string, content: string, parentId?: string) {
   const supabase = await createClient()
@@ -49,6 +50,14 @@ export async function createComment(contentId: string, content: string, parentId
   if (error) {
     throw new Error(`Failed to create comment: ${error.message}`)
   }
+
+  // 追踪评论事件
+  await trackEvent('post_commented', {
+    content_id: contentId,
+    comment_id: newComment.id,
+    user_id: user.id,
+    is_reply: !!parentId,
+  })
 
   // Create notification for content author
   try {

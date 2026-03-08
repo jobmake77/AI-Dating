@@ -1,4 +1,5 @@
 'use server'
+import { logger } from '@/lib/utils/logger'
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
@@ -60,14 +61,14 @@ export async function createEvent(formData: FormData) {
       .single()
 
     if (error) {
-      console.error('创建活动失败:', error)
+      logger.error('创建活动失败:', error)
       return { success: false, error: `创建活动失败: ${error.message}` }
     }
 
     revalidatePath('/events')
     return { success: true, data: event }
   } catch (error) {
-    console.error('创建活动错误:', error)
+    logger.error('创建活动错误:', error)
     if (error instanceof z.ZodError) {
       return { success: false, error: `表单验证失败: ${error.issues.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}` }
     }
@@ -105,4 +106,80 @@ export async function leaveEvent(eventId: string) {
 
   revalidatePath(`/events/${eventId}`)
   return { success: true }
+}
+
+// 活动签到
+export async function checkInEvent(eventId: string) {
+  try {
+    const supabase = await createClient()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return { success: false, error: '请先登录' }
+    }
+
+    // 检查是否已参加活动
+    const { data: participant } = await supabase
+      .from('event_participants')
+      .select('id, checked_in_at')
+      .eq('event_id', eventId)
+      .eq('user_id', user.id)
+      .single()
+
+    if (!participant) {
+      return { success: false, error: '你还未参加此活动' }
+    }
+
+    if (participant.checked_in_at) {
+      return { success: false, error: '你已经签到过了' }
+    }
+
+    // 更新签到时间
+    const { error } = await supabase
+      .from('event_participants')
+      .update({ checked_in_at: new Date().toISOString() })
+      .eq('id', participant.id)
+
+    if (error) {
+      logger.error('签到失败:', error)
+      return { success: false, error: '签到失败' }
+    }
+
+    revalidatePath(`/events/${eventId}`)
+    return { success: true }
+  } catch (error) {
+    logger.error('签到错误:', error)
+    return { success: false, error: '签到失败' }
+  }
+}
+
+// 获取签到状态
+export async function getCheckInStatus(eventId: string) {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      return { checkedIn: false, canCheckIn: false }
+    }
+
+    const { data: participant } = await supabase
+      .from('event_participants')
+      .select('checked_in_at')
+      .eq('event_id', eventId)
+      .eq('user_id', user.id)
+      .single()
+
+    if (!participant) {
+      return { checkedIn: false, canCheckIn: false }
+    }
+
+    return {
+      checkedIn: !!participant.checked_in_at,
+      canCheckIn: !participant.checked_in_at,
+      checkedInAt: participant.checked_in_at
+    }
+  } catch (error) {
+    logger.error('获取签到状态错误:', error)
+    return { checkedIn: false, canCheckIn: false }
+  }
 }

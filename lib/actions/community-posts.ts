@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
+import { logger } from '@/lib/utils/logger'
 
 // Helper to extract slug from Supabase join result (can be object or array)
 function getSlug(community: any): string | null {
@@ -82,7 +83,7 @@ export async function createCommunityPost(communityId: string, formData: FormDat
       .single()
 
     if (error) {
-      console.error('创建帖子失败:', error)
+      logger.error('创建帖子失败:', error)
       return { success: false, error: '创建帖子失败' }
     }
 
@@ -92,7 +93,7 @@ export async function createCommunityPost(communityId: string, formData: FormDat
     }
     return { success: true, data: post }
   } catch (error) {
-    console.error('创建帖子错误:', error)
+    logger.error('创建帖子错误:', error)
     if (error instanceof z.ZodError) {
       return { success: false, error: '表单数据验证失败' }
     }
@@ -153,7 +154,7 @@ export async function updateCommunityPost(postId: string, formData: FormData) {
       .single()
 
     if (error) {
-      console.error('更新帖子失败:', error)
+      logger.error('更新帖子失败:', error)
       return { success: false, error: '更新帖子失败' }
     }
 
@@ -164,7 +165,7 @@ export async function updateCommunityPost(postId: string, formData: FormData) {
     }
     return { success: true, data: updatedPost }
   } catch (error) {
-    console.error('更新帖子错误:', error)
+    logger.error('更新帖子错误:', error)
     if (error instanceof z.ZodError) {
       return { success: false, error: '表单数据验证失败' }
     }
@@ -215,7 +216,7 @@ export async function deleteCommunityPost(postId: string) {
       .eq('id', postId)
 
     if (error) {
-      console.error('删除帖子失败:', error)
+      logger.error('删除帖子失败:', error)
       return { success: false, error: '删除帖子失败' }
     }
 
@@ -225,7 +226,7 @@ export async function deleteCommunityPost(postId: string) {
     }
     return { success: true }
   } catch (error) {
-    console.error('删除帖子错误:', error)
+    logger.error('删除帖子错误:', error)
     return { success: false, error: '删除帖子失败' }
   }
 }
@@ -260,7 +261,7 @@ export async function togglePostLike(postId: string) {
         .eq('id', existingLike.id)
 
       if (error) {
-        console.error('取消点赞失败:', error)
+        logger.error('取消点赞失败:', error)
         return { success: false, error: '取消点赞失败' }
       }
 
@@ -275,14 +276,14 @@ export async function togglePostLike(postId: string) {
         })
 
       if (error) {
-        console.error('点赞失败:', error)
+        logger.error('点赞失败:', error)
         return { success: false, error: '点赞失败' }
       }
 
       return { success: true, liked: true }
     }
   } catch (error) {
-    console.error('切换点赞错误:', error)
+    logger.error('切换点赞错误:', error)
     return { success: false, error: '操作失败' }
   }
 }
@@ -327,7 +328,7 @@ export async function togglePostPin(postId: string) {
       .eq('id', postId)
 
     if (error) {
-      console.error('切换置顶状态失败:', error)
+      logger.error('切换置顶状态失败:', error)
       return { success: false, error: '操作失败' }
     }
 
@@ -338,7 +339,7 @@ export async function togglePostPin(postId: string) {
     }
     return { success: true, pinned: !post.is_pinned }
   } catch (error) {
-    console.error('切换置顶状态错误:', error)
+    logger.error('切换置顶状态错误:', error)
     return { success: false, error: '操作失败' }
   }
 }
@@ -383,7 +384,7 @@ export async function togglePostLock(postId: string) {
       .eq('id', postId)
 
     if (error) {
-      console.error('切换锁定状态失败:', error)
+      logger.error('切换锁定状态失败:', error)
       return { success: false, error: '操作失败' }
     }
 
@@ -394,7 +395,7 @@ export async function togglePostLock(postId: string) {
     }
     return { success: true, locked: !post.is_locked }
   } catch (error) {
-    console.error('切换锁定状态错误:', error)
+    logger.error('切换锁定状态错误:', error)
     return { success: false, error: '操作失败' }
   }
 }
@@ -446,7 +447,7 @@ export async function createPostComment(postId: string, content: string) {
       .single()
 
     if (error) {
-      console.error('创建评论失败:', error)
+      logger.error('创建评论失败:', error)
       return { success: false, error: '创建评论失败' }
     }
 
@@ -456,7 +457,7 @@ export async function createPostComment(postId: string, content: string) {
     }
     return { success: true, data: comment }
   } catch (error) {
-    console.error('创建评论错误:', error)
+    logger.error('创建评论错误:', error)
     if (error instanceof z.ZodError) {
       return { success: false, error: '评论内容验证失败' }
     }
@@ -516,7 +517,7 @@ export async function deletePostComment(commentId: string) {
       .eq('id', commentId)
 
     if (error) {
-      console.error('删除评论失败:', error)
+      logger.error('删除评论失败:', error)
       return { success: false, error: '删除评论失败' }
     }
 
@@ -526,7 +527,7 @@ export async function deletePostComment(commentId: string) {
     }
     return { success: true }
   } catch (error) {
-    console.error('删除评论错误:', error)
+    logger.error('删除评论错误:', error)
     return { success: false, error: '删除评论失败' }
   }
 }

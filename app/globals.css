@@ -57,6 +57,76 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
+
+  /* High Contrast Mode - WCAG AAA Compliant */
+  .high-contrast {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+    --primary: 0 0% 0%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 90%;
+    --secondary-foreground: 0 0% 0%;
+    --muted: 0 0% 85%;
+    --muted-foreground: 0 0% 20%;
+    --accent: 0 0% 85%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 100% 40%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 0%;
+    --input: 0 0% 0%;
+    --ring: 0 0% 0%;
+  }
+
+  .dark.high-contrast {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 0%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 0%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 20%;
+    --muted-foreground: 0 0% 85%;
+    --accent: 0 0% 20%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 100% 60%;
+    --destructive-foreground: 0 0% 0%;
+    --border: 0 0% 100%;
+    --input: 0 0% 100%;
+    --ring: 0 0% 100%;
+  }
+
+  /* Theme Color Variations */
+  [data-theme-color="blue"] {
+    --primary: 221 83% 53%;
+  }
+
+  [data-theme-color="green"] {
+    --primary: 142 76% 36%;
+  }
+
+  [data-theme-color="purple"] {
+    --primary: 262 83% 58%;
+  }
+
+  [data-theme-color="orange"] {
+    --primary: 25 95% 53%;
+  }
+
+  [data-theme-color="pink"] {
+    --primary: 330 81% 60%;
+  }
+
+  [data-theme-color="red"] {
+    --primary: 0 84% 60%;
+  }
 }
 
 @layer base {
@@ -445,10 +515,47 @@
     overflow-x: hidden;
   }
 
-  /* Better focus visibility */
+  /* Better focus visibility - WCAG 2.1 AA compliant */
   *:focus-visible {
     outline: 2px solid hsl(var(--ring));
     outline-offset: 2px;
+    border-radius: 0.25rem;
+  }
+
+  /* Remove default focus outline for mouse users */
+  *:focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  /* Enhanced focus for interactive elements */
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible,
+  [role="button"]:focus-visible,
+  [role="link"]:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  /* Skip link styles */
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    border-radius: 0 0 0.25rem 0;
+    z-index: 100;
+    font-weight: 600;
+  }
+
+  .skip-link:focus {
+    top: 0;
   }
 
   /* Hide scrollbar but keep functionality */

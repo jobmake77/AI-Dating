@@ -6,10 +6,34 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
+import { Metadata } from 'next'
 
-export const metadata = {
-  title: '活动 - AI Dating',
-  description: '发现和参与线下活动',
+export const metadata: Metadata = {
+  title: '活动 - AI-Dating',
+  description: '发现和参与 AI 开发者线下活动。技术分享、项目展示、社交聚会，与开发者面对面交流。',
+  keywords: ['活动', 'AI', '线下活动', '技术分享', '开发者聚会'],
+  openGraph: {
+    type: 'website',
+    locale: 'zh_CN',
+    url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/events`,
+    title: '活动 - AI-Dating',
+    description: '发现和参与 AI 开发者线下活动',
+    siteName: 'AI-Dating',
+    images: [
+      {
+        url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/og?type=home`,
+        width: 1200,
+        height: 630,
+        alt: '活动',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: '活动 - AI-Dating',
+    description: '发现和参与 AI 开发者线下活动',
+    images: [`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/og?type=home`],
+  },
 }
 
 async function EventsList({ type }: { type: 'official' | 'offline' }) {

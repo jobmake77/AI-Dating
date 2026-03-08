@@ -3,7 +3,9 @@
 import { useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, RefreshCw, Home } from 'lucide-react'
+import { logClientError } from '@/lib/utils/error-logger'
+import { getFriendlyErrorMessage } from '@/lib/utils/error-handler'
 
 export default function Error({
   error,
@@ -13,8 +15,12 @@ export default function Error({
   reset: () => void
 }) {
   useEffect(() => {
-    console.error('Page error:', error)
+    logClientError(error, {
+      component: 'MainLayoutError',
+    })
   }, [error])
+
+  const friendlyMessage = getFriendlyErrorMessage(error)
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -27,21 +33,30 @@ export default function Error({
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-muted-foreground">
-            抱歉，页面加载时出现了问题。请尝试刷新页面或返回首页。
+            {friendlyMessage}
           </p>
-          {error.message && (
+          {process.env.NODE_ENV === 'development' && error.message && (
             <details className="text-sm">
               <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
-                查看错误详情
+                查看错误详情（仅开发环境）
               </summary>
               <pre className="mt-2 p-4 bg-muted rounded-lg overflow-auto text-xs">
                 {error.message}
+                {error.stack && `\n\n${error.stack}`}
               </pre>
             </details>
           )}
           <div className="flex gap-2">
-            <Button onClick={reset}>重试</Button>
-            <Button variant="outline" onClick={() => window.location.href = '/'}>
+            <Button onClick={reset} className="gap-2">
+              <RefreshCw className="w-4 h-4" />
+              重试
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => window.location.href = '/'}
+              className="gap-2"
+            >
+              <Home className="w-4 h-4" />
               返回首页
             </Button>
           </div>

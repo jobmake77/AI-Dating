@@ -1,0 +1,108 @@
+{
+  "common": {
+    "appName": "AI-Dating",
+    "tagline": "A Date with AI: The AI Developer Community",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "more": "More",
+    "less": "Less",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "close": "Close"
+  },
+  "nav": {
+    "home": "Home",
+    "trending": "Trending",
+    "communities": "Communities",
+    "events": "Events",
+    "pricing": "Pricing",
+    "create": "Create",
+    "profile": "Profile",
+    "settings": "Settings",
+    "notifications": "Notifications",
+    "messages": "Messages",
+    "admin": "Admin",
+    "logout": "Logout"
+  },
+  "theme": {
+    "title": "Theme Settings",
+    "mode": "Theme Mode",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "color": "Theme Color",
+    "fontSize": "Font Size",
+    "fontSizeSmall": "Small",
+    "fontSizeMedium": "Medium",
+    "fontSizeLarge": "Large",
+    "highContrast": "High Contrast Mode",
+    "highContrastDescription": "Enhance color contrast for better readability (WCAG AAA compliant)",
+    "colorDescription": "Choose your preferred theme color",
+    "fontSizeDescription": "Adjust global font size for better readability"
+  },
+  "accessibility": {
+    "skipToContent": "Skip to main content",
+    "keyboardShortcuts": "Keyboard Shortcuts",
+    "keyboardShortcutsDescription": "Use these shortcuts to navigate and interact more efficiently",
+    "keyboardShortcutsTip": "Press ? to open this help panel anytime",
+    "categories": {
+      "navigation": "Navigation",
+      "actions": "Actions",
+      "ui": "UI"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "profile": "Profile",
+    "account": "Account",
+    "appearance": "Appearance",
+    "notifications": "Notifications",
+    "privacy": "Privacy",
+    "security": "Security"
+  },
+  "auth": {
+    "login": "Login",
+    "signup": "Sign Up",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "rememberMe": "Remember me",
+    "loginWithGoogle": "Login with Google",
+    "loginWithGithub": "Login with GitHub"
+  },
+  "content": {
+    "title": "Title",
+    "description": "Description",
+    "content": "Content",
+    "tags": "Tags",
+    "category": "Category",
+    "author": "Author",
+    "publishedAt": "Published",
+    "updatedAt": "Updated",
+    "views": "Views",
+    "likes": "Likes",
+    "comments": "Comments",
+    "share": "Share"
+  },
+  "errors": {
+    "generic": "An error occurred, please try again later",
+    "notFound": "Not found",
+    "unauthorized": "Unauthorized",
+    "forbidden": "Forbidden",
+    "serverError": "Server error",
+    "networkError": "Network error"
+  }
+}

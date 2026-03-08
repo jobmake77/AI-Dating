@@ -3,6 +3,11 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "sonner";
 import { getOrganizationSchema } from "@/lib/seo/structured-data";
+import { GoogleAnalytics } from '@next/third-parties/google';
+import "@/lib/utils/env"; // 验证环境变量
+import { WebVitalsReporter } from "@/components/analytics/web-vitals-reporter";
+import { OfflineIndicator } from "@/components/offline-indicator";
+import { CookieConsent } from "@/components/privacy/cookie-consent";
 
 export const metadata: Metadata = {
   title: {
@@ -74,6 +79,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const organizationSchema = getOrganizationSchema()
+  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
 
   return (
     <html lang="zh-CN">
@@ -87,7 +93,11 @@ export default function RootLayout({
         {children}
         <Toaster />
         <Sonner />
+        <WebVitalsReporter />
+        <OfflineIndicator />
+        <CookieConsent />
       </body>
+      {gaId && <GoogleAnalytics gaId={gaId} />}
     </html>
   );
 }

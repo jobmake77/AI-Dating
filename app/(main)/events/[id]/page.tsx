@@ -3,8 +3,10 @@ import { createClient } from '@/lib/supabase/server'
 import { getEventById, getUserParticipation } from '@/lib/queries/events'
 import { EventJoinButton } from '@/components/events/event-join-button'
 import { EventShareButton } from '@/components/events/event-share-button'
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import { MapPin, Clock, Users, Calendar } from 'lucide-react'
 import type { Metadata } from 'next'
+import { getEventSchema, getBreadcrumbSchema } from '@/lib/seo/structured-data'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -15,13 +17,35 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { data: event } = await getEventById(id)
   if (!event) return { title: '活动不存在' }
 
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+  const dateStr = new Date(event.start_time).toLocaleDateString('zh-CN')
+  const ogImageUrl = `${baseUrl}/api/og?type=event&title=${encodeURIComponent(event.title)}&date=${encodeURIComponent(dateStr)}&location=${encodeURIComponent(event.location)}&participants=${event.participants_count}`
+
   return {
     title: `${event.title} - AI Dating`,
-    description: event.description || `${event.location} · ${new Date(event.start_time).toLocaleDateString('zh-CN')}`,
+    description: event.description || `${event.location} · ${dateStr}`,
+    keywords: ['活动', 'AI', event.title, event.location],
     openGraph: {
+      type: 'website',
+      locale: 'zh_CN',
+      url: `${baseUrl}/events/${event.id}`,
       title: event.title,
-      description: event.description || `${event.location} · ${new Date(event.start_time).toLocaleDateString('zh-CN')}`,
-      images: event.cover_url ? [{ url: event.cover_url, width: 1200, height: 630 }] : [],
+      description: event.description || `${event.location} · ${dateStr}`,
+      siteName: 'AI-Dating',
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: event.title,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: event.title,
+      description: event.description || `${event.location} · ${dateStr}`,
+      images: [ogImageUrl],
     },
   }
 }
@@ -52,8 +76,53 @@ export default async function EventDetailPage({ params }: Props) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || ''
   const shareUrl = `${siteUrl}/events/${event.id}`
 
+  // Generate structured data
+  const eventSchema = getEventSchema({
+    name: event.title,
+    description: event.description,
+    startDate: event.start_time,
+    endDate: event.end_time,
+    location: event.location,
+    image: event.cover_url,
+    organizer: (event.creator as any)?.full_name || (event.creator as any)?.username || 'AI-Dating',
+    attendeeCount: event.participants_count,
+  })
+
+  const breadcrumbSchema = getBreadcrumbSchema([
+    { name: '首页', url: '/' },
+    { name: '活动', url: '/events' },
+    { name: event.title, url: `/events/${event.id}` },
+  ])
+
   return (
     <div className="container max-w-3xl py-8">
+      {/* Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(eventSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+
+      {/* Breadcrumb Navigation */}
+      <Breadcrumb className="mb-6">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/">首页</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/events">活动</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>{event.title}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
       {event.cover_url && (
         <div className="relative w-full aspect-video rounded-xl overflow-hidden mb-6 bg-muted">
           <img src={event.cover_url} alt={event.title} className="w-full h-full object-cover" />

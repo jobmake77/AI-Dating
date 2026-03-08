@@ -2,6 +2,35 @@ import { getTrendingContents } from '@/lib/actions/recommendations'
 import { ContentCard } from '@/components/content/content-card-twitter'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { TrendingUp } from 'lucide-react'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: '热门内容 - AI-Dating',
+  description: '发现 AI-Dating 社区最热门的内容、项目和讨论。探索最受欢迎的 AI 技术分享和开发经验。',
+  keywords: ['热门', '趋势', 'AI', '技术分享', '开发者社区'],
+  openGraph: {
+    type: 'website',
+    locale: 'zh_CN',
+    url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/trending`,
+    title: '热门内容 - AI-Dating',
+    description: '发现 AI-Dating 社区最热门的内容、项目和讨论',
+    siteName: 'AI-Dating',
+    images: [
+      {
+        url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/og?type=home`,
+        width: 1200,
+        height: 630,
+        alt: '热门内容',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: '热门内容 - AI-Dating',
+    description: '发现 AI-Dating 社区最热门的内容、项目和讨论',
+    images: [`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/og?type=home`],
+  },
+}
 
 interface TrendingPageProps {
   searchParams: Promise<{ range?: string }>

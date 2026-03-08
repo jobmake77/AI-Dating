@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { trackEvent } from '@/lib/analytics/events'
 
 export async function signInWithEmail(formData: FormData) {
   const supabase = await createClient()
@@ -21,6 +22,14 @@ export async function signInWithEmail(formData: FormData) {
 
   if (error) {
     return { error: error.message }
+  }
+
+  // 追踪登录事件
+  if (data.user) {
+    await trackEvent('user_logged_in', {
+      user_id: data.user.id,
+      email: data.user.email || undefined,
+    })
   }
 
   // Check if user exists in database
@@ -108,6 +117,13 @@ export async function signUpWithEmail(formData: FormData) {
       username,
       email: data.user.email,
       role: 'user',
+    })
+
+    // 追踪注册事件
+    await trackEvent('user_signed_up', {
+      user_id: data.user.id,
+      username,
+      email: data.user.email || undefined,
     })
 
     return {

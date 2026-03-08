@@ -6,10 +6,34 @@ import { Card } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import Link from 'next/link'
 import { Users, Plus } from 'lucide-react'
+import { Metadata } from 'next'
 
-export const metadata = {
-  title: '社区 - AI Dating',
-  description: '发现和加入感兴趣的社区',
+export const metadata: Metadata = {
+  title: '社区 - AI-Dating',
+  description: '发现和加入感兴趣的 AI 开发者社区。与志同道合的开发者交流学习，分享项目经验。',
+  keywords: ['社区', 'AI', '开发者', '技术交流', '项目分享'],
+  openGraph: {
+    type: 'website',
+    locale: 'zh_CN',
+    url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/communities`,
+    title: '社区 - AI-Dating',
+    description: '发现和加入感兴趣的 AI 开发者社区',
+    siteName: 'AI-Dating',
+    images: [
+      {
+        url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/og?type=home`,
+        width: 1200,
+        height: 630,
+        alt: '社区',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: '社区 - AI-Dating',
+    description: '发现和加入感兴趣的 AI 开发者社区',
+    images: [`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/og?type=home`],
+  },
 }
 
 async function CommunitiesList({ type }: { type: 'all' | 'joined' | 'trending' }) {

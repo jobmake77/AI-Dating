@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 import { customAlphabet } from 'nanoid'
+import { logger } from '@/lib/utils/logger'
 
 // 创建只包含小写字母和数字的 nanoid
 const nanoid = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 6)
@@ -87,16 +88,16 @@ export async function createCommunity(formData: FormData) {
       cover_url: (typeof rawCoverUrl === 'string' && rawCoverUrl.trim()) || undefined,
     }
 
-    console.log('准备验证的数据:', data)
+    logger.debug('准备验证的数据:', data)
 
     const validatedData = createCommunitySchema.parse(data)
 
-    console.log('验证通过的数据:', validatedData)
+    logger.debug('验证通过的数据:', validatedData)
 
     // 如果没有提供 slug，自动生成
     const slug = validatedData.slug || generateSlug(validatedData.name)
 
-    console.log('生成的 slug:', slug)
+    logger.debug('生成的 slug:', slug)
 
     // 检查 slug 是否已存在
     const { data: existingCommunity } = await supabase
@@ -116,7 +117,7 @@ export async function createCommunity(formData: FormData) {
       creator_id: user.id,
     }
 
-    console.log('准备插入的数据:', insertData)
+    logger.debug('准备插入的数据:', insertData)
 
     const { data: community, error } = await supabase
       .from('communities')
@@ -125,7 +126,7 @@ export async function createCommunity(formData: FormData) {
       .single()
 
     if (error) {
-      console.error('创建社区失败 - 完整错误:', {
+      logger.error('创建社区失败 - 完整错误:', {
         message: error.message,
         details: error.details,
         hint: error.hint,
@@ -134,15 +135,15 @@ export async function createCommunity(formData: FormData) {
       return { success: false, error: `创建社区失败: ${error.message}` }
     }
 
-    console.log('创建的社区数据:', community)
-    console.log('社区 slug:', community.slug)
+    logger.debug('创建的社区数据:', community)
+    logger.debug('社区 slug:', community.slug)
 
     revalidatePath('/communities')
     return { success: true, data: community }
   } catch (error) {
-    console.error('创建社区错误:', error)
+    logger.error('创建社区错误:', error)
     if (error instanceof z.ZodError) {
-      console.error('Zod 验证错误详情:', error.issues)
+      logger.error('Zod 验证错误详情:', error.issues)
       return { success: false, error: `表单数据验证失败: ${error.issues.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', ')}` }
     }
     return { success: false, error: '创建社区失败' }
@@ -190,7 +191,7 @@ export async function updateCommunity(communityId: string, formData: FormData) {
       .single()
 
     if (error) {
-      console.error('更新社区失败:', error)
+      logger.error('更新社区失败:', error)
       return { success: false, error: '更新社区失败' }
     }
 
@@ -198,7 +199,7 @@ export async function updateCommunity(communityId: string, formData: FormData) {
     revalidatePath('/communities')
     return { success: true, data: community }
   } catch (error) {
-    console.error('更新社区错误:', error)
+    logger.error('更新社区错误:', error)
     if (error instanceof z.ZodError) {
       return { success: false, error: '表单数据验证失败' }
     }
@@ -235,14 +236,14 @@ export async function deleteCommunity(communityId: string) {
       .eq('id', communityId)
 
     if (error) {
-      console.error('删除社区失败:', error)
+      logger.error('删除社区失败:', error)
       return { success: false, error: '删除社区失败' }
     }
 
     revalidatePath('/communities')
     return { success: true }
   } catch (error) {
-    console.error('删除社区错误:', error)
+    logger.error('删除社区错误:', error)
     return { success: false, error: '删除社区失败' }
   }
 }
@@ -308,7 +309,7 @@ export async function joinCommunity(communityId: string) {
       })
 
     if (error) {
-      console.error('加入社区失败:', error)
+      logger.error('加入社区失败:', error)
       return { success: false, error: '加入社区失败' }
     }
 
@@ -316,7 +317,7 @@ export async function joinCommunity(communityId: string) {
     revalidatePath('/communities')
     return { success: true }
   } catch (error) {
-    console.error('加入社区错误:', error)
+    logger.error('加入社区错误:', error)
     return { success: false, error: '加入社区失败' }
   }
 }
@@ -364,7 +365,7 @@ export async function leaveCommunity(communityId: string) {
       .eq('user_id', user.id)
 
     if (error) {
-      console.error('退出社区失败:', error)
+      logger.error('退出社区失败:', error)
       return { success: false, error: '退出社区失败' }
     }
 
@@ -381,7 +382,7 @@ export async function leaveCommunity(communityId: string) {
     revalidatePath('/communities')
     return { success: true }
   } catch (error) {
-    console.error('退出社区错误:', error)
+    logger.error('退出社区错误:', error)
     return { success: false, error: '退出社区失败' }
   }
 }
@@ -420,7 +421,7 @@ export async function updateMemberRole(
       .eq('community_id', communityId)
 
     if (error) {
-      console.error('更新成员角色失败:', error)
+      logger.error('更新成员角色失败:', error)
       return { success: false, error: '更新成员角色失败' }
     }
 
@@ -436,7 +437,7 @@ export async function updateMemberRole(
     }
     return { success: true }
   } catch (error) {
-    console.error('更新成员角色错误:', error)
+    logger.error('更新成员角色错误:', error)
     return { success: false, error: '更新成员角色失败' }
   }
 }
@@ -493,7 +494,7 @@ export async function removeMember(communityId: string, memberId: string) {
       .eq('community_id', communityId)
 
     if (error) {
-      console.error('移除成员失败:', error)
+      logger.error('移除成员失败:', error)
       return { success: false, error: '移除成员失败' }
     }
 
@@ -509,7 +510,7 @@ export async function removeMember(communityId: string, memberId: string) {
     }
     return { success: true }
   } catch (error) {
-    console.error('移除成员错误:', error)
+    logger.error('移除成员错误:', error)
     return { success: false, error: '移除成员失败' }
   }
 }

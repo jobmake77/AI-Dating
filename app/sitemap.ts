@@ -33,6 +33,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   })
 
+  // 获取所有公开社区
+  const { data: communities } = await supabase
+    .from('communities')
+    .select('slug, updated_at')
+    .eq('type', 'public')
+    .order('updated_at', { ascending: false })
+
+  // 获取所有活动
+  const { data: events } = await supabase
+    .from('events')
+    .select('id, updated_at')
+    .eq('status', 'active')
+    .order('updated_at', { ascending: false })
+
   // 静态页面
   const staticPages: MetadataRoute.Sitemap = [
     {
@@ -49,6 +63,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     {
       url: `${baseUrl}/search`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/communities`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/events`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/contents`,
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 0.7,
@@ -81,5 +113,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }))
 
-  return [...staticPages, ...contentPages, ...userPages, ...tagPages]
+  // 社区页
+  const communityPages: MetadataRoute.Sitemap =
+    communities?.map((community) => ({
+      url: `${baseUrl}/communities/${community.slug}`,
+      lastModified: new Date(community.updated_at),
+      changeFrequency: 'weekly' as const,
+      priority: 0.6,
+    })) || []
+
+  // 活动页
+  const eventPages: MetadataRoute.Sitemap =
+    events?.map((event) => ({
+      url: `${baseUrl}/events/${event.id}`,
+      lastModified: new Date(event.updated_at),
+      changeFrequency: 'weekly' as const,
+      priority: 0.5,
+    })) || []
+
+  return [...staticPages, ...contentPages, ...userPages, ...tagPages, ...communityPages, ...eventPages]
 }

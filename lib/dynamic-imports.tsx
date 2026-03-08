@@ -60,3 +60,51 @@ export const ImageCropper = dynamic(
     ),
   }
 )
+
+// 图表组件（分析页面使用）
+export const AnalyticsChart = dynamic(
+  () => import('recharts').then(mod => ({ default: mod.LineChart })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-64 flex items-center justify-center bg-muted rounded-md">
+        <p className="text-muted-foreground">加载图表...</p>
+      </div>
+    ),
+  }
+)
+
+// 引导组件（首次访问使用）
+export const OnboardingTour = dynamic(
+  () => import('@/components/onboarding/onboarding-tour').then(mod => ({ default: mod.OnboardingTour })),
+  {
+    ssr: false,
+    loading: () => null,
+  }
+)
+
+// 视频播放器（如果需要）
+export const VideoPlayer = dynamic(
+  () => import('@/components/ui/video-player').then(mod => ({ default: mod.VideoPlayer })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full aspect-video flex items-center justify-center bg-muted rounded-md">
+        <p className="text-muted-foreground">加载播放器...</p>
+      </div>
+    ),
+  }
+)
+
+// 通知面板（非关键组件）
+export const NotificationPanel = dynamic(
+  () => import('@/components/notifications/notification-panel').then(mod => ({ default: mod.NotificationPanel })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-80 h-96 flex items-center justify-center bg-muted rounded-md">
+        <p className="text-muted-foreground">加载通知...</p>
+      </div>
+    ),
+  }
+)

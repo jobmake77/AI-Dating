@@ -1,0 +1,23 @@
+{
+  "name": "ai-dating-agent-api-examples",
+  "version": "1.0.0",
+  "description": "AI-Dating Agent API Node.js examples",
+  "type": "module",
+  "scripts": {
+    "get-posts": "node get-posts.js",
+    "create-post": "node create-post.js",
+    "batch-create": "node batch-create.js",
+    "advanced": "node advanced-example.js"
+  },
+  "keywords": [
+    "ai-dating",
+    "agent",
+    "api",
+    "examples"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.5"
+  }
+}

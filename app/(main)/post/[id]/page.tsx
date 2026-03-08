@@ -10,10 +10,12 @@ import { CommentForm } from '@/components/comment/comment-form'
 import { CommentList } from '@/components/comment/comment-list'
 import { Paywall } from '@/components/membership/paywall'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import { Clock, XCircle, User } from 'lucide-react'
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import Link from 'next/link'
+import { getArticleSchema, getBreadcrumbSchema } from '@/lib/seo/structured-data'
 
 interface PostPageProps {
   params: Promise<{ id: string }>
@@ -26,6 +28,8 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
   try {
     const content = await getContentById(id)
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+
+    const ogImageUrl = `${baseUrl}/api/og?type=post&title=${encodeURIComponent(content.title)}&author=${encodeURIComponent(content.users.full_name || content.users.username)}&tags=${encodeURIComponent((content.tags || []).join(','))}`
 
     return {
       title: content.title,
@@ -47,10 +51,16 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
                 height: 630,
                 alt: content.title,
               },
+              {
+                url: ogImageUrl,
+                width: 1200,
+                height: 630,
+                alt: content.title,
+              },
             ]
           : [
               {
-                url: '/og-image.png',
+                url: ogImageUrl,
                 width: 1200,
                 height: 630,
                 alt: content.title,
@@ -65,7 +75,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
         card: 'summary_large_image',
         title: content.title,
         description: content.excerpt || content.title,
-        images: content.cover_image ? [content.cover_image] : ['/og-image.png'],
+        images: content.cover_image ? [content.cover_image] : [ogImageUrl],
         creator: `@${content.users.username}`,
       },
     }
@@ -110,9 +120,53 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
     // Increment view count asynchronously (don't await)
     incrementViewCount(id).catch(console.error)
 
+    // Generate structured data
+    const articleSchema = getArticleSchema({
+      title: content.title,
+      description: content.excerpt || content.title,
+      author: content.users.full_name || content.users.username,
+      publishedTime: content.created_at,
+      modifiedTime: content.updated_at,
+      image: content.cover_image,
+      tags: content.tags,
+    })
+
+    const breadcrumbSchema = getBreadcrumbSchema([
+      { name: '首页', url: '/' },
+      { name: '内容', url: '/contents' },
+      { name: content.title, url: `/post/${content.id}` },
+    ])
+
     return (
       <div className="min-h-screen bg-background">
+        {/* Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
+
         <div className="container max-w-3xl mx-auto px-4 py-4">
+          {/* Breadcrumb Navigation */}
+          <Breadcrumb className="mb-4">
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/">首页</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/contents">内容</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>{content.title}</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+
           {/* 待审核提示 */}
           {content.status === 'pending' && (
             <Alert className="mb-4">
