@@ -1,10 +1,29 @@
 'use server'
 import { logger } from '@/lib/utils/logger'
+import { normalizeSingleRelation } from '@/lib/utils/normalize'
+import { z } from 'zod'
 
 import { createClient } from '@/lib/supabase/server'
 
+// Validation schemas
+const contentIdSchema = z.string().uuid('无效的内容ID')
+const limitSchema = z.number().int('限制数量必须是整数').min(1, '限制数量必须大于0').max(50, '限制数量不能超过50')
+
 // 获取相关内容推荐（基于标签）
 export async function getRelatedContents(contentId: string, limit: number = 5) {
+  // Validate input
+  const contentIdValidation = contentIdSchema.safeParse(contentId)
+  if (!contentIdValidation.success) {
+    logger.error('Invalid contentId:', contentIdValidation.error)
+    return []
+  }
+
+  const limitValidation = limitSchema.safeParse(limit)
+  if (!limitValidation.success) {
+    logger.error('Invalid limit:', limitValidation.error)
+    return []
+  }
+
   try {
     const supabase = await createClient()
 
@@ -148,10 +167,9 @@ export async function getTrendingContents(params: {
       let score = 0
 
       // 处理 Supabase 嵌套查询返回的数组
-      const users = content.users as any
       const normalizedContent = {
         ...content,
-        users: Array.isArray(users) ? users[0] : users
+        users: normalizeSingleRelation(content.users)
       }
 
       // 浏览量权重

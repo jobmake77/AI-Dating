@@ -8,6 +8,7 @@ import { contentSchema } from '@/lib/validations/content'
 import { moderateHTMLContent, formatModerationError } from '@/lib/tencent/moderation'
 import { updateOnboardingProgress } from './onboarding'
 import { trackEvent } from '@/lib/analytics/events'
+import { canUserAccessCategory, type CategoryRole } from '@/lib/utils/categories'
 
 // Calculate reading time based on word count (300 words per minute)
 function calculateReadingTime(content: string): number {
@@ -70,13 +71,28 @@ export async function createContent(formData: FormData) {
     redirect('/login')
   }
 
+  // Get user role
+  const { data: userData } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  const userRole: CategoryRole = userData?.role === 'admin' ? 'admin' : 'user'
+
   // Parse and validate form data
   const rawData = {
     content: formData.get('content') as string,
     price_type: formData.get('price_type') as string || 'free',
+    category: formData.get('category') as string | undefined,
   }
 
   const validatedData = contentSchema.parse(rawData)
+
+  // Validate category permissions
+  if (validatedData.category && !canUserAccessCategory(userRole, validatedData.category)) {
+    throw new Error('您没有权限发布到该分类')
+  }
 
   // 腾讯云天御内容安全检测
   const moderationResult = await moderateHTMLContent(validatedData.content)
@@ -130,6 +146,7 @@ export async function createContent(formData: FormData) {
     .from('contents')
     .select('*', { count: 'exact', head: true })
     .eq('author_id', user.id)
+    .is('deleted_at', null)
 
   // 追踪事件
   if (contentCount === 1) {
@@ -236,10 +253,10 @@ export async function deleteContent(id: string) {
     redirect('/login')
   }
 
-  // Delete content
+  // Soft delete content
   const { error } = await supabase
     .from('contents')
-    .delete()
+    .update({ deleted_at: new Date().toISOString() })
     .eq('id', id)
     .eq('author_id', user.id) // Ensure user owns the content
 
@@ -248,7 +265,8 @@ export async function deleteContent(id: string) {
   }
 
   revalidatePath('/contents')
-  redirect('/contents')
+  revalidatePath('/')
+  revalidatePath(`/post/${id}`)
 }
 
 export async function incrementViewCount(id: string) {

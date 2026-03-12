@@ -38,6 +38,7 @@ export async function getCommentsByContentId(contentId: string): Promise<Comment
       )
     `)
     .eq('content_id', contentId)
+    .is('deleted_at', null)  // Exclude soft-deleted comments
     .order('created_at', { ascending: true })
 
   if (e1) {
@@ -58,6 +59,7 @@ export async function getCommentsByContentId(contentId: string): Promise<Comment
         )
       `)
       .eq('content_id', contentId)
+      .is('deleted_at', null)  // Exclude soft-deleted comments
       .order('created_at', { ascending: false })
 
     if (e2) {

@@ -29,8 +29,13 @@ export function EventShareButton({ title, url }: EventShareButtonProps) {
   }
 
   return (
-    <Button variant="outline" onClick={handleShare} className="gap-2">
-      <Share2 className="h-4 w-4" />
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={handleShare}
+      className="h-9 text-xs gap-1.5 flex-1"
+    >
+      <Share2 className="h-3.5 w-3.5" />
       分享
     </Button>
   )

@@ -1,5 +1,6 @@
 'use server'
 import { logger } from '@/lib/utils/logger'
+import { z } from 'zod'
 
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
@@ -33,15 +34,25 @@ const TYPE_EXT_MAP: Record<string, string[]> = {
   'video/x-msvideo': ['avi'],
 }
 
+// Validation schemas
+const videoUploadSchema = z.object({
+  filename: z.string().min(1, '文件名不能为空').max(255, '文件名过长'),
+  contentType: z.enum(['video/mp4', 'video/quicktime', 'video/webm', 'video/x-msvideo'], {
+    message: '只支持 MP4、MOV、WebM、AVI 格式的视频'
+  }),
+})
+
 export async function getVideoUploadUrl(filename: string, contentType: string) {
+  // Validate input
+  const validation = videoUploadSchema.safeParse({ filename, contentType })
+  if (!validation.success) {
+    return { error: validation.error.issues[0].message }
+  }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     return { error: '请先登录' }
-  }
-
-  if (!ALLOWED_VIDEO_TYPES.includes(contentType)) {
-    return { error: '只支持 MP4、MOV、WebM、AVI 格式的视频' }
   }
 
   // Validate that file extension matches the declared contentType

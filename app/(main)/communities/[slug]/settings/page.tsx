@@ -1,8 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getCommunityBySlug, getUserMembershipStatus } from '@/lib/queries/communities'
-import { Button } from '@/components/ui/button'
-import { CommunitySettingsForm } from '@/components/community/community-settings-form'
+import { CommunitySettingsClient } from '@/components/community/community-settings-client'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
@@ -31,17 +30,17 @@ export default async function SettingsPage({
   }
 
   return (
-    <div className="container max-w-2xl py-8">
-      <Link href={`/communities/${slug}`}>
-        <Button variant="ghost" size="sm" className="mb-4">
-          <ArrowLeft className="w-4 h-4 mr-2" />
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-6xl px-4 py-6">
+        <Link href={`/communities/${slug}`} className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary mb-4 transition-colors">
+          <ArrowLeft className="h-3.5 w-3.5" />
           返回社区
-        </Button>
-      </Link>
+        </Link>
 
-      <h1 className="text-2xl font-bold mb-6">社区设置</h1>
+        <h1 className="text-xl font-bold text-foreground mb-5">社区设置</h1>
 
-      <CommunitySettingsForm community={community} />
+        <CommunitySettingsClient community={community} slug={slug} />
+      </div>
     </div>
   )
 }

@@ -26,7 +26,7 @@ interface ContentVersion {
   author: {
     username: string
     full_name: string
-    avatar_url: string | null
+    avatar: string | null
   }
 }
 

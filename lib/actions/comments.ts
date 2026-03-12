@@ -5,8 +5,27 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createNotification } from './notifications'
 import { trackEvent } from '@/lib/analytics/events'
+import { z } from 'zod'
+
+// Validation schemas
+const createCommentSchema = z.object({
+  contentId: z.string().uuid('无效的内容ID'),
+  content: z.string().min(1, '评论内容不能为空').max(1000, '评论内容不能超过 1000 字符'),
+  parentId: z.string().uuid('无效的父评论ID').optional(),
+})
+
+const deleteCommentSchema = z.object({
+  commentId: z.string().uuid('无效的评论ID'),
+  contentId: z.string().uuid('无效的内容ID'),
+})
 
 export async function createComment(contentId: string, content: string, parentId?: string) {
+  // Validate input
+  const validation = createCommentSchema.safeParse({ contentId, content, parentId })
+  if (!validation.success) {
+    throw new Error(validation.error.issues[0].message)
+  }
+
   const supabase = await createClient()
 
   // Check authentication
@@ -15,20 +34,12 @@ export async function createComment(contentId: string, content: string, parentId
     redirect('/login')
   }
 
-  // Validate content
-  if (!content || content.trim().length === 0) {
-    throw new Error('评论内容不能为空')
-  }
-
-  if (content.length > 1000) {
-    throw new Error('评论内容不能超过 1000 字符')
-  }
-
   // Get content author
   const { data: contentData } = await supabase
     .from('contents')
     .select('author_id')
     .eq('id', contentId)
+    .is('deleted_at', null)
     .single()
 
   if (!contentData) {
@@ -77,6 +88,12 @@ export async function createComment(contentId: string, content: string, parentId
 }
 
 export async function deleteComment(commentId: string, contentId: string) {
+  // Validate input
+  const validation = deleteCommentSchema.safeParse({ commentId, contentId })
+  if (!validation.success) {
+    throw new Error(validation.error.issues[0].message)
+  }
+
   const supabase = await createClient()
 
   // Check authentication
@@ -85,10 +102,10 @@ export async function deleteComment(commentId: string, contentId: string) {
     redirect('/login')
   }
 
-  // Delete comment (RLS ensures user owns the comment)
+  // Soft delete comment (RLS ensures user owns the comment)
   const { error } = await supabase
     .from('comments')
-    .delete()
+    .update({ deleted_at: new Date().toISOString() })
     .eq('id', commentId)
     .eq('user_id', user.id)
 

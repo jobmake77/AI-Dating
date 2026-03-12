@@ -59,6 +59,10 @@ export function FollowButton({
       size="sm"
       onClick={handleToggleFollow}
       disabled={isLoading}
+      className={isFollowing
+        ? 'w-full h-8 text-xs border-primary/30 text-primary hover:bg-primary/10'
+        : 'w-full h-8 text-xs gradient-primary text-white hover:opacity-90 shadow-primary'
+      }
     >
       {isFollowing ? '已关注' : '关注'}
     </Button>

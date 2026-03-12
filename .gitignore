@@ -45,3 +45,4 @@ next-env.d.ts
 
 .worktrees/
 scripts/pentest/.admin-auth.json
+supabase/.temp/

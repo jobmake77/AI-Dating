@@ -1,6 +1,5 @@
 import { SiteHeader } from "@/components/layout/site-header";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
-import { LeftSidebar } from "@/components/layout/left-sidebar";
 import { OnboardingProvider } from "@/components/onboarding";
 import { createClient } from "@/lib/supabase/server";
 
@@ -36,17 +35,12 @@ export default async function MainLayout({
         跳到主内容
       </a>
       <SiteHeader serverUser={userData} />
-      <div className="flex pb-16 lg:pb-0 justify-center">
-        {/* 左侧导航 - 靠右对齐，紧贴内容区 */}
-        <div className="hidden lg:flex lg:w-[220px] xl:w-[260px] justify-end flex-shrink-0">
-          <LeftSidebar />
-        </div>
 
-        {/* 主内容区 + 右侧边栏 */}
-        <main id="main-content" className="flex flex-1 min-w-0 max-w-[990px]">
-          {children}
-        </main>
-      </div>
+      {/* 主内容区 */}
+      <main id="main-content" className="min-h-screen pb-16 lg:pb-0">
+        {children}
+      </main>
+
       <MobileBottomNav
         isAuthenticated={!!userData}
         username={userData?.username}

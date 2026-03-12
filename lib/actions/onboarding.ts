@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { OnboardingProgress } from '@/types/onboarding'
 import { logger } from '@/lib/utils/logger'
+import { z } from 'zod'
 
 export async function getOnboardingProgress(): Promise<OnboardingProgress | null> {
   try {
@@ -86,6 +87,20 @@ export async function updateOnboardingProgress(updates: {
   explored_content?: boolean
   checked_membership?: boolean
 }) {
+  // Validate input - all fields must be boolean if provided
+  const schema = z.object({
+    completed_profile: z.boolean().optional(),
+    first_post_published: z.boolean().optional(),
+    explored_content: z.boolean().optional(),
+    checked_membership: z.boolean().optional(),
+  })
+
+  const validation = schema.safeParse(updates)
+  if (!validation.success) {
+    logger.error('Invalid onboarding updates:', validation.error)
+    return
+  }
+
   try {
     const supabase = await createClient()
 

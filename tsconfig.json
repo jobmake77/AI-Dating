@@ -42,6 +42,10 @@
     "**/*.test.ts",
     "**/*.test.tsx",
     "**/*.spec.ts",
-    "**/*.spec.tsx"
+    "**/*.spec.tsx",
+    "examples",
+    "lib/cache",
+    "lib/dynamic-imports.tsx",
+    "lib/pwa"
   ]
 }

@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
           id,
           username,
           full_name,
-          avatar_url
+          avatar
         )
       `)
       .in('id', contentIds)

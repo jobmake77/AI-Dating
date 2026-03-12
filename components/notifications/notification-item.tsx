@@ -111,7 +111,7 @@ export function NotificationItem({ notification }: NotificationItemProps) {
               </span>
               {' '}
               <span className="text-muted-foreground">
-                {getMessage().split(notification.actor.full_name || notification.actor.username)[1]}
+                {(getMessage()?.split(notification.actor.full_name || notification.actor.username)[1]) || ''}
               </span>
             </p>
 

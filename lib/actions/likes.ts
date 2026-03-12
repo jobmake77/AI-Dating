@@ -5,8 +5,18 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createNotification } from './notifications'
 import { trackEvent } from '@/lib/analytics/events'
+import { z } from 'zod'
+
+// Validation schema
+const contentIdSchema = z.string().uuid('无效的内容ID')
 
 export async function toggleLike(contentId: string) {
+  // Validate input
+  const validation = contentIdSchema.safeParse(contentId)
+  if (!validation.success) {
+    throw new Error(validation.error.issues[0].message)
+  }
+
   const supabase = await createClient()
 
   // Check authentication
@@ -20,6 +30,7 @@ export async function toggleLike(contentId: string) {
     .from('contents')
     .select('author_id')
     .eq('id', contentId)
+    .is('deleted_at', null)
     .single()
 
   if (!content) {

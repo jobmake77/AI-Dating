@@ -2,12 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { format } from 'date-fns'
-import { zhCN } from 'date-fns/locale'
 import { markConversationAsRead } from '@/lib/actions/chat'
 import Image from 'next/image'
-import { Circle, CheckCircle } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 interface Message {
   id: string
@@ -39,6 +36,14 @@ function extractImageUrl(content: string): string {
   return content.slice(7, -1) // 移除 '[image:' 和 ']'
 }
 
+// 辅助函数：格式化时间
+function formatTime(dateString: string): string {
+  const date = new Date(dateString)
+  const hours = date.getHours().toString().padStart(2, '0')
+  const minutes = date.getMinutes().toString().padStart(2, '0')
+  return `${hours}:${minutes}`
+}
+
 export function ChatMessages({ conversationId, initialMessages, otherUserLastReadAt, currentUserId }: ChatMessagesProps) {
   const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [otherLastReadAt, setOtherLastReadAt] = useState<string | null>(otherUserLastReadAt)
@@ -65,8 +70,7 @@ export function ChatMessages({ conversationId, initialMessages, otherUserLastRea
     let pollingInterval: NodeJS.Timeout | null = null
     let lastCheckedTime = new Date().toISOString()
 
-    console.log('[ChatMessages] Setting up realtime subscription for:', conversationId)
-    console.log('[ChatMessages] Current user ID:', currentUserId)
+    // Setting up realtime subscription
 
     const channel = supabase
       .channel(`conversation:${conversationId}`, {
@@ -83,7 +87,7 @@ export function ChatMessages({ conversationId, initialMessages, otherUserLastRea
           filter: `conversation_id=eq.${conversationId}`,
         },
         async (payload) => {
-          console.log('[ChatMessages] ✅ New message received via Realtime:', payload)
+          // New message received via Realtime
 
           // 获取发送者信息
           const { data: sender } = await supabase
@@ -97,11 +101,11 @@ export function ChatMessages({ conversationId, initialMessages, otherUserLastRea
             sender,
           } as Message
 
-          console.log('[ChatMessages] Adding message to state:', newMessage)
+          // Adding message to state
           setMessages((prev) => {
             // 避免重复添加
             if (prev.some(m => m.id === newMessage.id)) {
-              console.log('[ChatMessages] Message already exists, skipping')
+              // Message already exists, skipping
               return prev
             }
             return [...prev, newMessage]
@@ -122,7 +126,7 @@ export function ChatMessages({ conversationId, initialMessages, otherUserLastRea
           filter: `conversation_id=eq.${conversationId}`,
         },
         async (payload) => {
-          console.log('[ChatMessages] ✅ Participant updated via Realtime:', payload)
+          // Participant updated via Realtime
 
           // 如果更新的不是当前用户，更新对方的 last_read_at
           if (payload.new.user_id !== currentUserId) {
@@ -131,7 +135,7 @@ export function ChatMessages({ conversationId, initialMessages, otherUserLastRea
         }
       )
       .subscribe((status, err) => {
-        console.log('[ChatMessages] Subscription status:', status)
+        // Subscription status changed
         if (err) {
           console.error('[ChatMessages] Subscription error:', err)
         }
@@ -142,7 +146,7 @@ export function ChatMessages({ conversationId, initialMessages, otherUserLastRea
 
           // 每 3 秒轮询一次新消息
           pollingInterval = setInterval(async () => {
-            console.log('[ChatMessages] Polling for new messages...')
+            // Polling for new messages
             const { data: newMessages } = await supabase
               .from('messages')
               .select(`
@@ -159,7 +163,7 @@ export function ChatMessages({ conversationId, initialMessages, otherUserLastRea
               .order('created_at', { ascending: true })
 
             if (newMessages && newMessages.length > 0) {
-              console.log('[ChatMessages] ✅ Polling found new messages:', newMessages.length)
+              // Polling found new messages
               setMessages((prev) => [...prev, ...newMessages as Message[]])
               lastCheckedTime = newMessages[newMessages.length - 1].created_at
             }
@@ -168,7 +172,7 @@ export function ChatMessages({ conversationId, initialMessages, otherUserLastRea
       })
 
     return () => {
-      console.log('[ChatMessages] Cleaning up subscription')
+      // Cleaning up subscription
       if (pollingInterval) {
         clearInterval(pollingInterval)
       }
@@ -179,89 +183,52 @@ export function ChatMessages({ conversationId, initialMessages, otherUserLastRea
   if (messages.length === 0) {
     return (
       <div className="flex items-center justify-center h-full">
-        <p className="text-muted-foreground">开始对话...</p>
+        <p className="text-xs text-muted-foreground">开始对话...</p>
       </div>
     )
   }
 
   return (
-    <div ref={containerRef} className="h-full overflow-y-auto">
-      <div className="max-w-5xl mx-auto px-4 py-6 space-y-4">
-        {messages.map((message, index) => {
-          const isCurrentUser = message.sender_id === currentUserId
-          const showAvatar = index === 0 || messages[index - 1].sender_id !== message.sender_id
+    <div ref={containerRef} className="h-full overflow-y-auto p-4 space-y-3 bg-secondary/20">
+      {messages.map((message) => {
+        const isCurrentUser = message.sender_id === currentUserId
 
-          // 判断消息是否已读（只对当前用户发送的消息显示）
-          const isRead = isCurrentUser && otherLastReadAt &&
-            new Date(message.created_at) <= new Date(otherLastReadAt)
-
-          return (
+        return (
+          <motion.div
+            key={message.id}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
+          >
             <div
-              key={message.id}
-              className={`flex gap-2 ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'} items-end`}
+              className={`max-w-[70%] rounded-2xl px-4 py-2.5 text-xs leading-relaxed ${
+                isCurrentUser
+                  ? 'gradient-primary text-white rounded-br-md'
+                  : 'bg-card text-foreground border border-border rounded-bl-md shadow-card'
+              } ${isImageMessage(message.content) ? 'p-1' : ''}`}
             >
-              {/* 头像 */}
-              <div className="shrink-0 w-8">
-                {showAvatar && !isCurrentUser ? (
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={message.sender?.avatar || undefined} />
-                    <AvatarFallback className="text-xs">
-                      {(message.sender?.full_name || message.sender?.username || 'U')
-                        .charAt(0)
-                        .toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                ) : null}
-              </div>
-
-              {/* 消息气泡 */}
-              <div className={`flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'} max-w-[70%] sm:max-w-[60%]`}>
-                <div
-                  className={`group relative rounded-2xl shadow-sm ${
-                    isCurrentUser
-                      ? 'bg-primary text-primary-foreground rounded-br-sm'
-                      : 'bg-background border border-border rounded-bl-sm'
-                  } ${isImageMessage(message.content) ? 'p-1' : 'px-4 py-2.5'}`}
-                >
-                  {isImageMessage(message.content) ? (
-                    <div className="relative w-full max-w-sm">
-                      <Image
-                        src={extractImageUrl(message.content)}
-                        alt="聊天图片"
-                        width={300}
-                        height={300}
-                        className="rounded-xl object-cover"
-                        unoptimized
-                      />
-                    </div>
-                  ) : (
-                    <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words">
-                      {message.content}
-                    </p>
-                  )}
+              {isImageMessage(message.content) ? (
+                <div className="relative w-full max-w-sm">
+                  <Image
+                    src={extractImageUrl(message.content)}
+                    alt="聊天图片"
+                    width={300}
+                    height={300}
+                    className="rounded-xl object-cover"
+                    unoptimized
+                  />
                 </div>
-
-                {/* 时间戳和已读状态 */}
-                <div className={`flex items-center gap-1 mt-1 px-1 ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'}`}>
-                  <span className="text-[11px] text-muted-foreground">
-                    {format(new Date(message.created_at), 'HH:mm', { locale: zhCN })}
-                  </span>
-                  {isCurrentUser && (
-                    <span className="text-muted-foreground">
-                      {isRead ? (
-                        <CheckCircle className="h-3.5 w-3.5 text-blue-500 fill-blue-500" />
-                      ) : (
-                        <Circle className="h-3.5 w-3.5" />
-                      )}
-                    </span>
-                  )}
-                </div>
+              ) : (
+                message.content
+              )}
+              <div className={`text-[10px] mt-1 ${isCurrentUser ? 'text-white/60' : 'text-muted-foreground'}`}>
+                {formatTime(message.created_at)}
               </div>
             </div>
-          )
-        })}
-        <div ref={messagesEndRef} />
-      </div>
+          </motion.div>
+        )
+      })}
+      <div ref={messagesEndRef} />
     </div>
   )
 }

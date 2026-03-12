@@ -15,15 +15,13 @@ export default async function MessagesPage() {
   const conversations = await getUserConversations(user.id)
 
   return (
-    <div className="container max-w-7xl mx-auto p-4 md:p-6">
-      <div className="flex border border-border rounded-xl overflow-hidden shadow-lg bg-background" style={{ height: 'calc(100vh - 8rem)' }}>
+    <div className="mx-auto max-w-5xl px-4 py-4">
+      <div className="flex rounded-lg border border-border bg-card overflow-hidden shadow-card" style={{ height: 'calc(100vh - 80px)' }}>
         {/* 左侧：会话列表 */}
-        <div className="w-full md:w-96 border-r border-border flex flex-col">
+        <div className="w-72 shrink-0 border-r border-border flex flex-col">
           {/* Header */}
-          <div className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10 shadow-sm flex-shrink-0">
-            <div className="px-4 py-4">
-              <h1 className="text-2xl font-bold">消息</h1>
-            </div>
+          <div className="p-3 border-b border-border">
+            <h2 className="text-sm font-bold text-foreground mb-2">消息</h2>
           </div>
 
           {/* Conversations */}
@@ -33,11 +31,11 @@ export default async function MessagesPage() {
         </div>
 
         {/* 右侧：空状态提示 */}
-        <div className="hidden md:flex flex-1 items-center justify-center bg-muted/20">
+        <div className="flex-1 flex items-center justify-center bg-secondary/20">
           <div className="text-center">
-            <MessageCircle className="h-24 w-24 mx-auto mb-4 text-muted-foreground/50" />
-            <h2 className="text-2xl font-semibold mb-2">选择一个对话</h2>
-            <p className="text-muted-foreground">
+            <MessageCircle className="h-16 w-16 mx-auto mb-3 text-muted-foreground/50" />
+            <h2 className="text-lg font-semibold mb-1 text-foreground">选择一个对话</h2>
+            <p className="text-sm text-muted-foreground">
               从左侧选择一个对话开始聊天
             </p>
           </div>

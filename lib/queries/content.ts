@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/utils/logger'
+import { normalizeSingleRelation } from '@/lib/utils/normalize'
 
 export interface ContentListParams {
   page?: number
@@ -7,6 +8,7 @@ export interface ContentListParams {
   tag?: string
   status?: 'approved' | 'pending' | 'rejected'
   authorId?: string
+  sortBy?: 'hot' | 'latest' | 'following'
 }
 
 export interface FeedItem {
@@ -49,7 +51,10 @@ export interface FeedItem {
 // 获取包含转发的内容时间线
 export async function getContentsFeed(params: ContentListParams = {}) {
   const supabase = await createClient()
-  const { page = 1, limit = 12, tag, status = 'approved' } = params
+  const { page = 1, limit = 12, tag, status = 'approved', sortBy = 'hot' } = params
+
+  // Get current user for following filter
+  const { data: { user } } = await supabase.auth.getUser()
 
   // 1. 获取原创内容
   let originalQuery = supabase
@@ -64,6 +69,7 @@ export async function getContentsFeed(params: ContentListParams = {}) {
       )
     `)
     .eq('status', status)
+    .is('deleted_at', null)  // Exclude soft-deleted records
 
   if (tag) {
     originalQuery = originalQuery.contains('tags', [tag])
@@ -116,13 +122,9 @@ export async function getContentsFeed(params: ContentListParams = {}) {
   // 添加原创内容
   if (originalContents) {
     originalContents.forEach((content: any) => {
-      // Normalize users field (Supabase may return array instead of object)
-      const users = content.users as any
-      const normalizedUsers = Array.isArray(users) ? users[0] : users
-
       feedItems.push({
         ...content,
-        users: normalizedUsers,
+        users: normalizeSingleRelation(content.users),
         content_id: content.id,
         is_repost: false,
       })
@@ -133,44 +135,61 @@ export async function getContentsFeed(params: ContentListParams = {}) {
   if (reposts) {
     reposts.forEach((repost: any) => {
       if (repost.contents) {
-        // Normalize users fields
-        const contentUsers = repost.contents.users as any
-        const normalizedContentUsers = Array.isArray(contentUsers) ? contentUsers[0] : contentUsers
-
-        const repostUsers = repost.users as any
-        const normalizedRepostUsers = Array.isArray(repostUsers) ? repostUsers[0] : repostUsers
-
         feedItems.push({
           ...repost.contents,
-          users: normalizedContentUsers,
+          users: normalizeSingleRelation(repost.contents.users),
           id: `repost-${repost.id}`, // Use repost ID to make it unique
           content_id: repost.contents.id,
           is_repost: true,
-          reposted_by: normalizedRepostUsers,
+          reposted_by: normalizeSingleRelation(repost.users),
           reposted_at: repost.created_at,
         })
       }
     })
   }
 
-  // 4. 按时间排序（原创用 created_at，转发用 reposted_at）
-  feedItems.sort((a, b) => {
-    const timeA = a.is_repost ? new Date(a.reposted_at!).getTime() : new Date(a.created_at).getTime()
-    const timeB = b.is_repost ? new Date(b.reposted_at!).getTime() : new Date(b.created_at).getTime()
-    return timeB - timeA
+  // 4. Filter by following if needed
+  let filteredItems = feedItems
+  if (sortBy === 'following' && user) {
+    // Get user's following list
+    const { data: following } = await supabase
+      .from('follows')
+      .select('following_id')
+      .eq('follower_id', user.id)
+
+    const followingIds = following?.map(f => f.following_id) || []
+    filteredItems = feedItems.filter(item =>
+      followingIds.includes(item.author_id) ||
+      (item.is_repost && item.reposted_by && followingIds.includes(item.reposted_by.id))
+    )
+  }
+
+  // 5. Sort based on sortBy parameter
+  filteredItems.sort((a, b) => {
+    if (sortBy === 'latest') {
+      // Sort by time (newest first)
+      const timeA = a.is_repost ? new Date(a.reposted_at!).getTime() : new Date(a.created_at).getTime()
+      const timeB = b.is_repost ? new Date(b.reposted_at!).getTime() : new Date(b.created_at).getTime()
+      return timeB - timeA
+    } else {
+      // Sort by hot (likes + comments + views)
+      const scoreA = (a.likes_count || 0) * 3 + (a.comments_count || 0) * 2 + (a.view_count || 0) * 0.1
+      const scoreB = (b.likes_count || 0) * 3 + (b.comments_count || 0) * 2 + (b.view_count || 0) * 0.1
+      return scoreB - scoreA
+    }
   })
 
-  // 5. 分页
+  // 6. 分页
   const from = (page - 1) * limit
   const to = from + limit
-  const paginatedItems = feedItems.slice(from, to)
+  const paginatedItems = filteredItems.slice(from, to)
 
   return {
     contents: paginatedItems,
-    total: feedItems.length,
+    total: filteredItems.length,
     page,
     limit,
-    totalPages: Math.ceil(feedItems.length / limit),
+    totalPages: Math.ceil(filteredItems.length / limit),
   }
 }
 
@@ -190,6 +209,7 @@ export async function getContents(params: ContentListParams = {}) {
       )
     `, { count: 'exact' })
     .eq('status', status)
+    .is('deleted_at', null)  // Exclude soft-deleted records
     .order('created_at', { ascending: false })
 
   if (tag) {
@@ -235,6 +255,7 @@ export async function getContentById(id: string) {
       )
     `)
     .eq('id', id)
+    .is('deleted_at', null)  // Exclude soft-deleted records
     .single()
 
   if (error) {
@@ -261,6 +282,7 @@ export async function getContentBySlug(slug: string) {
       )
     `)
     .eq('slug', slug)
+    .is('deleted_at', null)  // Exclude soft-deleted records
     .single()
 
   if (error) {

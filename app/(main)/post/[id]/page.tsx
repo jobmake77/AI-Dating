@@ -2,16 +2,17 @@ import { getContentById } from '@/lib/queries/content'
 import { getCommentsByContentId } from '@/lib/queries/comments'
 import { checkUserLiked } from '@/lib/actions/likes'
 import { checkUserReposted } from '@/lib/actions/reposts'
+import { checkUserBookmarked } from '@/lib/actions/bookmarks'
 import { checkUserMembership } from '@/lib/actions/membership'
 import { createClient } from '@/lib/supabase/server'
 import { incrementViewCount } from '@/lib/actions/content'
-import { ContentDetail } from '@/components/content/content-detail'
-import { CommentForm } from '@/components/comment/comment-form'
-import { CommentList } from '@/components/comment/comment-list'
+import { ContentDetailCard } from '@/components/content/content-detail-card'
+import { CompactPostActions } from '@/components/content/compact-post-actions'
+import { CompactCommentForm } from '@/components/comment/compact-comment-form'
+import { CompactCommentList } from '@/components/comment/compact-comment-list'
 import { Paywall } from '@/components/membership/paywall'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
-import { Clock, XCircle, User } from 'lucide-react'
+import { Clock, XCircle, ArrowLeft } from 'lucide-react'
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import Link from 'next/link'
@@ -112,9 +113,11 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
     // Check if user liked and reposted this content
     let isLiked = false
     let isReposted = false
+    let isBookmarked = false
     if (user) {
       isLiked = await checkUserLiked(id, user.id)
       isReposted = await checkUserReposted(id, user.id)
+      isBookmarked = await checkUserBookmarked(id, user.id)
     }
 
     // Increment view count asynchronously (don't await)
@@ -149,23 +152,15 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
         />
 
-        <div className="container max-w-3xl mx-auto px-4 py-4">
-          {/* Breadcrumb Navigation */}
-          <Breadcrumb className="mb-4">
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/">首页</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/contents">内容</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>{content.title}</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
+        <div className="mx-auto max-w-3xl px-4 py-4">
+          {/* Back to home link */}
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary mb-4 transition-colors"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            返回首页
+          </Link>
 
           {/* 待审核提示 */}
           {content.status === 'pending' && (
@@ -185,63 +180,50 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
             </Alert>
           )}
 
-          {/* 作者信息 */}
-          <Link
-            href={`/u/${content.users.username}`}
-            className="flex items-center gap-2.5 mb-4 group"
-          >
-            {content.users.avatar ? (
-              <img
-                src={content.users.avatar}
-                alt={content.users.full_name || content.users.username}
-                className="w-9 h-9 rounded-full object-cover"
-              />
-            ) : (
-              <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
-                <User className="w-4 h-4 text-muted-foreground" />
-              </div>
-            )}
-            <div>
-              <p className="text-sm font-semibold group-hover:underline leading-tight">
-                {content.users.full_name || content.users.username}
-              </p>
-              <p className="text-xs text-muted-foreground">@{content.users.username}</p>
-            </div>
-          </Link>
-
-          {/* 主内容 */}
-          <ContentDetail
+          {/* Content Detail Card */}
+          <ContentDetailCard
             content={content}
-            isAuthenticated={!!user}
-            isMember={isMember}
-            isAuthor={user?.id === content.author_id}
-            isLiked={isLiked}
-            isReposted={isReposted}
-            contentId={id}
+            canViewFullContent={!needsPaywall}
+            currentUserId={user?.id}
           />
+
+          {/* Actions */}
+          <div className="mt-4 rounded-lg border border-border bg-card p-4 shadow-card">
+            <CompactPostActions
+              contentId={id}
+              initialLikesCount={content.likes_count}
+              initialRepostsCount={content.reposts_count}
+              initialIsLiked={isLiked}
+              initialIsReposted={isReposted}
+              initialIsBookmarked={isBookmarked}
+              isAuthenticated={!!user}
+            />
+          </div>
 
           {/* 付费墙 */}
           {needsPaywall && (
-            <div className="mt-8">
+            <div className="mt-4">
               <Paywall contentType="article" />
             </div>
           )}
 
-          {/* 评论区 */}
+          {/* Comment Input */}
           {!needsPaywall && (
-            <div id="comments-section" className="border-t border-border/50 mt-6 pt-6">
-              <h2 className="text-lg font-bold mb-4">
-                评论 ({content.comments_count || 0})
-              </h2>
-              <div className="space-y-6">
-                <CommentForm contentId={id} isAuthenticated={!!user} />
-                <CommentList
-                  comments={comments}
-                  currentUserId={user?.id}
-                  contentId={id}
-                  isAuthenticated={!!user}
-                />
-              </div>
+            <div className="mt-4">
+              <CompactCommentForm contentId={id} isAuthenticated={!!user} />
+            </div>
+          )}
+
+          {/* Comments */}
+          {!needsPaywall && (
+            <div id="comments-section" className="mt-4">
+              <CompactCommentList
+                comments={comments}
+                currentUserId={user?.id}
+                contentId={id}
+                isAuthenticated={!!user}
+                commentsCount={content.comments_count || 0}
+              />
             </div>
           )}
         </div>

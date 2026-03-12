@@ -2,6 +2,11 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { z } from 'zod'
+
+// Validation schemas
+const agentNameSchema = z.string().min(1, 'Agent 名称不能为空').max(50, 'Agent 名称过长')
+const agentIdSchema = z.string().uuid('无效的 Agent ID')
 
 export async function getUserAgents() {
   const supabase = await createClient()
@@ -19,6 +24,12 @@ export async function getUserAgents() {
 }
 
 export async function createAgent(name: string) {
+  // Validate input
+  const validation = agentNameSchema.safeParse(name)
+  if (!validation.success) {
+    return { error: validation.error.issues[0].message }
+  }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: '未登录' }
@@ -45,6 +56,12 @@ export async function createAgent(name: string) {
 }
 
 export async function deleteAgent(agentId: string) {
+  // Validate input
+  const validation = agentIdSchema.safeParse(agentId)
+  if (!validation.success) {
+    return { error: validation.error.issues[0].message }
+  }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: '未登录' }

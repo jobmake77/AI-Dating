@@ -1,12 +1,12 @@
 import { getContents } from '@/lib/queries/content'
-import { ContentList } from '@/components/content/content-list'
-import { Pagination } from '@/components/content/pagination'
-import { notFound } from 'next/navigation'
+import { ContentListCompact } from '@/components/content/content-list-compact'
 import { Metadata } from 'next'
+import { TagHeader } from '@/components/tag/tag-header'
+import { FeedTabs } from '@/components/feed/feed-tabs'
 
 interface TagPageProps {
   params: Promise<{ name: string }>
-  searchParams: Promise<{ page?: string }>
+  searchParams: Promise<{ page?: string; tab?: string }>
 }
 
 export async function generateMetadata({ params }: TagPageProps): Promise<Metadata> {
@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: TagPageProps): Promise<Metada
 
 export default async function TagPage({ params, searchParams }: TagPageProps) {
   const { name } = await params
-  const { page: pageParam } = await searchParams
+  const { page: pageParam, tab = 'new' } = await searchParams
   const page = Number(pageParam) || 1
 
   const tagName = decodeURIComponent(name)
@@ -56,19 +56,28 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
   const { contents, totalPages, total } = await getContents({ page, tag: tagName })
 
   return (
-    <div className="container py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold flex items-center gap-2">
-          <span className="text-primary">#</span>
-          {tagName}
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          {total} 篇内容使用了这个标签
-        </p>
-      </div>
+    <div className="min-h-screen bg-background">
+      {/* Tag Header Banner */}
+      <TagHeader tagName={tagName} postCount={total || 0} />
 
-      <ContentList contents={contents} />
-      <Pagination currentPage={page} totalPages={totalPages} basePath={`/tag/${encodeURIComponent(tagName)}`} />
+      {/* Main Content */}
+      <div className="mx-auto max-w-3xl px-4 py-6">
+        {/* Feed Tabs */}
+        <div className="mb-5">
+          <FeedTabs activeTab={tab} basePath={`/tag/${encodeURIComponent(tagName)}`} />
+        </div>
+
+        {/* Content List */}
+        <div className="space-y-1.5">
+          {contents.length > 0 ? (
+            <ContentListCompact contents={contents} />
+          ) : (
+            <div className="rounded-lg border border-border bg-card p-10 text-center shadow-card">
+              <p className="text-xs text-muted-foreground">该标签暂无内容</p>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

@@ -14,6 +14,8 @@ const createEventSchema = z.object({
   cover_url: z.string().optional(),
 })
 
+const eventIdSchema = z.string().uuid('无效的活动ID')
+
 export async function createEvent(formData: FormData) {
   try {
     const supabase = await createClient()
@@ -77,6 +79,12 @@ export async function createEvent(formData: FormData) {
 }
 
 export async function joinEvent(eventId: string) {
+  // Validate input
+  const validation = eventIdSchema.safeParse(eventId)
+  if (!validation.success) {
+    return { success: false, error: validation.error.issues[0].message }
+  }
+
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return { success: false, error: '请先登录' }
@@ -92,6 +100,12 @@ export async function joinEvent(eventId: string) {
 }
 
 export async function leaveEvent(eventId: string) {
+  // Validate input
+  const validation = eventIdSchema.safeParse(eventId)
+  if (!validation.success) {
+    return { success: false, error: validation.error.issues[0].message }
+  }
+
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return { success: false, error: '请先登录' }
@@ -110,6 +124,12 @@ export async function leaveEvent(eventId: string) {
 
 // 活动签到
 export async function checkInEvent(eventId: string) {
+  // Validate input
+  const validation = eventIdSchema.safeParse(eventId)
+  if (!validation.success) {
+    return { success: false, error: validation.error.issues[0].message }
+  }
+
   try {
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()

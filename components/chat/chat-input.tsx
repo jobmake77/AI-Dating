@@ -108,7 +108,7 @@ export function ChatInput({ conversationId }: ChatInputProps) {
   return (
     <div className="relative">
       <div className="flex items-end gap-2">
-        {/* 图片上传按钮 */}
+        {/* 图片上传和表情按钮 */}
         <input
           ref={fileInputRef}
           type="file"
@@ -116,32 +116,30 @@ export function ChatInput({ conversationId }: ChatInputProps) {
           onChange={handleImageUpload}
           className="hidden"
         />
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={isUploading || isSending}
-          className="shrink-0 h-12 w-12 rounded-full"
-        >
-          {isUploading ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
-          ) : (
-            <ImageIcon className="h-5 w-5" />
-          )}
-        </Button>
-
-        {/* 表情按钮 */}
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-          disabled={isSending}
-          className="shrink-0 h-12 w-12 rounded-full"
-        >
-          <Smile className="h-5 w-5" />
-        </Button>
+        <div className="flex gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground hover:text-accent"
+            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+            disabled={isSending}
+          >
+            <Smile className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground hover:text-info"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading || isSending}
+          >
+            {isUploading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <ImageIcon className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
 
         <Textarea
           ref={textareaRef}
@@ -149,17 +147,17 @@ export function ChatInput({ conversationId }: ChatInputProps) {
           onChange={(e) => setContent(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="输入消息..."
-          className="min-h-[48px] max-h-[200px] resize-none rounded-2xl border-2 focus-visible:ring-1 text-[15px] py-3"
+          className="min-h-[36px] max-h-[100px] text-xs bg-secondary/60 border-none resize-none flex-1"
           rows={1}
           disabled={isSending}
         />
         <Button
+          size="icon"
+          className="h-9 w-9 shrink-0 gradient-primary text-white hover:opacity-90 shadow-primary rounded-full"
           onClick={handleSubmit}
           disabled={!content.trim() || isSending}
-          size="icon"
-          className="shrink-0 h-12 w-12 rounded-full shadow-md hover:shadow-lg transition-shadow"
         >
-          <Send className="h-5 w-5" />
+          <Send className="h-3.5 w-3.5" />
         </Button>
       </div>
 

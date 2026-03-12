@@ -43,7 +43,7 @@ export default async function AdminContentsPage() {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      {content.price_type === 'member_only' && (
+                      {content.price_type === 'member' && (
                         <Badge variant="default">会员专享</Badge>
                       )}
                     </div>

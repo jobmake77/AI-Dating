@@ -10,16 +10,40 @@
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
+    --primary: 221 83% 53%;
     --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
     --muted: 0 0% 96.1%;
     --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
+    --accent: 262 83% 58%;
     --accent-foreground: 0 0% 9%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
+    --success: 152 69% 40%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+    --vote-up: 221 83% 53%;
+    --vote-down: 0 72% 51%;
+    --tag: 220 14% 93%;
+    --tag-foreground: 220 9% 46%;
+    --online: 152 69% 40%;
+    --link: 221 83% 53%;
+    --cat-announce: 210 100% 56%;
+    --cat-beginner: 152 69% 40%;
+    --cat-activity: 38 92% 50%;
+    --cat-help: 142 71% 45%;
+    --cat-suggest: 262 83% 58%;
+    --cat-tips: 199 89% 48%;
+    --cat-showcase: 340 82% 52%;
+    --cat-chat: 24 95% 53%;
+    --cat-welfare: 280 68% 55%;
+    --cat-enterprise: 210 16% 46%;
+    --cat-curated: 330 81% 60%;
+    --cat-live: 0 72% 51%;
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
     --ring: 0 0% 3.9%;
@@ -29,6 +53,19 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+
+    /* Gradient tokens */
+    --gradient-primary: linear-gradient(135deg, hsl(221 83% 53%), hsl(262 83% 58%));
+    --gradient-success: linear-gradient(135deg, hsl(152 69% 40%), hsl(168 84% 40%));
+    --gradient-warm: linear-gradient(135deg, hsl(38 92% 50%), hsl(340 82% 52%));
+    --gradient-info: linear-gradient(135deg, hsl(199 89% 48%), hsl(221 83% 53%));
+    --gradient-sunset: linear-gradient(135deg, hsl(340 82% 52%), hsl(24 95% 53%));
+    --gradient-ocean: linear-gradient(135deg, hsl(199 89% 48%), hsl(152 69% 40%));
+
+    /* Shadow tokens */
+    --shadow-card: 0 1px 3px hsl(0 0% 0% / 0.04), 0 1px 2px hsl(0 0% 0% / 0.02);
+    --shadow-elevated: 0 4px 12px hsl(0 0% 0% / 0.08);
+    --shadow-primary: 0 4px 14px hsl(221 83% 53% / 0.25);
   }
 
   .dark {
@@ -56,6 +93,19 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+
+    /* Gradient tokens - dark mode */
+    --gradient-primary: linear-gradient(135deg, hsl(221 83% 58%), hsl(262 83% 63%));
+    --gradient-success: linear-gradient(135deg, hsl(152 69% 45%), hsl(168 84% 40%));
+    --gradient-warm: linear-gradient(135deg, hsl(38 92% 50%), hsl(340 82% 52%));
+    --gradient-info: linear-gradient(135deg, hsl(199 89% 48%), hsl(221 83% 58%));
+    --gradient-sunset: linear-gradient(135deg, hsl(340 82% 52%), hsl(24 95% 53%));
+    --gradient-ocean: linear-gradient(135deg, hsl(199 89% 48%), hsl(152 69% 45%));
+
+    /* Shadow tokens - dark mode */
+    --shadow-card: 0 1px 3px hsl(0 0% 0% / 0.2);
+    --shadow-elevated: 0 4px 12px hsl(0 0% 0% / 0.3);
+    --shadow-primary: 0 4px 14px hsl(221 83% 58% / 0.35);
   }
 
   /* High Contrast Mode - WCAG AAA Compliant */
@@ -566,5 +616,90 @@
 
   .hide-scrollbar::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Gradient utility classes */
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .gradient-success {
+    background: var(--gradient-success);
+  }
+
+  .gradient-warm {
+    background: var(--gradient-warm);
+  }
+
+  .gradient-info {
+    background: var(--gradient-info);
+  }
+
+  .gradient-sunset {
+    background: var(--gradient-sunset);
+  }
+
+  .gradient-ocean {
+    background: var(--gradient-ocean);
+  }
+
+  .gradient-hero {
+    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--primary) / 0.05) 100%);
+  }
+
+  /* Shadow utility classes */
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+
+  .shadow-elevated {
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .shadow-primary {
+    box-shadow: var(--shadow-primary);
+  }
+
+  /* Text utility classes */
+  .text-link {
+    color: hsl(var(--link));
+  }
+
+  /* TipTap Editor Styles */
+  .ProseMirror {
+    outline: none;
+  }
+
+  .ProseMirror p.is-editor-empty:first-child::before {
+    color: hsl(var(--muted-foreground));
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+  }
+
+  .ProseMirror p {
+    margin: 0.5rem 0;
+  }
+
+  .ProseMirror strong {
+    font-weight: 600;
+  }
+
+  .ProseMirror em {
+    font-style: italic;
+  }
+
+  .ProseMirror img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+    margin: 1rem 0;
+  }
+
+  .ProseMirror video {
+    max-width: 100%;
+    border-radius: 0.5rem;
+    margin: 1rem 0;
   }
 }

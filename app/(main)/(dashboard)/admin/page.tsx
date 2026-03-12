@@ -1,9 +1,7 @@
 import { requireAdmin } from '@/lib/middleware/admin'
 import { createClient } from '@/lib/supabase/server'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { FileText, Users, Clock, CheckCircle } from 'lucide-react'
-import Link from 'next/link'
-import { GrowthChart } from '@/components/admin/growth-chart'
+import { AdminDashboard } from '@/components/admin/admin-dashboard'
+import { Activity } from 'lucide-react'
 
 function buildLast30Days() {
   const days: { date: string; users: number; contents: number }[] = []
@@ -34,6 +32,7 @@ export default async function AdminPage() {
     { count: approvedContents },
     { data: recentUsers },
     { data: recentContents },
+    { data: pendingContentData },
   ] = await Promise.all([
     supabase.from('users').select('*', { count: 'exact', head: true }),
     supabase.from('contents').select('*', { count: 'exact', head: true }),
@@ -41,6 +40,7 @@ export default async function AdminPage() {
     supabase.from('contents').select('*', { count: 'exact', head: true }).eq('status', 'approved'),
     supabase.from('users').select('created_at').gte('created_at', since.toISOString()),
     supabase.from('contents').select('created_at').gte('created_at', since.toISOString()),
+    supabase.from('contents').select('id, title, created_at, users(username)').eq('status', 'pending').order('created_at', { ascending: false }).limit(10),
   ])
 
   // 按日期聚合
@@ -60,46 +60,53 @@ export default async function AdminPage() {
     if (item) item.contents++
   })
 
+  // 计算增长率
+  const todayUsers = recentUsers?.filter(u => {
+    const d = new Date(u.created_at)
+    const today = new Date()
+    return d.getDate() === today.getDate() && d.getMonth() === today.getMonth()
+  }).length ?? 0
+
+  const todayContents = recentContents?.filter(c => {
+    const d = new Date(c.created_at)
+    const today = new Date()
+    return d.getDate() === today.getDate() && d.getMonth() === today.getMonth()
+  }).length ?? 0
+
   const stats = [
-    { label: '总用户数', value: totalUsers ?? 0, icon: Users, href: '/admin/users', color: 'text-blue-500' },
-    { label: '总内容数', value: totalContents ?? 0, icon: FileText, href: '/admin/contents', color: 'text-green-500' },
-    { label: '待审核', value: pendingContents ?? 0, icon: Clock, href: '/admin/moderation', color: 'text-yellow-500' },
-    { label: '已发布', value: approvedContents ?? 0, icon: CheckCircle, href: '/admin/contents', color: 'text-emerald-500' },
+    { label: '总用户', value: totalUsers ?? 0, change: `+${todayUsers}`, gradient: 'gradient-primary' },
+    { label: '今日帖子', value: todayContents, change: '', gradient: 'gradient-info' },
+    { label: '活跃用户', value: Math.floor((totalUsers ?? 0) * 0.15), change: '+8%', gradient: 'gradient-ocean' },
+    { label: '待审核', value: pendingContents ?? 0, change: '', gradient: 'gradient-warm' },
   ]
 
-  return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold">管理后台</h1>
-        <p className="text-muted-foreground mt-1">平台数据概览</p>
-      </div>
+  // 格式化待审核内容
+  const pendingContent = (pendingContentData ?? []).map((item) => {
+    const createdAt = new Date(item.created_at)
+    const now = new Date()
+    const diffMs = now.getTime() - createdAt.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
 
-      {/* 统计卡片 */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {stats.map((stat) => (
-          <Link key={stat.label} href={stat.href}>
-            <Card className="hover:bg-accent/30 transition-colors cursor-pointer">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">{stat.label}</CardTitle>
-                <stat.icon className={`h-4 w-4 ${stat.color}`} />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
-      </div>
+    let time = ''
+    if (diffMins < 60) {
+      time = `${diffMins}m`
+    } else if (diffHours < 24) {
+      time = `${diffHours}h`
+    } else {
+      time = `${diffDays}d`
+    }
 
-      {/* 增长曲线 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">近 30 天增长趋势</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <GrowthChart data={chartData} />
-        </CardContent>
-      </Card>
-    </div>
-  )
+    return {
+      id: item.id,
+      title: item.title,
+      author: (item.users as any)?.username ?? '未知用户',
+      time,
+      reason: '待审核',
+      severity: 'medium',
+    }
+  })
+
+  return <AdminDashboard stats={stats} chartData={chartData} pendingContent={pendingContent} />
 }

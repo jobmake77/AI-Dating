@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import Link from 'next/link'
-import { ArrowLeft, ThumbsUp, MessageCircle, Pin, Lock, Trash } from 'lucide-react'
+import { ArrowLeft, ThumbsUp, MessageCircle, Pin, Lock, Trash, Users } from 'lucide-react'
 import { togglePostLike, togglePostPin, togglePostLock, deleteCommunityPost, createPostComment } from '@/lib/actions/community-posts'
 
 async function handleToggleLike(postId: string): Promise<void> {
@@ -54,42 +54,50 @@ async function PostDetail({ postId }: { postId: string }) {
 
   return (
     <div>
-      <Card className="p-6">
+      <Card className="p-5 shadow-sm">
         <div className="flex items-start gap-4">
           <img
             src={post.author.avatar_url || '/default-avatar.png'}
             alt={post.author.display_name || post.author.username}
-            className="w-12 h-12 rounded-full"
+            className="w-10 h-10 rounded-full"
           />
           <div className="flex-1">
             <div className="flex items-center justify-between">
               <div>
-                <Link href={`/u/${post.author.username}`} className="font-medium hover:underline">
-                  {post.author.display_name || post.author.username}
-                </Link>
-                <p className="text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <Link href={`/u/${post.author.username}`} className="font-medium text-sm hover:underline">
+                    {post.author.display_name || post.author.username}
+                  </Link>
+                  {post.is_pinned && (
+                    <Pin className="w-3.5 h-3.5 text-primary" />
+                  )}
+                  {post.is_locked && (
+                    <Lock className="w-3.5 h-3.5 text-muted-foreground" />
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
                   {new Date(post.created_at).toLocaleString('zh-CN')}
                 </p>
               </div>
               {canEdit && (
-                <div className="flex gap-2">
+                <div className="flex gap-1">
                   {canModerate && (
                     <>
                       <form action={handleTogglePin.bind(null, postId)}>
-                        <Button variant="ghost" size="sm" type="submit">
-                          <Pin className={`w-4 h-4 ${post.is_pinned ? 'fill-current' : ''}`} />
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" type="submit">
+                          <Pin className={`w-3.5 h-3.5 ${post.is_pinned ? 'fill-current' : ''}`} />
                         </Button>
                       </form>
                       <form action={handleToggleLock.bind(null, postId)}>
-                        <Button variant="ghost" size="sm" type="submit">
-                          <Lock className={`w-4 h-4 ${post.is_locked ? 'fill-current' : ''}`} />
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" type="submit">
+                          <Lock className={`w-3.5 h-3.5 ${post.is_locked ? 'fill-current' : ''}`} />
                         </Button>
                       </form>
                     </>
                   )}
                   <form action={handleDeletePost.bind(null, postId)}>
-                    <Button variant="ghost" size="sm" type="submit">
-                      <Trash className="w-4 h-4" />
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0" type="submit">
+                      <Trash className="w-3.5 h-3.5" />
                     </Button>
                   </form>
                 </div>
@@ -97,9 +105,9 @@ async function PostDetail({ postId }: { postId: string }) {
             </div>
 
             {post.title && (
-              <h1 className="text-2xl font-bold mt-4">{post.title}</h1>
+              <h1 className="text-xl font-bold mt-3">{post.title}</h1>
             )}
-            <div className="mt-4 whitespace-pre-wrap">{post.content}</div>
+            <div className="mt-3 text-sm whitespace-pre-wrap leading-relaxed">{post.content}</div>
 
             {post.images && post.images.length > 0 && (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-4">
@@ -108,23 +116,23 @@ async function PostDetail({ postId }: { postId: string }) {
                     key={idx}
                     src={img}
                     alt=""
-                    className="w-full h-48 rounded object-cover"
+                    className="w-full h-40 rounded object-cover"
                   />
                 ))}
               </div>
             )}
 
-            <div className="flex items-center gap-4 mt-6 pt-4 border-t">
+            <div className="flex items-center gap-4 mt-5 pt-4 border-t">
               {user && (
                 <form action={handleToggleLike.bind(null, postId)}>
-                  <Button variant="ghost" size="sm" type="submit">
-                    <ThumbsUp className={`w-4 h-4 mr-2 ${liked ? 'fill-current' : ''}`} />
+                  <Button variant="ghost" size="sm" className="h-8 text-xs" type="submit">
+                    <ThumbsUp className={`w-3.5 h-3.5 mr-1.5 ${liked ? 'fill-current' : ''}`} />
                     {post.likes_count}
                   </Button>
                 </form>
               )}
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <MessageCircle className="w-4 h-4" />
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <MessageCircle className="w-3.5 h-3.5" />
                 {post.comments_count} 评论
               </div>
             </div>
@@ -140,16 +148,16 @@ async function CommentsList({ postId }: { postId: string }) {
 
   if (comments.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
+      <div className="text-center py-8 text-muted-foreground text-sm">
         还没有评论
       </div>
     )
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {comments.map((comment: any) => (
-        <Card key={comment.id} className="p-4">
+        <Card key={comment.id} className="p-3 shadow-sm">
           <div className="flex items-start gap-3">
             <img
               src={comment.author.avatar_url || '/default-avatar.png'}
@@ -158,14 +166,14 @@ async function CommentsList({ postId }: { postId: string }) {
             />
             <div className="flex-1">
               <div className="flex items-center gap-2">
-                <Link href={`/u/${comment.author.username}`} className="font-medium text-sm hover:underline">
+                <Link href={`/u/${comment.author.username}`} className="font-medium text-xs hover:underline">
                   {comment.author.display_name || comment.author.username}
                 </Link>
                 <span className="text-xs text-muted-foreground">
                   {new Date(comment.created_at).toLocaleString('zh-CN')}
                 </span>
               </div>
-              <p className="text-sm mt-1">{comment.content}</p>
+              <p className="text-sm mt-1 leading-relaxed">{comment.content}</p>
             </div>
           </div>
         </Card>
@@ -180,8 +188,8 @@ async function CommentForm({ postId }: { postId: string }) {
 
   if (!user) {
     return (
-      <Card className="p-4 text-center">
-        <p className="text-muted-foreground">请先登录后评论</p>
+      <Card className="p-4 text-center shadow-sm">
+        <p className="text-muted-foreground text-sm">请先登录后评论</p>
       </Card>
     )
   }
@@ -189,8 +197,8 @@ async function CommentForm({ postId }: { postId: string }) {
   const { data: post } = await getCommunityPostById(postId)
   if (post?.is_locked) {
     return (
-      <Card className="p-4 text-center">
-        <p className="text-muted-foreground">帖子已被锁定，无法评论</p>
+      <Card className="p-4 text-center shadow-sm">
+        <p className="text-muted-foreground text-sm">帖子已被锁定，无法评论</p>
       </Card>
     )
   }
@@ -202,8 +210,8 @@ async function CommentForm({ postId }: { postId: string }) {
   }
 
   return (
-    <Card className="p-4">
-      <form action={handleSubmit} className="space-y-4">
+    <Card className="p-4 shadow-sm">
+      <form action={handleSubmit} className="space-y-3">
         <Textarea
           name="content"
           placeholder="写下你的评论..."
@@ -211,9 +219,10 @@ async function CommentForm({ postId }: { postId: string }) {
           minLength={1}
           maxLength={2000}
           rows={3}
+          className="text-sm"
         />
         <div className="flex justify-end">
-          <Button type="submit">发表评论</Button>
+          <Button type="submit" size="sm" className="text-xs">发表评论</Button>
         </div>
       </form>
     </Card>
@@ -233,25 +242,56 @@ export default async function PostDetailPage({
   }
 
   return (
-    <div className="container max-w-4xl py-8">
-      <Link href={`/communities/${slug}`}>
-        <Button variant="ghost" size="sm" className="mb-4">
-          <ArrowLeft className="w-4 h-4 mr-2" />
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-4xl px-4 py-4">
+        <Link
+          href={`/communities/${slug}`}
+          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary mb-4 transition-colors"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
           返回社区
-        </Button>
-      </Link>
+        </Link>
 
-      <Suspense fallback={<div>加载中...</div>}>
-        <PostDetail postId={id} />
-      </Suspense>
+        {/* Community Info Banner */}
+        <div className="rounded-lg border border-border bg-card overflow-hidden shadow-sm mb-4">
+          <div className="h-12 bg-gradient-to-r from-primary/20 via-accent/10 to-blue-500/20" />
+          <div className="px-4 pb-3 -mt-4">
+            <div className="flex items-end gap-2">
+              {post.community.icon_url ? (
+                <img
+                  src={post.community.icon_url}
+                  alt={post.community.name}
+                  className="w-10 h-10 rounded-lg bg-card shadow-sm border border-border object-cover"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-lg bg-card shadow-sm border border-border flex items-center justify-center">
+                  <Users className="w-5 h-5 text-primary" />
+                </div>
+              )}
+              <div className="pb-0.5">
+                <Link href={`/communities/${slug}`} className="text-sm font-bold text-foreground hover:underline">
+                  {post.community.name}
+                </Link>
+                <p className="text-xs text-muted-foreground">
+                  {post.community.members_count} 成员
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
 
-      <div className="mt-8">
-        <h2 className="text-xl font-bold mb-4">评论</h2>
-        <div className="space-y-4">
-          <CommentForm postId={id} />
-          <Suspense fallback={<div>加载中...</div>}>
-            <CommentsList postId={id} />
-          </Suspense>
+        <Suspense fallback={<div className="text-sm text-muted-foreground">加载中...</div>}>
+          <PostDetail postId={id} />
+        </Suspense>
+
+        <div className="mt-6">
+          <h2 className="text-base font-bold mb-3">评论</h2>
+          <div className="space-y-3">
+            <CommentForm postId={id} />
+            <Suspense fallback={<div className="text-sm text-muted-foreground">加载中...</div>}>
+              <CommentsList postId={id} />
+            </Suspense>
+          </div>
         </div>
       </div>
     </div>

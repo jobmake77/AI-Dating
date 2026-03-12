@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { ContentForm } from '@/components/content/content-form'
+import { CreatePostForm } from '@/components/content/create-post-form'
 
 export default async function CreatePage() {
   const supabase = await createClient()
@@ -10,16 +10,14 @@ export default async function CreatePage() {
     redirect('/login')
   }
 
-  return (
-    <div className="container max-w-3xl mx-auto py-8 px-4">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">发布内容</h1>
-        <p className="text-muted-foreground mt-2">
-          分享你的想法、见解和经验
-        </p>
-      </div>
+  // Get user role
+  const { data: userData } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single()
 
-      <ContentForm />
-    </div>
-  )
+  const userRole = userData?.role === 'admin' ? 'admin' : 'user'
+
+  return <CreatePostForm userRole={userRole} />
 }

@@ -4,8 +4,18 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createNotification } from './notifications'
+import { z } from 'zod'
+
+// Validation schema
+const contentIdSchema = z.string().uuid('无效的内容ID')
 
 export async function toggleRepost(contentId: string) {
+  // Validate input
+  const validation = contentIdSchema.safeParse(contentId)
+  if (!validation.success) {
+    throw new Error(validation.error.issues[0].message)
+  }
+
   const supabase = await createClient()
 
   // Check authentication

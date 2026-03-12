@@ -4,9 +4,8 @@ import { getUserStats } from '@/lib/queries/user'
 import { checkUserFollowing } from '@/lib/actions/follows'
 import { getUserAgents } from '@/lib/actions/agents'
 import { createClient } from '@/lib/supabase/server'
-import { UserProfile } from '@/components/user/user-profile'
-import { UserContentTabs } from '@/components/user/user-content-tabs'
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
+import { UserProfileCard } from '@/components/user/user-profile-card'
+import { UserContentTabsCompact } from '@/components/user/user-content-tabs-compact'
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import { getPersonSchema, getBreadcrumbSchema } from '@/lib/seo/structured-data'
@@ -123,7 +122,7 @@ export default async function UserPage({ params, searchParams }: UserPageProps) 
     ])
 
     return (
-      <div className="container max-w-4xl mx-auto py-8 px-4">
+      <div className="container max-w-3xl mx-auto py-4 px-4">
         {/* Structured Data */}
         <script
           type="application/ld+json"
@@ -134,21 +133,8 @@ export default async function UserPage({ params, searchParams }: UserPageProps) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
         />
 
-        {/* Breadcrumb Navigation */}
-        <Breadcrumb className="mb-6">
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/">首页</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>{user.full_name || user.username}</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-
-        <div className="space-y-8">
-          <UserProfile
+        <div className="space-y-4">
+          <UserProfileCard
             user={user}
             isOwner={isOwner}
             currentUserId={currentUser?.id}
@@ -156,7 +142,7 @@ export default async function UserPage({ params, searchParams }: UserPageProps) 
             isAuthenticated={!!currentUser}
             stats={stats}
           />
-          <UserContentTabs
+          <UserContentTabsCompact
             username={username}
             isOwner={isOwner}
             agents={agents}

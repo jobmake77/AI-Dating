@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { normalizeSingleRelation } from '@/lib/utils/normalize'
 
 export interface SearchResult {
   id: string
@@ -44,6 +45,7 @@ export async function searchContents(query: string, page: number = 1) {
       )
     `, { count: 'exact' })
     .eq('status', 'approved')
+    .is('deleted_at', null)
     .or(`title.ilike.%${query}%,excerpt.ilike.%${query}%,content.ilike.%${query}%`)
     .order('created_at', { ascending: false })
     .range(from, to)
@@ -72,6 +74,7 @@ export async function searchContents(query: string, page: number = 1) {
       )
     `)
     .eq('status', 'approved')
+    .is('deleted_at', null)
     .contains('tags', [query])
     .order('created_at', { ascending: false })
     .range(from, to)
@@ -83,13 +86,10 @@ export async function searchContents(query: string, page: number = 1) {
   )
 
   // 处理 Supabase 嵌套查询返回的数组
-  const normalizedResults = uniqueResults.map(result => {
-    const users = result.users as any
-    return {
-      ...result,
-      users: Array.isArray(users) ? users[0] : users
-    }
-  })
+  const normalizedResults = uniqueResults.map(result => ({
+    ...result,
+    users: normalizeSingleRelation(result.users)
+  }))
 
   const totalPages = Math.ceil((count || 0) / pageSize)
 

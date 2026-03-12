@@ -1,13 +1,14 @@
 import { getContentsFeed } from "@/lib/queries/content";
-import { ContentList } from "@/components/content/content-list-twitter";
+import { ContentListCompact } from "@/components/content/content-list-compact";
+import { FeedTabs } from "@/components/content/feed-tabs";
 import { Pagination } from "@/components/content/pagination";
-import { TrendingTags } from "@/components/tag/trending-tags";
-import { TrendingContents } from "@/components/content/trending-contents";
 import { ProgressCard } from "@/components/onboarding/progress-card";
 import { ProgressCheckpoint } from "@/components/onboarding/progress-checkpoint";
 import { getOnboardingProgress } from "@/lib/actions/onboarding";
 import { createClient } from "@/lib/supabase/server";
-import Link from "next/link";
+import { WelcomeBanner } from "@/components/home/welcome-banner";
+import { CategoriesSidebar } from "@/components/home/categories-sidebar";
+import { CommunitySidebar } from "@/components/home/community-sidebar";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -39,14 +40,18 @@ export const metadata: Metadata = {
 }
 
 interface HomeProps {
-  searchParams: Promise<{ page?: string }>
+  searchParams: Promise<{ page?: string; tab?: string }>
 }
 
 export default async function Home({ searchParams }: HomeProps) {
   const params = await searchParams
   const page = Number(params.page) || 1
+  const tab = params.tab || 'hot'
 
-  const { contents, totalPages } = await getContentsFeed({ page })
+  const sortBy = (['hot', 'latest', 'following'] as const).includes(tab as 'hot' | 'latest' | 'following')
+    ? (tab as 'hot' | 'latest' | 'following')
+    : 'hot'
+  const { contents, totalPages } = await getContentsFeed({ page, sortBy })
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -56,49 +61,50 @@ export default async function Home({ searchParams }: HomeProps) {
   const onboardingProgress = user ? await getOnboardingProgress() : null
 
   return (
-    <div className="flex min-h-screen w-full bg-background">
-      <div className="flex w-full justify-center">
-        <div className="relative flex w-full max-w-[1060px] bg-background">
+    <div className="min-h-screen bg-background">
+      {/* Welcome Banner */}
+      <WelcomeBanner />
 
-          {/* 主内容流 */}
-          <main className="relative z-10 flex-1 min-h-screen max-w-[620px] border-r border-border bg-background">
-            <div className="sticky top-[56px] z-10 border-b border-border bg-background/95 backdrop-blur px-5 py-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">For you</p>
-                  <h1 className="text-lg font-semibold">最新内容</h1>
-                </div>
-                <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
-                  <span className="inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-                  更新实时同步
-                </div>
+      <div className="mx-auto max-w-6xl px-4 py-4">
+        <div className="flex gap-4">
+          {/* Left Sidebar - Categories */}
+          <CategoriesSidebar />
+
+          {/* Main Content */}
+          <main className="flex-1 min-w-0 space-y-3">
+            <FeedTabs />
+
+            {/* Topic list header (Trae-style) */}
+            <div className="hidden sm:flex items-center px-4 py-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+              <span className="flex-1">话题</span>
+              <div className="flex items-center gap-4">
+                <span className="w-12 text-center">回复</span>
+                <span className="w-12 text-center">浏览</span>
+                <span className="w-12 text-center">活动</span>
               </div>
             </div>
 
-            {/* 新用户引导进度卡片 */}
-            <div className="px-5 pt-5">
-              {onboardingProgress && <ProgressCard progress={onboardingProgress} />}
-            </div>
+            {/* New user onboarding progress card */}
+            {onboardingProgress && (
+              <div className="px-4">
+                <ProgressCard progress={onboardingProgress} />
+              </div>
+            )}
 
-            {/* 探索内容检查点 */}
+            {/* Explore content checkpoint */}
             {user && <ProgressCheckpoint step="explored_content" />}
 
-            <ContentList contents={contents} isAuthenticated={isAuthenticated} />
+            <div className="space-y-1.5">
+              <ContentListCompact contents={contents} isAuthenticated={isAuthenticated} />
+            </div>
 
-            <div className="border-t border-border p-5">
+            <div className="border-t border-border p-4">
               <Pagination currentPage={page} totalPages={totalPages} basePath="/" />
             </div>
           </main>
 
-          {/* 右侧边栏 */}
-          <aside className="relative z-10 hidden xl:block w-[320px] flex-shrink-0">
-            <div className="sticky top-[56px] p-4 space-y-4">
-              <div className="space-y-4">
-                <TrendingTags />
-                <TrendingContents />
-              </div>
-            </div>
-          </aside>
+          {/* Right Sidebar - Community Info */}
+          <CommunitySidebar />
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { z } from 'zod'
 
 export interface ContentVersion {
   id: string
@@ -15,10 +16,25 @@ export interface ContentVersion {
   created_at: string
 }
 
+// Validation schemas
+const contentIdSchema = z.string().uuid('无效的内容ID')
+const versionIdSchema = z.string().uuid('无效的版本ID')
+
+const restoreVersionSchema = z.object({
+  contentId: z.string().uuid('无效的内容ID'),
+  versionId: z.string().uuid('无效的版本ID'),
+})
+
 /**
  * Get all versions for a content
  */
 export async function getContentVersions(contentId: string) {
+  // Validate input
+  const validation = contentIdSchema.safeParse(contentId)
+  if (!validation.success) {
+    return { error: validation.error.issues[0].message }
+  }
+
   const supabase = await createClient()
 
   const { data, error } = await supabase
@@ -29,7 +45,7 @@ export async function getContentVersions(contentId: string) {
         id,
         username,
         full_name,
-        avatar_url
+        avatar
       )
     `)
     .eq('content_id', contentId)
@@ -46,6 +62,12 @@ export async function getContentVersions(contentId: string) {
  * Get a specific version
  */
 export async function getContentVersion(versionId: string) {
+  // Validate input
+  const validation = versionIdSchema.safeParse(versionId)
+  if (!validation.success) {
+    return { error: validation.error.issues[0].message }
+  }
+
   const supabase = await createClient()
 
   const { data, error } = await supabase
@@ -56,7 +78,7 @@ export async function getContentVersion(versionId: string) {
         id,
         username,
         full_name,
-        avatar_url
+        avatar
       )
     `)
     .eq('id', versionId)
@@ -73,6 +95,12 @@ export async function getContentVersion(versionId: string) {
  * Restore a version (create new version from old one)
  */
 export async function restoreContentVersion(contentId: string, versionId: string) {
+  // Validate input
+  const validation = restoreVersionSchema.safeParse({ contentId, versionId })
+  if (!validation.success) {
+    return { error: validation.error.issues[0].message }
+  }
+
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()

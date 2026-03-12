@@ -41,19 +41,19 @@ export function EventCreateForm({ isAdmin = false }: EventCreateFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-4">
       {/* 管理员：活动类型选择 */}
       {isAdmin && (
         <div className="space-y-2">
-          <Label>活动类型</Label>
-          <div className="flex gap-3">
+          <Label className="text-xs font-medium">活动类型</Label>
+          <div className="flex gap-2">
             <button
               type="button"
               onClick={() => setEventType('offline')}
-              className={`flex-1 py-2 px-4 rounded-lg border text-sm font-medium transition-colors ${
+              className={`flex-1 py-2 px-3 rounded-lg border text-xs font-medium transition-all ${
                 eventType === 'offline'
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'border-border hover:bg-accent'
+                  ? 'gradient-primary text-white border-transparent shadow-primary'
+                  : 'border-border hover:bg-accent text-foreground'
               }`}
             >
               线下活动
@@ -61,10 +61,10 @@ export function EventCreateForm({ isAdmin = false }: EventCreateFormProps) {
             <button
               type="button"
               onClick={() => setEventType('official')}
-              className={`flex-1 py-2 px-4 rounded-lg border text-sm font-medium transition-colors ${
+              className={`flex-1 py-2 px-3 rounded-lg border text-xs font-medium transition-all ${
                 eventType === 'official'
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'border-border hover:bg-accent'
+                  ? 'gradient-primary text-white border-transparent shadow-primary'
+                  : 'border-border hover:bg-accent text-foreground'
               }`}
             >
               官方活动
@@ -74,7 +74,7 @@ export function EventCreateForm({ isAdmin = false }: EventCreateFormProps) {
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="title">活动标题 *</Label>
+        <Label htmlFor="title" className="text-xs font-medium">活动标题 *</Label>
         <Input
           id="title"
           name="title"
@@ -82,11 +82,12 @@ export function EventCreateForm({ isAdmin = false }: EventCreateFormProps) {
           required
           minLength={2}
           maxLength={100}
+          className="h-9 text-xs"
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="location">活动地点 *</Label>
+        <Label htmlFor="location" className="text-xs font-medium">活动地点 *</Label>
         <Input
           id="location"
           name="location"
@@ -94,49 +95,57 @@ export function EventCreateForm({ isAdmin = false }: EventCreateFormProps) {
           required
           minLength={2}
           maxLength={200}
+          className="h-9 text-xs"
         />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label htmlFor="start_time">开始时间 *</Label>
-          <Input id="start_time" name="start_time" type="datetime-local" required />
+          <Label htmlFor="start_time" className="text-xs font-medium">开始时间 *</Label>
+          <Input id="start_time" name="start_time" type="datetime-local" required className="h-9 text-xs" />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="end_time">结束时间（可选）</Label>
-          <Input id="end_time" name="end_time" type="datetime-local" />
+          <Label htmlFor="end_time" className="text-xs font-medium">结束时间（可选）</Label>
+          <Input id="end_time" name="end_time" type="datetime-local" className="h-9 text-xs" />
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="description">活动介绍</Label>
+        <Label htmlFor="description" className="text-xs font-medium">活动介绍</Label>
         <Textarea
           id="description"
           name="description"
           placeholder="介绍一下活动内容、注意事项等..."
           rows={4}
+          className="text-xs resize-none"
         />
       </div>
 
       <div className="space-y-2">
-        <Label>封面图</Label>
+        <Label className="text-xs font-medium">封面图</Label>
         <EventCoverUpload
           onUploadSuccess={(url) => setCoverUrl(url)}
           onRemove={() => setCoverUrl('')}
         />
       </div>
 
-      <div className="flex gap-3 pt-2">
+      <div className="flex gap-2 pt-2">
         <Button
           type="button"
           variant="outline"
-          className="flex-1"
+          size="sm"
+          className="flex-1 h-9 text-xs"
           onClick={() => router.back()}
           disabled={isSubmitting}
         >
           取消
         </Button>
-        <Button type="submit" className="flex-1" disabled={isSubmitting}>
+        <Button
+          type="submit"
+          size="sm"
+          className="flex-1 h-9 text-xs gradient-primary text-white hover:opacity-90 shadow-primary"
+          disabled={isSubmitting}
+        >
           {isSubmitting ? '创建中...' : '发起活动'}
         </Button>
       </div>

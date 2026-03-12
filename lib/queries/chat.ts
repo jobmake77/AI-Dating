@@ -1,10 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
+import { normalizeSingleRelation } from '@/lib/utils/normalize'
 
-// 获取用户的所有会话
+// 获取用户的所有会话（优化版 - 消除 N+1 查询）
 export async function getUserConversations(userId: string) {
   const supabase = await createClient()
 
-  const { data, error } = await supabase
+  // 第一步：获取用户参与的所有会话 ID 和 last_read_at
+  const { data: participantData, error: participantError } = await supabase
     .from('conversation_participants')
     .select(`
       conversation_id,
@@ -18,93 +20,117 @@ export async function getUserConversations(userId: string) {
     .eq('user_id', userId)
     .order('conversations(updated_at)', { ascending: false })
 
-  if (error) {
-    throw new Error(`Failed to fetch conversations: ${error.message}`)
+  if (participantError) {
+    throw new Error(`Failed to fetch conversations: ${participantError.message}`)
   }
 
-  // 获取每个会话的最后一条消息和对方用户信息
-  const conversationsWithDetails = await Promise.all(
-    (data || []).map(async (participant) => {
-      const conversationId = participant.conversation_id
+  if (!participantData || participantData.length === 0) {
+    return []
+  }
 
-      // 获取最后一条消息
-      const { data: lastMessage } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('conversation_id', conversationId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single()
+  const conversationIds = participantData.map(p => p.conversation_id)
 
-      // 获取对方用户信息
-      const { data: otherParticipants } = await supabase
-        .from('conversation_participants')
-        .select(`
-          user_id,
-          users (
-            id,
-            username,
-            full_name,
-            avatar
-          )
-        `)
-        .eq('conversation_id', conversationId)
-        .neq('user_id', userId)
-        .single()
+  // 第二步：批量获取所有会话的最后一条消息
+  const { data: lastMessages } = await supabase
+    .from('messages')
+    .select('*')
+    .in('conversation_id', conversationIds)
+    .order('created_at', { ascending: false })
 
-      // 提取用户对象（Supabase 返回的是嵌套对象）
-      const otherUserData = otherParticipants?.users as any
-      const otherUser = Array.isArray(otherUserData) ? otherUserData[0] : otherUserData
+  // 为每个会话找到最后一条消息
+  const lastMessageMap = new Map()
+  lastMessages?.forEach(msg => {
+    if (!lastMessageMap.has(msg.conversation_id)) {
+      lastMessageMap.set(msg.conversation_id, msg)
+    }
+  })
 
-      // 计算未读消息数
-      const { count: unreadCount } = await supabase
-        .from('messages')
-        .select('*', { count: 'exact', head: true })
-        .eq('conversation_id', conversationId)
-        .gt('created_at', participant.last_read_at || '1970-01-01')
-        .neq('sender_id', userId)
+  // 第三步：批量获取所有对方用户信息
+  const { data: allParticipants } = await supabase
+    .from('conversation_participants')
+    .select(`
+      conversation_id,
+      user_id,
+      users (
+        id,
+        username,
+        full_name,
+        avatar
+      )
+    `)
+    .in('conversation_id', conversationIds)
+    .neq('user_id', userId)
 
-      // 处理 Supabase 嵌套查询返回的数组
-      const conversations = participant.conversations as any
-      const normalizedConversations = Array.isArray(conversations) ? conversations[0] : conversations
+  // 创建会话 ID 到对方用户的映射
+  const otherUserMap = new Map()
+  allParticipants?.forEach(participant => {
+    const userData = normalizeSingleRelation(participant.users)
+    if (userData) {
+      otherUserMap.set(participant.conversation_id, userData)
+    }
+  })
 
-      return {
-        id: conversationId,
-        lastMessage,
-        otherUser,
-        unreadCount: unreadCount || 0,
-        lastReadAt: participant.last_read_at,
-        updatedAt: normalizedConversations?.updated_at,
-      }
-    })
+  // 第四步：批量计算未读消息数
+  const unreadCountsPromises = participantData.map(async (participant) => {
+    const { count } = await supabase
+      .from('messages')
+      .select('*', { count: 'exact', head: true })
+      .eq('conversation_id', participant.conversation_id)
+      .gt('created_at', participant.last_read_at || '1970-01-01')
+      .neq('sender_id', userId)
+
+    return {
+      conversationId: participant.conversation_id,
+      unreadCount: count || 0
+    }
+  })
+
+  const unreadCounts = await Promise.all(unreadCountsPromises)
+  const unreadCountMap = new Map(
+    unreadCounts.map(uc => [uc.conversationId, uc.unreadCount])
   )
+
+  // 第五步：组合所有数据
+  const conversationsWithDetails = participantData.map((participant) => {
+    const conversationId = participant.conversation_id
+    const conversations = normalizeSingleRelation(participant.conversations)
+
+    return {
+      id: conversationId,
+      lastMessage: lastMessageMap.get(conversationId) || null,
+      otherUser: otherUserMap.get(conversationId) || null,
+      unreadCount: unreadCountMap.get(conversationId) || 0,
+      lastReadAt: participant.last_read_at,
+      updatedAt: conversations?.updated_at,
+    }
+  })
 
   return conversationsWithDetails
 }
 
-// 获取或创建与指定用户的会话
+// 获取或创建与指定用户的会话（优化版）
 export async function getOrCreateConversation(userId: string, otherUserId: string) {
   const supabase = await createClient()
 
-  // 查找是否已存在会话
+  // 使用更高效的查询：通过 JOIN 查找现有会话
   const { data: existingConversations } = await supabase
     .from('conversation_participants')
     .select('conversation_id')
     .eq('user_id', userId)
 
   if (existingConversations && existingConversations.length > 0) {
-    // 检查这些会话中是否有包含 otherUserId 的
-    for (const conv of existingConversations) {
-      const { data: otherParticipant } = await supabase
-        .from('conversation_participants')
-        .select('user_id')
-        .eq('conversation_id', conv.conversation_id)
-        .eq('user_id', otherUserId)
-        .single()
+    const conversationIds = existingConversations.map(c => c.conversation_id)
 
-      if (otherParticipant) {
-        return conv.conversation_id
-      }
+    // 批量检查这些会话中是否有包含 otherUserId 的
+    const { data: matchingParticipants } = await supabase
+      .from('conversation_participants')
+      .select('conversation_id')
+      .in('conversation_id', conversationIds)
+      .eq('user_id', otherUserId)
+      .limit(1)
+
+    if (matchingParticipants && matchingParticipants.length > 0) {
+      return matchingParticipants[0].conversation_id
     }
   }
 
@@ -194,12 +220,10 @@ export async function getConversationOtherUser(conversationId: string, currentUs
     throw new Error(`Failed to fetch other user: ${error.message}`)
   }
 
-  // Supabase 返回的 users 可能是数组或对象，需要处理
-  const users = data?.users as any
-  return Array.isArray(users) ? users[0] : users
+  return normalizeSingleRelation(data?.users)
 }
 
-// 获取未读消息数量
+// 获取未读消息数量（优化版 - 使用单个查询）
 export async function getUnreadMessagesCount(userId: string) {
   const supabase = await createClient()
 
@@ -213,10 +237,8 @@ export async function getUnreadMessagesCount(userId: string) {
     return 0
   }
 
-  // 计算所有会话的未读消息总数
-  let totalUnread = 0
-
-  for (const conv of conversations) {
+  // 使用批量查询计算未读消息
+  const unreadCountsPromises = conversations.map(async (conv) => {
     const { count } = await supabase
       .from('messages')
       .select('*', { count: 'exact', head: true })
@@ -224,8 +246,9 @@ export async function getUnreadMessagesCount(userId: string) {
       .gt('created_at', conv.last_read_at || '1970-01-01')
       .neq('sender_id', userId)
 
-    totalUnread += count || 0
-  }
+    return count || 0
+  })
 
-  return totalUnread
+  const unreadCounts = await Promise.all(unreadCountsPromises)
+  return unreadCounts.reduce((total, count) => total + count, 0)
 }

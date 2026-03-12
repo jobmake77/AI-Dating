@@ -1,18 +1,18 @@
 import { notFound } from 'next/navigation'
 import { getContents } from '@/lib/queries/content'
 import { CATEGORIES, type CategorySlug } from '@/lib/constants/categories'
-import { CategoryNav } from '@/components/category/category-nav'
-import { ContentList } from '@/components/content/content-list'
-import { Pagination } from '@/components/content/pagination'
+import { CategoryHeader } from '@/components/category/category-header'
+import { FeedTabs } from '@/components/feed/feed-tabs'
+import { ContentListCompact } from '@/components/content/content-list-compact'
 
 interface CategoryPageProps {
   params: Promise<{ slug: string }>
-  searchParams: Promise<{ page?: string }>
+  searchParams: Promise<{ page?: string; tab?: string }>
 }
 
 export default async function CategoryPage({ params, searchParams }: CategoryPageProps) {
   const { slug } = await params
-  const { page: pageParam } = await searchParams
+  const { page: pageParam, tab = 'new' } = await searchParams
   const page = Number(pageParam) || 1
 
   // Validate category slug
@@ -21,7 +21,6 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   }
 
   const category = CATEGORIES[slug as CategorySlug]
-  const IconComponent = category.icon
 
   // Fetch contents for this category
   // Note: Category filtering is removed, showing all contents for now
@@ -31,34 +30,28 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   })
 
   return (
-    <div className="container py-8 space-y-8">
-      {/* Category Header */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <IconComponent className="w-10 h-10 text-primary" />
-          <div>
-            <h1 className="text-3xl font-bold">{category.name}</h1>
-            <p className="text-muted-foreground mt-1">{category.description}</p>
-          </div>
+    <div className="min-h-screen bg-background">
+      {/* Category Header Banner */}
+      <CategoryHeader category={category} />
+
+      {/* Main Content */}
+      <div className="mx-auto max-w-3xl px-4 py-6">
+        {/* Feed Tabs */}
+        <div className="mb-5">
+          <FeedTabs activeTab={tab} basePath={`/category/${slug}`} />
         </div>
 
-        {/* Category Navigation */}
-        <CategoryNav />
-      </div>
-
-      {/* Content List */}
-      {contents.length > 0 ? (
-        <>
-          <ContentList contents={contents} />
-          {totalPages > 1 && (
-            <Pagination currentPage={page} totalPages={totalPages} basePath={`/category/${slug}`} />
+        {/* Content List */}
+        <div className="space-y-1.5">
+          {contents.length > 0 ? (
+            <ContentListCompact contents={contents} />
+          ) : (
+            <div className="rounded-lg border border-border bg-card p-10 text-center shadow-card">
+              <p className="text-xs text-muted-foreground">该板块暂无内容</p>
+            </div>
           )}
-        </>
-      ) : (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">该板块暂无内容</p>
         </div>
-      )}
+      </div>
     </div>
   )
 }

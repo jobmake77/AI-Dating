@@ -70,15 +70,15 @@ CREATE POLICY "Allow insert performance_metrics" ON performance_metrics
   TO authenticated, anon
   WITH CHECK (true);
 
--- RLS 策略：只有管理员可以查看
+-- RLS 策略：只有管理员可以查看（使用 users 表而不是 profiles）
 CREATE POLICY "Admin can view web_vitals" ON web_vitals
   FOR SELECT
   TO authenticated
   USING (
     EXISTS (
-      SELECT 1 FROM profiles
-      WHERE profiles.id = auth.uid()
-      AND profiles.role = 'admin'
+      SELECT 1 FROM users
+      WHERE users.id = auth.uid()
+      AND users.role = 'admin'
     )
   );
 
@@ -87,9 +87,9 @@ CREATE POLICY "Admin can view performance_metrics" ON performance_metrics
   TO authenticated
   USING (
     EXISTS (
-      SELECT 1 FROM profiles
-      WHERE profiles.id = auth.uid()
-      AND profiles.role = 'admin'
+      SELECT 1 FROM users
+      WHERE users.id = auth.uid()
+      AND users.role = 'admin'
     )
   );
 

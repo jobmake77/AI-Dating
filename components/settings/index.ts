@@ -1,0 +1,6 @@
+export { SettingsLayout } from './settings-layout'
+export { ProfileSettings } from './profile-settings'
+export { NotificationSettings } from './notification-settings'
+export { SecuritySettings } from './security-settings'
+export { AppearanceSettings } from './appearance-settings'
+export { AgentSettings } from './agent-settings'

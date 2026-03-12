@@ -1,8 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
 import { formatDistanceToNow } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
 import { MessageCircle } from 'lucide-react'
@@ -29,83 +27,90 @@ interface ConversationListProps {
   activeConversationId?: string
 }
 
+// 辅助函数：检测是否是图片消息
+function isImageMessage(content: string): boolean {
+  return content.startsWith('[image:') && content.endsWith(']')
+}
+
+// 辅助函数：格式化时间
+function formatTime(dateString: string): string {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / 60000)
+
+  if (diffInMinutes < 1) return '刚刚'
+  if (diffInMinutes < 60) return `${diffInMinutes}m`
+
+  const diffInHours = Math.floor(diffInMinutes / 60)
+  if (diffInHours < 24) return `${diffInHours}h`
+
+  const diffInDays = Math.floor(diffInHours / 24)
+  if (diffInDays < 7) return `${diffInDays}d`
+
+  return formatDistanceToNow(date, { addSuffix: false, locale: zhCN })
+}
+
 export function ConversationList({ conversations, activeConversationId }: ConversationListProps) {
   if (conversations.length === 0) {
     return (
-      <div className="text-center py-16 border border-border rounded-lg">
-        <MessageCircle className="h-16 w-16 mx-auto mb-4 text-muted-foreground/50" />
-        <p className="text-muted-foreground text-lg mb-2">还没有消息</p>
-        <p className="text-muted-foreground text-sm">
-          访问其他用户的主页，点击"发消息"开始对话
+      <div className="text-center py-12 px-4">
+        <MessageCircle className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
+        <p className="text-muted-foreground text-xs mb-1">还没有消息</p>
+        <p className="text-muted-foreground text-[10px]">
+          访问其他用户的主页开始对话
         </p>
       </div>
     )
   }
 
   return (
-    <div className="divide-y divide-border">
+    <div>
       {conversations.map((conversation) => {
         const isActive = conversation.id === activeConversationId
+        const displayContent = conversation.lastMessage?.content
+          ? (isImageMessage(conversation.lastMessage.content) ? '[图片]' : conversation.lastMessage.content)
+          : '开始对话...'
 
         return (
           <Link
             key={conversation.id}
             href={`/messages/${conversation.id}`}
-            className={`block transition-colors ${
-              isActive
-                ? 'bg-muted'
-                : 'hover:bg-muted/50 active:bg-muted'
-            }`}
           >
-          <div className="px-4 py-4 flex items-center gap-3">
-            {/* 头像 */}
-            <div className="relative shrink-0">
-              <Avatar className="h-14 w-14 ring-2 ring-background">
-                <AvatarImage src={conversation.otherUser?.avatar || undefined} />
-                <AvatarFallback className="text-base font-semibold">
+            <button
+              className={`w-full text-left px-3 py-3 flex items-center gap-2.5 transition-all border-l-2 ${
+                isActive ? 'bg-primary/5 border-primary' : 'border-transparent hover:bg-secondary/50'
+              }`}
+            >
+              <div className="relative">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full gradient-primary text-xs font-bold text-white">
                   {(conversation.otherUser?.full_name || conversation.otherUser?.username || 'U')
                     .charAt(0)
                     .toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              {conversation.unreadCount > 0 && (
-                <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary flex items-center justify-center">
-                  <span className="text-[10px] font-bold text-primary-foreground">
-                    {conversation.unreadCount > 9 ? '9+' : conversation.unreadCount}
-                  </span>
                 </div>
-              )}
-            </div>
-
-            {/* 内容 */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-baseline justify-between mb-1 gap-2">
-                <span className={`font-semibold text-[15px] truncate ${
-                  conversation.unreadCount > 0 ? 'text-foreground' : 'text-foreground/90'
-                }`}>
-                  {conversation.otherUser?.full_name || conversation.otherUser?.username}
-                </span>
-                {conversation.lastMessage && (
-                  <span className="text-[11px] text-muted-foreground shrink-0">
-                    {formatDistanceToNow(new Date(conversation.lastMessage.created_at), {
-                      addSuffix: false,
-                      locale: zhCN,
-                    })}
-                  </span>
-                )}
               </div>
-
-              <p className={`text-[14px] truncate ${
-                conversation.unreadCount > 0
-                  ? 'text-foreground font-medium'
-                  : 'text-muted-foreground'
-              }`}>
-                {conversation.lastMessage?.content || '开始对话...'}
-              </p>
-            </div>
-          </div>
-        </Link>
-      )
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-foreground truncate">
+                    {conversation.otherUser?.full_name || conversation.otherUser?.username}
+                  </span>
+                  {conversation.lastMessage && (
+                    <span className="text-[10px] text-muted-foreground ml-1 shrink-0">
+                      {formatTime(conversation.lastMessage.created_at)}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+                  {displayContent}
+                </p>
+              </div>
+              {conversation.unreadCount > 0 && (
+                <span className="flex h-5 w-5 items-center justify-center rounded-full gradient-primary text-[9px] font-bold text-white shadow-primary">
+                  {conversation.unreadCount > 9 ? '9+' : conversation.unreadCount}
+                </span>
+              )}
+            </button>
+          </Link>
+        )
       })}
     </div>
   )

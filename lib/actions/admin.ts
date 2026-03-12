@@ -4,6 +4,16 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { trackEvent } from '@/lib/analytics/events'
+import { z } from 'zod'
+
+// Validation schemas
+const userIdSchema = z.string().uuid('无效的用户ID')
+
+const updateMembershipSchema = z.object({
+  userId: z.string().uuid('无效的用户ID'),
+  membershipTier: z.enum(['free', 'premium'], { message: '会员等级必须是 free 或 premium' }),
+  expireAt: z.string().datetime('无效的过期时间').optional(),
+})
 
 // 检查是否为管理员
 export async function checkIsAdmin(): Promise<boolean> {
@@ -48,6 +58,12 @@ export async function updateUserMembership(
   membershipTier: 'free' | 'premium',
   expireAt?: string
 ) {
+  // Validate input
+  const validation = updateMembershipSchema.safeParse({ userId, membershipTier, expireAt })
+  if (!validation.success) {
+    throw new Error(validation.error.issues[0].message)
+  }
+
   const supabase = await createClient()
 
   const isAdmin = await checkIsAdmin()

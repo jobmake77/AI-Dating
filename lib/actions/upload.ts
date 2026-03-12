@@ -1,10 +1,20 @@
 'use server'
 import { logger } from '@/lib/utils/logger'
+import { z } from 'zod'
 
 import { createClient } from '@/lib/supabase/server'
 import { uploadToR2, validateImageFile, validateImageBuffer } from '@/lib/cloudflare/r2'
 
+// Validation schema
+const folderSchema = z.string().regex(/^[a-z0-9-]+$/, '文件夹名称只能包含小写字母、数字和连字符').max(50, '文件夹名称过长')
+
 export async function uploadImage(formData: FormData, folder: string = 'content-images') {
+  // Validate folder name
+  const folderValidation = folderSchema.safeParse(folder)
+  if (!folderValidation.success) {
+    return { error: folderValidation.error.issues[0].message }
+  }
+
   const supabase = await createClient()
 
   // Check authentication

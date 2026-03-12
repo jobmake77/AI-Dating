@@ -1,5 +1,6 @@
 'use server'
 import { logger } from '@/lib/utils/logger'
+import { z } from 'zod'
 
 import { createClient } from '@/lib/supabase/server'
 
@@ -9,10 +10,18 @@ export interface SearchResult {
   total: number
 }
 
-export async function searchContents(query: string, page: number = 1, limit: number = 10) {
-  const supabase = await createClient()
+// Validation schemas
+const searchQuerySchema = z.string().min(1, '搜索关键词不能为空').max(100, '搜索关键词过长')
 
-  if (!query || query.trim().length === 0) {
+const paginationSchema = z.object({
+  page: z.number().int().min(1, '页码必须大于0'),
+  limit: z.number().int().min(1, '每页数量必须大于0').max(100, '每页数量不能超过100'),
+})
+
+export async function searchContents(query: string, page: number = 1, limit: number = 10) {
+  // Validate input
+  const queryValidation = searchQuerySchema.safeParse(query)
+  if (!queryValidation.success) {
     return {
       contents: [],
       total: 0,
@@ -21,6 +30,13 @@ export async function searchContents(query: string, page: number = 1, limit: num
       totalPages: 0,
     }
   }
+
+  const paginationValidation = paginationSchema.safeParse({ page, limit })
+  if (!paginationValidation.success) {
+    throw new Error(paginationValidation.error.issues[0].message)
+  }
+
+  const supabase = await createClient()
 
   const searchQuery = query.trim().toLowerCase()
 
@@ -56,6 +72,23 @@ export async function searchContents(query: string, page: number = 1, limit: num
 }
 
 export async function searchUsers(query: string, page: number = 1, limit: number = 10) {
+  // Validate input
+  const queryValidation = searchQuerySchema.safeParse(query)
+  if (!queryValidation.success) {
+    return {
+      users: [],
+      total: 0,
+      page,
+      limit,
+      totalPages: 0,
+    }
+  }
+
+  const paginationValidation = paginationSchema.safeParse({ page, limit })
+  if (!paginationValidation.success) {
+    throw new Error(paginationValidation.error.issues[0].message)
+  }
+
   const supabase = await createClient()
 
   if (!query || query.trim().length === 0) {

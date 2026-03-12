@@ -4,12 +4,29 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { Tag } from '@/lib/types/tag'
 import { logger } from '@/lib/utils/logger'
+import { z } from 'zod'
+
+// Validation schemas
+const tagNameSchema = z.string().min(1, '标签名不能为空').max(50, '标签名过长')
+
+const contentIdSchema = z.string().uuid('无效的内容ID')
+
+const addTagsSchema = z.object({
+  contentId: contentIdSchema,
+  tagNames: z.array(tagNameSchema).min(1, '至少需要一个标签').max(10, '标签数量不能超过10个'),
+})
 
 /**
  * 创建或获取标签
  * 如果标签已存在，返回现有标签；否则创建新标签
  */
 export async function createOrGetTag(name: string): Promise<{ tag: Tag | null; error: string | null }> {
+  // Validate input
+  const validation = tagNameSchema.safeParse(name)
+  if (!validation.success) {
+    return { tag: null, error: validation.error.issues[0].message }
+  }
+
   try {
     const supabase = await createClient()
 
@@ -53,6 +70,12 @@ export async function createOrGetTag(name: string): Promise<{ tag: Tag | null; e
  * 为内容添加标签
  */
 export async function addTagsToContent(contentId: string, tagNames: string[]): Promise<{ error: string | null }> {
+  // Validate input
+  const validation = addTagsSchema.safeParse({ contentId, tagNames })
+  if (!validation.success) {
+    return { error: validation.error.issues[0].message }
+  }
+
   try {
     const supabase = await createClient()
 

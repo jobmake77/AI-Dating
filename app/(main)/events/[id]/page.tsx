@@ -95,7 +95,7 @@ export default async function EventDetailPage({ params }: Props) {
   ])
 
   return (
-    <div className="container max-w-3xl py-8">
+    <div className="min-h-screen bg-background">
       {/* Structured Data */}
       <script
         type="application/ld+json"
@@ -106,73 +106,125 @@ export default async function EventDetailPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
 
-      {/* Breadcrumb Navigation */}
-      <Breadcrumb className="mb-6">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/">首页</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/events">活动</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>{event.title}</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
+      {/* Hero Banner with Cover Image */}
+      <div className="relative w-full h-64 bg-gradient-primary overflow-hidden">
+        {event.cover_url ? (
+          <img
+            src={event.cover_url}
+            alt={event.title}
+            className="w-full h-full object-cover opacity-90"
+          />
+        ) : (
+          <div className="absolute inset-0 gradient-sunset opacity-80" />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
 
-      {event.cover_url && (
-        <div className="relative w-full aspect-video rounded-xl overflow-hidden mb-6 bg-muted">
-          <img src={event.cover_url} alt={event.title} className="w-full h-full object-cover" />
-        </div>
-      )}
-
-      <div className="space-y-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1">
+        {/* Event Title Overlay */}
+        <div className="absolute bottom-0 left-0 right-0 p-6">
+          <div className="max-w-4xl mx-auto">
             <div className="flex items-center gap-2 mb-2">
               {event.type === 'official' && (
-                <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">官方活动</span>
+                <span className="rounded-full gradient-primary px-2.5 py-0.5 text-[10px] font-medium text-white shadow-primary">
+                  官方
+                </span>
               )}
               {event.status === 'cancelled' && (
-                <span className="text-xs bg-destructive/10 text-destructive px-2 py-0.5 rounded-full">已取消</span>
+                <span className="rounded-full bg-destructive px-2.5 py-0.5 text-[10px] font-medium text-white">
+                  已取消
+                </span>
               )}
             </div>
-            <h1 className="text-2xl font-bold">{event.title}</h1>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 py-4 border-y">
-          <div className="flex items-center gap-2 text-sm">
-            <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
-            <span>{event.location}</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm">
-            <Users className="h-4 w-4 text-muted-foreground shrink-0" />
-            <span>{event.participants_count} 人参与</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm">
-            <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
-            <span>{formatDateTime(event.start_time)}</span>
-          </div>
-          {event.end_time && (
-            <div className="flex items-center gap-2 text-sm">
-              <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
-              <span>结束：{formatDateTime(event.end_time)}</span>
+            <h1 className="text-2xl font-bold text-white mb-2">{event.title}</h1>
+            <div className="flex items-center gap-3 text-xs text-white/90">
+              <span className="flex items-center gap-1">
+                <Users className="h-3.5 w-3.5" />
+                {event.participants_count} 人参与
+              </span>
+              <span className="flex items-center gap-1">
+                <MapPin className="h-3.5 w-3.5" />
+                {event.location}
+              </span>
             </div>
-          )}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-4xl mx-auto px-4 py-6">
+        {/* Breadcrumb */}
+        <Breadcrumb className="mb-5">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/" className="text-xs">首页</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/events" className="text-xs">活动</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage className="text-xs">{event.title}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+
+        {/* Event Details Card */}
+        <div className="rounded-lg border border-border bg-card overflow-hidden shadow-card mb-4">
+          <div className="h-1 gradient-primary" />
+          <div className="p-5">
+            <h2 className="text-sm font-semibold mb-3">活动详情</h2>
+
+            {/* Time & Location Info */}
+            <div className="space-y-2 mb-4">
+              <div className="flex items-center gap-2 text-xs">
+                <div className="flex items-center gap-1.5 bg-primary/5 rounded-full px-2.5 py-1.5">
+                  <Calendar className="h-3 w-3 text-primary" />
+                  <span>{formatDateTime(event.start_time)}</span>
+                </div>
+              </div>
+              {event.end_time && (
+                <div className="flex items-center gap-2 text-xs">
+                  <div className="flex items-center gap-1.5 bg-info/5 rounded-full px-2.5 py-1.5">
+                    <Clock className="h-3 w-3 text-info" />
+                    <span>结束：{formatDateTime(event.end_time)}</span>
+                  </div>
+                </div>
+              )}
+              <div className="flex items-center gap-2 text-xs">
+                <div className="flex items-center gap-1.5 bg-warning/5 rounded-full px-2.5 py-1.5">
+                  <MapPin className="h-3 w-3 text-warning" />
+                  <span>{event.location}</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 text-xs">
+                <div className="flex items-center gap-1.5 bg-success/5 rounded-full px-2.5 py-1.5">
+                  <Users className="h-3 w-3 text-success" />
+                  <span className="font-mono">{event.participants_count} 人参与</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Description */}
+            {event.description && (
+              <div className="mb-4">
+                <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                  {event.description}
+                </p>
+              </div>
+            )}
+
+            {/* Organizer */}
+            {event.creator && (
+              <div className="text-xs text-muted-foreground pt-3 border-t">
+                发起人：{(event.creator as any).full_name || (event.creator as any).username || '匿名'}
+              </div>
+            )}
+          </div>
         </div>
 
-        {event.description && (
-          <div className="prose prose-sm max-w-none">
-            <p className="text-sm leading-relaxed whitespace-pre-wrap">{event.description}</p>
-          </div>
-        )}
-
+        {/* Action Buttons */}
         {event.status === 'active' && (
-          <div className="flex gap-3 pt-2">
+          <div className="flex gap-3">
             <EventJoinButton
               eventId={event.id}
               initialJoined={!!participation}
@@ -180,12 +232,6 @@ export default async function EventDetailPage({ params }: Props) {
               isAuthenticated={!!user}
             />
             <EventShareButton title={event.title} url={shareUrl} />
-          </div>
-        )}
-
-        {event.creator && (
-          <div className="text-xs text-muted-foreground pt-2 border-t">
-            发起人：{(event.creator as any).full_name || (event.creator as any).username || '匿名'}
           </div>
         )}
       </div>

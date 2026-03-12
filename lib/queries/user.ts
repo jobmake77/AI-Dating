@@ -9,6 +9,7 @@ export async function getUserStats(userId: string) {
     .select('*', { count: 'exact', head: true })
     .eq('author_id', userId)
     .eq('status', 'approved')
+    .is('deleted_at', null)
 
   // Get total likes on user's contents
   const { data: likesData } = await supabase
@@ -16,6 +17,7 @@ export async function getUserStats(userId: string) {
     .select('likes_count')
     .eq('author_id', userId)
     .eq('status', 'approved')
+    .is('deleted_at', null)
 
   const totalLikes = likesData?.reduce((sum, content) => sum + (content.likes_count || 0), 0) || 0
 

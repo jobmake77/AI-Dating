@@ -22,6 +22,7 @@ export async function batchGetUsers(userIds: string[]) {
     .from('users')
     .select('id, username, full_name, avatar, bio')
     .in('id', uniqueIds)
+    .is('deleted_at', null)  // Exclude soft-deleted users
 
   if (error) {
     console.error('批量获取用户失败:', error)
@@ -56,6 +57,7 @@ export async function batchGetContents(contentIds: string[]) {
     `)
     .in('id', uniqueIds)
     .eq('status', 'approved')
+    .is('deleted_at', null)  // Exclude soft-deleted contents
 
   if (error) {
     console.error('批量获取内容失败:', error)
@@ -194,6 +196,7 @@ export async function getOptimizedContentsList(options: {
         author_id
       `, { count: 'exact' })
       .eq('status', status)
+      .is('deleted_at', null)  // Exclude soft-deleted contents
       .order(orderBy, { ascending: false })
       .range(offset, offset + limit - 1)
 
@@ -237,6 +240,7 @@ export async function getOptimizedUserContents(
       .select('*', { count: 'exact' })
       .eq('author_id', userId)
       .eq('status', status)
+      .is('deleted_at', null)  // Exclude soft-deleted contents
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
 

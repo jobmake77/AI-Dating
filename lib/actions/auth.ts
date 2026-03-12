@@ -4,6 +4,18 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { trackEvent } from '@/lib/analytics/events'
+import { z } from 'zod'
+
+// Validation schemas
+const signInSchema = z.object({
+  email: z.string().email('请输入有效的邮箱地址'),
+  password: z.string().min(1, '密码不能为空'),
+})
+
+const signUpSchema = z.object({
+  email: z.string().email('请输入有效的邮箱地址'),
+  password: z.string().min(6, '密码至少需要 6 个字符').max(100, '密码过长'),
+})
 
 export async function signInWithEmail(formData: FormData) {
   const supabase = await createClient()
@@ -11,8 +23,10 @@ export async function signInWithEmail(formData: FormData) {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
 
-  if (!email || !password) {
-    return { error: '请输入邮箱和密码' }
+  // Validate input
+  const validation = signInSchema.safeParse({ email, password })
+  if (!validation.success) {
+    return { error: validation.error.issues[0].message }
   }
 
   const { data, error } = await supabase.auth.signInWithPassword({
@@ -63,12 +77,10 @@ export async function signUpWithEmail(formData: FormData) {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
 
-  if (!email || !password) {
-    return { error: '请输入邮箱和密码' }
-  }
-
-  if (password.length < 6) {
-    return { error: '密码至少需要 6 个字符' }
+  // Validate input
+  const validation = signUpSchema.safeParse({ email, password })
+  if (!validation.success) {
+    return { error: validation.error.issues[0].message }
   }
 
   const { data, error } = await supabase.auth.signUp({

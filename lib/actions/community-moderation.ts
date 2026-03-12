@@ -3,11 +3,25 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { logger } from '@/lib/utils/logger'
+import { z } from 'zod'
+
+// Validation schemas
+const kickMemberSchema = z.object({
+  communityId: z.string().uuid('无效的社区ID'),
+  memberId: z.string().uuid('无效的成员ID'),
+  reason: z.string().max(500, '原因过长').optional(),
+})
 
 /**
  * 踢出社区成员
  */
 export async function kickMember(communityId: string, memberId: string, reason?: string) {
+  // Validate input
+  const validation = kickMemberSchema.safeParse({ communityId, memberId, reason })
+  if (!validation.success) {
+    return { success: false, error: validation.error.issues[0].message }
+  }
+
   try {
     const supabase = await createClient()
 

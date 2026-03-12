@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
+import { z } from 'zod'
 
 export interface UserDataExport {
   user: any
@@ -16,10 +17,19 @@ export interface UserDataExport {
   notifications: any[]
 }
 
+// Validation schema
+const userIdSchema = z.string().uuid('无效的用户ID')
+
 /**
  * Export all user data in JSON format (GDPR compliance)
  */
 export async function exportUserData(userId: string): Promise<{ success: boolean; data?: UserDataExport; error?: string }> {
+  // Validate input
+  const validation = userIdSchema.safeParse(userId)
+  if (!validation.success) {
+    return { success: false, error: validation.error.issues[0].message }
+  }
+
   try {
     const supabase = await createClient()
 

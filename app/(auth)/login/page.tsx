@@ -2,15 +2,16 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Github, Mail, Sparkles, Code, Rocket, Zap } from 'lucide-react'
+import { Github, Mail, Sparkles, Zap } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { signInWithEmail, signUpWithEmail, signInWithGitHub, sendPasswordReset } from '@/lib/actions/auth'
+import { signInWithEmail, signInWithGitHub } from '@/lib/actions/auth'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -18,7 +19,6 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [warning, setWarning] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-  const [showForgotPassword, setShowForgotPassword] = useState(false)
 
   useEffect(() => {
     let isMounted = true
@@ -73,35 +73,6 @@ export default function LoginPage() {
     // Success will redirect automatically
   }
 
-  const handleEmailSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
-    setWarning(null)
-    setSuccess(null)
-
-    const formData = new FormData(e.currentTarget)
-    const result = await signUpWithEmail(formData)
-
-    if (result?.error) {
-      setError(result.error)
-      if (result?.warning) {
-        setWarning(result.warning)
-      }
-      setLoading(false)
-    } else if (result?.success) {
-      setSuccess(result.message || '注册成功！')
-      if (result?.redirect) {
-        // 如果不需要邮箱验证，直接跳转
-        setTimeout(() => {
-          router.push('/')
-        }, 1000)
-      } else {
-        setLoading(false)
-      }
-    }
-  }
-
   const handleGitHubLogin = async () => {
     setLoading(true)
     setError(null)
@@ -113,17 +84,6 @@ export default function LoginPage() {
       setLoading(false)
     }
     // Success will redirect automatically
-  }
-
-  const handleForgotPassword = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
-    setSuccess(null)
-    const result = await sendPasswordReset(new FormData(e.currentTarget))
-    setLoading(false)
-    if (result?.error) setError(result.error)
-    else setSuccess(result.message || '重置链接已发送')
   }
 
   // 直接显示登录表单，不显示加载页面
@@ -170,105 +130,17 @@ export default function LoginPage() {
               </Alert>
             )}
 
-            <Tabs defaultValue="signin" className="w-full" onValueChange={() => { setError(null); setSuccess(null); setShowForgotPassword(false) }}>
-              <TabsList className="grid w-full grid-cols-2">
+            <Tabs defaultValue="signin" className="w-full" onValueChange={() => { setError(null); setSuccess(null) }}>
+              <TabsList className="grid w-full grid-cols-1">
                 <TabsTrigger value="signin">登录</TabsTrigger>
-                <TabsTrigger value="signup">注册</TabsTrigger>
               </TabsList>
 
               <TabsContent value="signin" className="space-y-4">
-                {!showForgotPassword ? (
-                  <form onSubmit={handleEmailSignIn} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="signin-email">邮箱</Label>
-                      <Input
-                        id="signin-email"
-                        name="email"
-                        type="email"
-                        placeholder="your@email.com"
-                        required
-                        disabled={loading}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="signin-password">密码</Label>
-                        <button
-                          type="button"
-                          onClick={() => { setShowForgotPassword(true); setError(null); setSuccess(null) }}
-                          className="text-xs text-muted-foreground hover:text-primary transition-colors"
-                        >
-                          忘记密码？
-                        </button>
-                      </div>
-                      <Input
-                        id="signin-password"
-                        name="password"
-                        type="password"
-                        placeholder="••••••••"
-                        required
-                        disabled={loading}
-                      />
-                    </div>
-
-                    <Button type="submit" className="w-full" disabled={loading}>
-                      <Mail className="mr-2 h-4 w-4" />
-                      {loading ? '登录中...' : '邮箱登录'}
-                    </Button>
-                  </form>
-                ) : (
-                  <form onSubmit={handleForgotPassword} className="space-y-4">
-                    <p className="text-sm text-muted-foreground">
-                      输入注册邮箱，我们将发送密码重置链接。GitHub 登录的用户也可以通过此方式设置密码。
-                    </p>
-                    <div className="space-y-2">
-                      <Label htmlFor="reset-email">邮箱</Label>
-                      <Input
-                        id="reset-email"
-                        name="email"
-                        type="email"
-                        placeholder="your@email.com"
-                        required
-                        disabled={loading}
-                      />
-                    </div>
-                    <div className="flex gap-2">
-                      <Button type="button" variant="outline" className="flex-1" onClick={() => setShowForgotPassword(false)}>
-                        返回
-                      </Button>
-                      <Button type="submit" className="flex-1" disabled={loading}>
-                        {loading ? '发送中...' : '发送重置链接'}
-                      </Button>
-                    </div>
-                  </form>
-                )}
-
-                {!showForgotPassword && (
-                  <>
-                    <div className="relative">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t" />
-                      </div>
-                      <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-background px-2 text-muted-foreground">或</span>
-                      </div>
-                    </div>
-
-                    <Button onClick={handleGitHubLogin} disabled={loading} variant="outline" className="w-full group">
-                      <Github className="mr-2 h-4 w-4 group-hover:rotate-12 transition-transform" />
-                      {loading ? '跳转中...' : '使用 GitHub 登录'}
-                    </Button>
-                  </>
-                )}
-              </TabsContent>
-
-              <TabsContent value="signup" className="space-y-4">
-                <form onSubmit={handleEmailSignUp} className="space-y-4">
+                <form onSubmit={handleEmailSignIn} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signup-email">邮箱</Label>
+                    <Label htmlFor="signin-email">邮箱</Label>
                     <Input
-                      id="signup-email"
+                      id="signin-email"
                       name="email"
                       type="email"
                       placeholder="your@email.com"
@@ -278,25 +150,28 @@ export default function LoginPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="signup-password">密码</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="signin-password">密码</Label>
+                      <Link
+                        href="/forgot-password"
+                        className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        忘记密码？
+                      </Link>
+                    </div>
                     <Input
-                      id="signup-password"
+                      id="signin-password"
                       name="password"
                       type="password"
-                      placeholder="至少 6 个字符"
+                      placeholder="••••••••"
                       required
-                      minLength={6}
                       disabled={loading}
                     />
                   </div>
 
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={loading}
-                  >
+                  <Button type="submit" className="w-full" disabled={loading}>
                     <Mail className="mr-2 h-4 w-4" />
-                    {loading ? '注册中...' : '邮箱注册'}
+                    {loading ? '登录中...' : '邮箱登录'}
                   </Button>
                 </form>
 
@@ -305,26 +180,22 @@ export default function LoginPage() {
                     <span className="w-full border-t" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">
-                      或
-                    </span>
+                    <span className="bg-background px-2 text-muted-foreground">或</span>
                   </div>
                 </div>
 
-                <Button
-                  onClick={handleGitHubLogin}
-                  disabled={loading}
-                  variant="outline"
-                  className="w-full group"
-                >
+                <Button onClick={handleGitHubLogin} disabled={loading} variant="outline" className="w-full group">
                   <Github className="mr-2 h-4 w-4 group-hover:rotate-12 transition-transform" />
-                  {loading ? '跳转中...' : '使用 GitHub 注册'}
+                  {loading ? '跳转中...' : '使用 GitHub 登录'}
                 </Button>
               </TabsContent>
             </Tabs>
 
             <p className="text-center text-sm text-muted-foreground">
-              登录即表示你同意我们的服务条款和隐私政策
+              还没有账号？{' '}
+              <Link href="/register" className="text-primary font-medium hover:underline">
+                立即注册
+              </Link>
             </p>
           </CardContent>
         </Card>

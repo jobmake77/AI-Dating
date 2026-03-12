@@ -1,54 +1,83 @@
 'use client'
 
+import { usePathname } from 'next/navigation'
+import { useEffect } from 'react'
 import Link from 'next/link'
+import { Code2, Home, ArrowLeft, SearchX } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { FileQuestion, Home, ArrowLeft } from 'lucide-react'
 
 /**
  * 404 页面
  * 当用户访问不存在的页面时显示
  */
 export default function NotFound() {
+  const pathname = usePathname()
+
+  useEffect(() => {
+    console.error('404 Error: User attempted to access non-existent route:', pathname)
+  }, [pathname])
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <Card className="max-w-2xl w-full">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileQuestion className="w-5 h-5" />
-            页面不存在
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-muted-foreground">
-            抱歉，您访问的页面不存在或已被删除。
-          </p>
-          <p className="text-sm text-muted-foreground">
-            可能的原因：
-          </p>
-          <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
-            <li>页面链接已过期</li>
-            <li>页面地址输入错误</li>
-            <li>内容已被删除或移动</li>
-          </ul>
-          <div className="flex gap-2">
-            <Button asChild className="gap-2">
-              <Link href="/">
-                <Home className="w-4 h-4" />
-                返回首页
-              </Link>
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => window.history.back()}
-              className="gap-2"
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center max-w-md"
+      >
+        <div className="flex items-center justify-center mb-6">
+          <div className="relative">
+            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-destructive/10">
+              <SearchX className="h-10 w-10 text-destructive" />
+            </div>
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.3, type: 'spring' }}
+              className="absolute -top-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-warning text-warning-foreground text-xs font-bold"
             >
-              <ArrowLeft className="w-4 h-4" />
-              返回上一页
-            </Button>
+              !
+            </motion.div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        <h1
+          className="font-mono text-7xl font-bold mb-2"
+          style={{
+            background: 'linear-gradient(135deg, hsl(221, 83%, 53%), hsl(262, 83%, 58%))',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+          }}
+        >
+          404
+        </h1>
+        <p className="text-base font-medium text-foreground mb-1">页面未找到</p>
+        <p className="text-sm text-muted-foreground mb-2">
+          路径 <code className="font-mono text-xs bg-secondary px-1.5 py-0.5 rounded text-foreground">{pathname}</code> 不存在
+        </p>
+        <p className="text-xs text-muted-foreground mb-8">该页面可能已被移除、重命名或暂时不可用</p>
+
+        <div className="flex items-center justify-center gap-3">
+          <Link href="/">
+            <Button
+              className="h-10 gap-2 text-sm font-medium text-primary-foreground"
+              style={{ background: 'linear-gradient(135deg, hsl(221, 83%, 53%), hsl(262, 83%, 58%))' }}
+            >
+              <Home className="h-4 w-4" />
+              返回首页
+            </Button>
+          </Link>
+          <Button variant="outline" onClick={() => window.history.back()} className="h-10 gap-2 text-sm">
+            <ArrowLeft className="h-4 w-4" />
+            返回上一页
+          </Button>
+        </div>
+
+        <div className="mt-10 flex items-center justify-center gap-2 text-muted-foreground">
+          <Code2 className="h-4 w-4" />
+          <span className="font-mono text-xs">AI-Dating</span>
+        </div>
+      </motion.div>
     </div>
   )
 }

@@ -3,6 +3,15 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireAdmin } from '@/lib/middleware/admin'
+import { z } from 'zod'
+
+// Validation schemas
+const contentIdSchema = z.string().uuid('无效的内容ID')
+
+const rejectContentSchema = z.object({
+  contentId: z.string().uuid('无效的内容ID'),
+  reason: z.string().min(1, '拒绝原因不能为空').max(500, '拒绝原因过长'),
+})
 
 /**
  * 获取待审核内容列表
@@ -63,6 +72,12 @@ export async function getModerationStats() {
 }
 
 export async function approveContent(contentId: string) {
+  // Validate input
+  const validation = contentIdSchema.safeParse(contentId)
+  if (!validation.success) {
+    throw new Error(validation.error.issues[0].message)
+  }
+
   await requireAdmin()
 
   const supabase = await createClient()
@@ -98,6 +113,12 @@ export async function approveContent(contentId: string) {
 }
 
 export async function rejectContent(contentId: string, reason: string) {
+  // Validate input
+  const validation = rejectContentSchema.safeParse({ contentId, reason })
+  if (!validation.success) {
+    throw new Error(validation.error.issues[0].message)
+  }
+
   await requireAdmin()
 
   const supabase = await createClient()

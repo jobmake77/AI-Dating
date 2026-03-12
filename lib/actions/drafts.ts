@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { z } from 'zod'
 
 export interface DraftData {
   title?: string
@@ -12,10 +13,26 @@ export interface DraftData {
   tags?: string[]
 }
 
+// Validation schema
+const draftDataSchema = z.object({
+  title: z.string().max(200, '标题过长').optional(),
+  content: z.string().min(1, '内容不能为空').max(100000, '内容过长'),
+  excerpt: z.string().max(500, '摘要过长').optional(),
+  cover_image: z.string().url('无效的封面图片URL').optional(),
+  price_type: z.enum(['free', 'member']).optional(),
+  tags: z.array(z.string().max(50, '标签过长')).max(10, '标签数量不能超过10个').optional(),
+})
+
 /**
  * Save or update draft
  */
 export async function saveDraft(data: DraftData) {
+  // Validate input
+  const validation = draftDataSchema.safeParse(data)
+  if (!validation.success) {
+    return { error: validation.error.issues[0].message }
+  }
+
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()

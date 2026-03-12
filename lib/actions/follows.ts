@@ -1,12 +1,27 @@
 'use server'
 import { logger } from '@/lib/utils/logger'
+import { z } from 'zod'
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createNotification } from './notifications'
 
+// Validation schemas
+const userIdSchema = z.string().uuid('无效的用户ID')
+
+const checkFollowingSchema = z.object({
+  userId: z.string().uuid('无效的用户ID'),
+  currentUserId: z.string().uuid('无效的当前用户ID'),
+})
+
 export async function toggleFollow(userId: string) {
+  // Validate input
+  const validation = userIdSchema.safeParse(userId)
+  if (!validation.success) {
+    throw new Error(validation.error.issues[0].message)
+  }
+
   const supabase = await createClient()
 
   // Check authentication
@@ -68,6 +83,13 @@ export async function toggleFollow(userId: string) {
 }
 
 export async function checkUserFollowing(userId: string, currentUserId: string): Promise<boolean> {
+  // Validate input
+  const validation = checkFollowingSchema.safeParse({ userId, currentUserId })
+  if (!validation.success) {
+    logger.warn('Invalid input for checkUserFollowing:', validation.error.issues[0].message)
+    return false
+  }
+
   const supabase = await createClient()
 
   const { data } = await supabase

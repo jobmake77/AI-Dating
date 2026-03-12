@@ -1,20 +1,33 @@
 'use server'
 import { logger } from '@/lib/utils/logger'
+import { z } from 'zod'
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
+// Validation schemas
+const sendMessageSchema = z.object({
+  conversationId: z.string().uuid('无效的会话ID'),
+  content: z.string().min(1, '消息内容不能为空').max(5000, '消息内容过长'),
+})
+
+const conversationIdSchema = z.string().uuid('无效的会话ID')
+
+const userIdSchema = z.string().uuid('无效的用户ID')
+
 // 发送消息
 export async function sendMessage(conversationId: string, content: string) {
+  // Validate input
+  const validation = sendMessageSchema.safeParse({ conversationId, content })
+  if (!validation.success) {
+    return { error: validation.error.issues[0].message }
+  }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
     return { error: '请先登录' }
-  }
-
-  if (!content.trim()) {
-    return { error: '消息内容不能为空' }
   }
 
   // 验证用户是否是会话参与者
@@ -51,6 +64,12 @@ export async function sendMessage(conversationId: string, content: string) {
 
 // 标记会话为已读
 export async function markConversationAsRead(conversationId: string) {
+  // Validate input
+  const validation = conversationIdSchema.safeParse(conversationId)
+  if (!validation.success) {
+    return { error: validation.error.issues[0].message }
+  }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -75,6 +94,12 @@ export async function markConversationAsRead(conversationId: string) {
 
 // 创建与指定用户的会话
 export async function createConversationWithUser(otherUserId: string) {
+  // Validate input
+  const validation = userIdSchema.safeParse(otherUserId)
+  if (!validation.success) {
+    return { error: validation.error.issues[0].message }
+  }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 

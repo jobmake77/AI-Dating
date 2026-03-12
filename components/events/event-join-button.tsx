@@ -62,11 +62,15 @@ export function EventJoinButton({
     <Button
       onClick={handleToggle}
       disabled={isLoading}
-      variant={isJoined ? 'outline' : 'default'}
-      className="gap-2"
+      size="sm"
+      className={`h-9 text-xs gap-1.5 flex-1 ${
+        isJoined
+          ? 'bg-secondary text-foreground hover:bg-secondary/80'
+          : 'gradient-primary text-white hover:opacity-90 shadow-primary'
+      }`}
     >
-      <Users className="h-4 w-4" />
-      {isJoined ? `已参与 (${count})` : `我要参与 (${count})`}
+      <Users className="h-3.5 w-3.5" />
+      {isJoined ? '已参加' : '报名参加'}
     </Button>
   )
 }

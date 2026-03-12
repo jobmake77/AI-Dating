@@ -2,13 +2,12 @@
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { MobileNav } from '@/components/layout/mobile-nav'
 import { MobileSearchModal } from '@/components/search/mobile-search-modal'
 import { createClient } from '@/lib/supabase/client'
-import { Search, User } from 'lucide-react'
+import { Search, User, Code2, Bell, MessageSquare, Plus, ChevronDown, Menu, X } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
-import { useState, FormEvent, useEffect } from 'react'
+import { useState, FormEvent, useEffect, useRef } from 'react'
 import { useToast } from '@/hooks/use-toast'
 import { NotificationDropdown } from '@/components/notifications/notification-dropdown'
 
@@ -25,20 +24,53 @@ interface SiteHeaderProps {
   serverUser?: ServerUser | null
 }
 
+const navItems = [
+  { href: "/", label: "话题" },
+  { href: "/trending", label: "热门" },
+  { href: "/explore", label: "探索" },
+  { href: "/communities", label: "社区" },
+  { href: "/events", label: "活动" },
+];
+
+// Mock categories - replace with real data
+const categories = [
+  { id: "1", slug: "announce", name: "公告", icon: "📢", description: "官方公告和重要通知" },
+  { id: "2", slug: "beginner", name: "新手", icon: "🌱", description: "新手问题和入门指南" },
+  { id: "3", slug: "activity", name: "活动", icon: "🎉", description: "社区活动和线下聚会" },
+  { id: "4", slug: "help", name: "求助", icon: "🆘", description: "技术问题求助" },
+  { id: "5", slug: "suggest", name: "建议", icon: "💡", description: "功能建议和反馈" },
+  { id: "6", slug: "tips", name: "技巧", icon: "✨", description: "实用技巧分享" },
+];
+
 export function SiteHeader({ serverUser }: SiteHeaderProps) {
   const router = useRouter()
   const pathname = usePathname()
   const { toast } = useToast()
   const [isSigningOut, setIsSigningOut] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [searchFocused, setSearchFocused] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [catOpen, setCatOpen] = useState(false)
+  const catRef = useRef<HTMLDivElement>(null)
 
   const user = serverUser
   const username = serverUser?.username
   const role = serverUser?.role
 
-  // 获取未读通知数量 + 实时订阅
+  // Close category dropdown when clicking outside
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (catRef.current && !catRef.current.contains(e.target as Node)) {
+        setCatOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  // Get unread notification count + real-time subscription
   useEffect(() => {
     if (!user) {
       setUnreadCount(0)
@@ -132,106 +164,219 @@ export function SiteHeader({ serverUser }: SiteHeaderProps) {
   const profileLink = username ? `/u/${username}` : '/settings'
 
   return (
-    <header className="border-b border-border/60 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 sticky top-0 z-50 shadow-sm">
-      <div className="flex h-14 items-center justify-between px-4 gap-3">
-        {/* 左侧：汉堡菜单（移动端）+ Logo */}
-        <div className="flex items-center gap-3 flex-shrink-0">
-          {/* 移动端汉堡菜单 */}
-          <div className="lg:hidden">
-            <MobileNav
-              isAuthenticated={!!user}
-              username={username}
-              onSignOut={handleSignOut}
-            />
+    <header className="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur-xl">
+      <div className="mx-auto flex h-12 max-w-6xl items-center gap-3 px-4">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2 shrink-0 group">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg gradient-primary">
+            <Code2 className="h-4 w-4 text-white" />
           </div>
-
-          <Link
-            href="/"
-            className="font-bold text-xl hover:opacity-80 transition-opacity"
-            aria-label="返回首页"
-          >
+          <span className="hidden font-mono text-sm font-bold sm:block text-foreground group-hover:text-primary transition-colors">
             AI-Dating
-          </Link>
-        </div>
+          </span>
+        </Link>
 
-        {/* 中间：搜索框（桌面端） */}
-        <form onSubmit={handleSearch} className="relative hidden md:block">
-          <label htmlFor="search-input" className="sr-only">搜索内容和标签</label>
-          <div className="flex items-center gap-2 border border-border/80 px-3 py-1.5 bg-background">
-            <Search className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+        {/* Nav - Desktop */}
+        <nav className="hidden md:flex items-center gap-0.5">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                  isActive
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                }`}
+              >
+                {item.label}
+              </Link>
+            )
+          })}
+
+          {/* Categories dropdown */}
+          <div className="relative" ref={catRef}>
+            <button
+              onClick={() => setCatOpen(!catOpen)}
+              className={`flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                catOpen ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+              }`}
+            >
+              类别
+              <ChevronDown className={`h-3 w-3 transition-transform ${catOpen ? "rotate-180" : ""}`} />
+            </button>
+            {catOpen && (
+              <div className="absolute top-full left-0 mt-1 w-72 rounded-xl border border-border bg-card shadow-elevated animate-scale-in overflow-hidden z-50">
+                <div className="p-2 max-h-80 overflow-y-auto">
+                  {categories.map((cat) => (
+                    <Link
+                      key={cat.id}
+                      href={`/category/${cat.slug}`}
+                      onClick={() => setCatOpen(false)}
+                      className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-xs hover:bg-secondary/80 transition-all group"
+                    >
+                      <span className="text-lg leading-none">{cat.icon}</span>
+                      <div className="flex-1 min-w-0">
+                        <span className="font-medium text-foreground group-hover:text-primary transition-colors block">
+                          {cat.name}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground line-clamp-1">
+                          {cat.description}
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </nav>
+
+        {/* Search - Desktop */}
+        <form onSubmit={handleSearch} className="hidden md:block flex-1 max-w-md">
+          <div
+            className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 transition-all ${
+              searchFocused
+                ? "border-primary bg-background shadow-sm w-full"
+                : "border-border bg-secondary/50 w-48"
+            }`}
+          >
+            <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
             <Input
-              id="search-input"
               type="search"
               placeholder="搜索内容、标签..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-8 w-[220px] border-0 bg-transparent px-0 text-sm shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setSearchFocused(false)}
+              className="h-6 border-0 bg-transparent px-0 text-xs shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
             />
           </div>
         </form>
 
-        {/* 右侧：操作区 */}
-        <div className="flex items-center gap-1.5 flex-shrink-0">
-          {/* 移动端搜索按钮 */}
+        {/* Right actions */}
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {/* Mobile search button */}
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setMobileSearchOpen(true)}
-            className="md:hidden"
-            aria-label="搜索"
+            className="md:hidden h-8 w-8"
           >
-            <Search className="w-5 h-5" />
+            <Search className="h-4 w-4" />
           </Button>
 
           {user ? (
             <>
-              {/* 通知下拉 */}
+              {/* Notifications */}
               <NotificationDropdown
                 unreadCount={unreadCount}
                 onRead={() => setUnreadCount(0)}
               />
 
-              {/* 管理员入口 */}
-              {role === 'admin' && (
-                <>
-                </>
-              )}
-
-              {/* 用户头像 - 桌面端 */}
-              <Button variant="ghost" size="sm" asChild className="hidden sm:flex">
-                <Link href={profileLink} aria-label="查看个人主页">
-                  {avatarUrl ? (
-                    <img
-                      src={avatarUrl}
-                      alt={`${displayName} 的头像`}
-                      className="w-7 h-7 rounded-full object-cover"
-                    />
-                  ) : (
-                    <User className="w-5 h-5" aria-hidden="true" />
-                  )}
+              {/* Messages - Icon only */}
+              <Button variant="ghost" size="icon" asChild className="hidden sm:flex h-8 w-8">
+                <Link href="/messages">
+                  <MessageSquare className="h-4 w-4" />
                 </Link>
               </Button>
 
-              {/* 退出 - 桌面端 */}
-              <Button
-                onClick={handleSignOut}
-                variant="ghost"
-                size="sm"
-                disabled={isSigningOut}
-                className="hover:bg-destructive/10 hover:text-destructive transition-colors hidden sm:flex"
-              >
-                {isSigningOut ? '退出中...' : '退出'}
+              {/* Create post */}
+              <Button size="sm" asChild className="hidden sm:flex h-8 px-3 text-xs">
+                <Link href="/create">
+                  <Plus className="h-3.5 w-3.5 mr-1" />
+                  发布
+                </Link>
+              </Button>
+
+              {/* User avatar */}
+              <Button variant="ghost" size="icon" asChild className="hidden sm:flex h-8 w-8">
+                <Link href={profileLink}>
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt={displayName}
+                      className="w-6 h-6 rounded-full object-cover"
+                    />
+                  ) : (
+                    <User className="h-4 w-4" />
+                  )}
+                </Link>
               </Button>
             </>
           ) : (
-            <Button asChild size="sm">
+            <Button asChild size="sm" className="h-8 px-3 text-xs">
               <Link href="/login">登录</Link>
             </Button>
           )}
+
+          {/* Mobile menu button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden h-8 w-8"
+          >
+            {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+          </Button>
         </div>
       </div>
 
-      {/* 移动端搜索模态框 */}
+      {/* Mobile menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-border bg-card animate-fade-in-up">
+          <nav className="flex flex-col p-2">
+            {navItems.map((item) => {
+              const isActive = pathname === item.href
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`px-3 py-2 text-sm font-medium rounded-md transition-all ${
+                    isActive
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              )
+            })}
+            {user && (
+              <>
+                <Link
+                  href="/publish"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-3 py-2 text-sm font-medium rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+                >
+                  发布内容
+                </Link>
+                <Link
+                  href={profileLink}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-3 py-2 text-sm font-medium rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+                >
+                  个人主页
+                </Link>
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    handleSignOut()
+                  }}
+                  disabled={isSigningOut}
+                  className="px-3 py-2 text-sm font-medium rounded-md text-left text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
+                >
+                  {isSigningOut ? '退出中...' : '退出登录'}
+                </button>
+              </>
+            )}
+          </nav>
+        </div>
+      )}
+
+      {/* Mobile search modal */}
       <MobileSearchModal
         open={mobileSearchOpen}
         onOpenChange={setMobileSearchOpen}

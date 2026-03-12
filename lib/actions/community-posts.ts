@@ -4,12 +4,12 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 import { logger } from '@/lib/utils/logger'
+import { normalizeSingleRelation } from '@/lib/utils/normalize'
 
 // Helper to extract slug from Supabase join result (can be object or array)
 function getSlug(community: any): string | null {
-  if (!community) return null
-  if (Array.isArray(community)) return community[0]?.slug ?? null
-  return community.slug ?? null
+  const normalized = normalizeSingleRelation(community)
+  return normalized?.slug ?? null
 }
 
 // =====================================================
@@ -77,7 +77,7 @@ export async function createCommunityPost(communityId: string, formData: FormDat
       })
       .select(`
         *,
-        author:users!community_posts_author_id_fkey(id, username, display_name, avatar_url),
+        author:users!community_posts_author_id_fkey(id, username, full_name, avatar),
         community:communities!community_posts_community_id_fkey(id, slug, name)
       `)
       .single()
@@ -442,7 +442,7 @@ export async function createPostComment(postId: string, content: string) {
       })
       .select(`
         *,
-        author:users!community_post_comments_author_id_fkey(id, username, display_name, avatar_url)
+        author:users!community_post_comments_author_id_fkey(id, username, full_name, avatar)
       `)
       .single()
 
@@ -493,7 +493,11 @@ export async function deletePostComment(commentId: string) {
       return { success: false, error: '评论不存在' }
     }
 
-    const postData = Array.isArray(comment.post) ? comment.post[0] : comment.post as any
+    const postData = normalizeSingleRelation(comment.post)
+
+    if (!postData) {
+      return { success: false, error: '帖子不存在' }
+    }
 
     // 验证用户权限（必须是作者或管理员/版主）
     const isAuthor = comment.author_id === user.id

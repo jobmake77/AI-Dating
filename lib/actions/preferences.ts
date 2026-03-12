@@ -9,12 +9,24 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { ThemePreferences } from '@/types/theme'
 import { Locale } from '@/i18n/config'
+import { z } from 'zod'
 
 export interface UserPreferences extends ThemePreferences {
   locale: Locale
   reduceMotion: boolean
   keyboardShortcutsEnabled: boolean
 }
+
+// Validation schema
+const userPreferencesSchema = z.object({
+  mode: z.enum(['light', 'dark', 'system']).optional(),
+  color: z.string().max(50, '颜色值过长').optional(),
+  fontSize: z.enum(['small', 'medium', 'large']).optional(),
+  highContrast: z.boolean().optional(),
+  locale: z.enum(['zh', 'en']).optional(),
+  reduceMotion: z.boolean().optional(),
+  keyboardShortcutsEnabled: z.boolean().optional(),
+})
 
 /**
  * Get user preferences from database
@@ -54,6 +66,12 @@ export async function getUserPreferences(): Promise<UserPreferences | null> {
 export async function updateUserPreferences(
   preferences: Partial<UserPreferences>
 ): Promise<{ success: boolean; error?: string }> {
+  // Validate input
+  const validation = userPreferencesSchema.safeParse(preferences)
+  if (!validation.success) {
+    return { success: false, error: validation.error.issues[0].message }
+  }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 

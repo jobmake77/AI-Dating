@@ -1,11 +1,10 @@
 import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { getEvents } from '@/lib/queries/events'
-import { EventCard } from '@/components/events/event-card'
+import { EventsListClient } from '@/components/events/events-list-client'
 import { Button } from '@/components/ui/button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import Link from 'next/link'
-import { Plus } from 'lucide-react'
+import { Plus, Sparkles } from 'lucide-react'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -36,26 +35,10 @@ export const metadata: Metadata = {
   },
 }
 
-async function EventsList({ type }: { type: 'official' | 'offline' }) {
-  const { data: events } = await getEvents({ type, limit: 50 })
+async function EventsList() {
+  const { data: events } = await getEvents({ limit: 50 })
 
-  if (events.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">
-          {type === 'official' ? '暂无官方活动' : '暂无线下活动'}
-        </p>
-      </div>
-    )
-  }
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {events.map((event: any) => (
-        <EventCard key={event.id} event={event} />
-      ))}
-    </div>
-  )
+  return <EventsListClient events={events} />
 }
 
 export default async function EventsPage() {
@@ -63,40 +46,38 @@ export default async function EventsPage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   return (
-    <div className="container max-w-6xl py-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">活动</h1>
-          <p className="text-muted-foreground mt-1">发现和参与精彩活动</p>
-        </div>
-        {user && (
-          <Link href="/events/create">
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              发起活动
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-4xl px-4 py-6">
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl gradient-sunset flex items-center justify-center">
+              <Sparkles className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-foreground">活动</h1>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                参与社区活动，提升技能、拓展人脉
+              </p>
+            </div>
+          </div>
+          {user && (
+            <Button
+              size="sm"
+              className="h-9 gap-1.5 gradient-primary text-white hover:opacity-90 text-xs shadow-primary"
+              asChild
+            >
+              <Link href="/events/create">
+                <Plus className="h-3.5 w-3.5" />
+                创建活动
+              </Link>
             </Button>
-          </Link>
-        )}
+          )}
+        </div>
+
+        <Suspense fallback={<div>加载中...</div>}>
+          <EventsList />
+        </Suspense>
       </div>
-
-      <Tabs defaultValue="official" className="w-full">
-        <TabsList className="grid w-full max-w-xs grid-cols-2">
-          <TabsTrigger value="official">官方活动</TabsTrigger>
-          <TabsTrigger value="offline">线下活动</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="official" className="mt-6">
-          <Suspense fallback={<div>加载中...</div>}>
-            <EventsList type="official" />
-          </Suspense>
-        </TabsContent>
-
-        <TabsContent value="offline" className="mt-6">
-          <Suspense fallback={<div>加载中...</div>}>
-            <EventsList type="offline" />
-          </Suspense>
-        </TabsContent>
-      </Tabs>
     </div>
   )
 }

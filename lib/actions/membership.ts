@@ -3,6 +3,15 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireAdmin } from '@/lib/middleware/admin'
+import { z } from 'zod'
+
+// Validation schemas
+const userIdSchema = z.string().uuid('无效的用户ID')
+
+const membershipSchema = z.object({
+  userId: z.string().uuid('无效的用户ID'),
+  days: z.number().int('天数必须是整数').min(1, '天数必须大于0').max(3650, '天数不能超过10年'),
+})
 
 /**
  * 获取所有用户列表
@@ -30,6 +39,12 @@ export async function getAllUsers() {
  * @param days 会员天数
  */
 export async function setUserMembership(userId: string, days: number) {
+  // Validate input
+  const validation = membershipSchema.safeParse({ userId, days })
+  if (!validation.success) {
+    throw new Error(validation.error.issues[0].message)
+  }
+
   await requireAdmin()
 
   const supabase = await createClient()
@@ -70,6 +85,12 @@ export async function setUserMembership(userId: string, days: number) {
  * @param userId 用户 ID
  */
 export async function cancelUserMembership(userId: string) {
+  // Validate input
+  const validation = userIdSchema.safeParse(userId)
+  if (!validation.success) {
+    throw new Error(validation.error.issues[0].message)
+  }
+
   await requireAdmin()
 
   const supabase = await createClient()
