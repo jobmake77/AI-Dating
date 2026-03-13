@@ -1,5 +1,5 @@
-const { createClient } = require('@supabase/supabase-js')
-const fs = require('fs')
+import fs from 'node:fs'
+import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -21,7 +21,7 @@ async function runMigration(filePath) {
     const sql = fs.readFileSync(filePath, 'utf8')
     console.log(`Running migration: ${filePath}`)
     
-    const { data, error } = await supabase.rpc('exec_sql', { sql_query: sql })
+    const { error } = await supabase.rpc('exec_sql', { sql_query: sql })
     
     if (error) {
       console.error('Migration error:', error)
@@ -37,7 +37,7 @@ async function runMigration(filePath) {
 
 const migrationFile = process.argv[2]
 if (!migrationFile) {
-  console.error('Usage: node run-migration.js <migration-file>')
+  console.error('Usage: node run-migration.mjs <migration-file>')
   process.exit(1)
 }
 

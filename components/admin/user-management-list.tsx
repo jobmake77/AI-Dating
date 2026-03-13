@@ -9,6 +9,7 @@ import { User, Shield, Calendar } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
 import { useToast } from '@/hooks/use-toast'
+import Image from 'next/image'
 
 interface UserData {
   id: string
@@ -70,10 +71,13 @@ export function UserManagementList({ users }: UserManagementListProps) {
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-start gap-3 flex-1">
               {user.avatar ? (
-                <img
+                <Image
                   src={user.avatar}
                   alt={user.username}
-                  className="w-12 h-12 rounded-full"
+                  width={48}
+                  height={48}
+                  unoptimized
+                  className="w-12 h-12 rounded-full object-cover"
                 />
               ) : (
                 <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">

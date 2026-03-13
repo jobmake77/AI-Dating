@@ -5,6 +5,10 @@
 
 import type { Metric } from 'web-vitals'
 
+type WindowWithGtag = Window & {
+  gtag?: (action: 'event', eventName: string, params?: Record<string, unknown>) => void
+}
+
 export interface WebVitalsMetric {
   id: string
   name: string
@@ -82,8 +86,9 @@ export function sendToAnalytics(metric: Metric) {
   }
 
   // 发送到 Google Analytics（如果已配置）
-  if (typeof window !== 'undefined' && (window as any).gtag) {
-    ;(window as any).gtag('event', metric.name, {
+  const windowWithGtag = window as WindowWithGtag
+  if (windowWithGtag.gtag) {
+    windowWithGtag.gtag('event', metric.name, {
       value: Math.round(metric.name === 'CLS' ? metric.value * 1000 : metric.value),
       event_category: 'Web Vitals',
       event_label: metric.id,

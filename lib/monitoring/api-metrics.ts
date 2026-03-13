@@ -99,7 +99,7 @@ async function logApiMetrics(metrics: ApiMetrics): Promise<void> {
         // 静默失败，不影响主请求
       })
     }
-  } catch (error) {
+  } catch {
     // 静默失败
   }
 }

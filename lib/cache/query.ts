@@ -3,7 +3,8 @@
  * 为 Supabase 查询提供缓存层
  */
 
-import { SupabaseClient } from '@supabase/supabase-js'
+import type { PostgrestError, SupabaseClient } from '@supabase/supabase-js'
+import type { Tables } from '@/types/database.types'
 import {
   getCached,
   setCached,
@@ -19,13 +20,27 @@ export interface QueryCacheOptions {
   key: string
 }
 
+type QueryResult<T> = {
+  data: T | null
+  error: PostgrestError | null
+  cached?: boolean
+}
+
+type SearchFilters = Record<string, string | number | boolean | null>
+type CachedContentRow = Record<string, unknown>
+type CachedUserStats = {
+  contentsCount: number
+  followersCount: number
+  followingCount: number
+}
+
 /**
  * 缓存 Supabase 查询结果
  */
 export async function cachedQuery<T>(
-  queryFn: () => Promise<{ data: T | null; error: any }>,
+  queryFn: () => Promise<QueryResult<T>>,
   options: QueryCacheOptions
-): Promise<{ data: T | null; error: any; cached?: boolean }> {
+): Promise<QueryResult<T>> {
   const { ttl = CACHE_TTL.DYNAMIC, prefix = CACHE_PREFIX.QUERY, key } = options
 
   const cacheKey = buildCacheKey(prefix, key)
@@ -57,7 +72,7 @@ export const contentCache = {
   async getContent(
     supabase: SupabaseClient,
     contentId: string
-  ): Promise<{ data: any; error: any; cached?: boolean }> {
+  ): Promise<QueryResult<CachedContentRow>> {
     return cachedQuery(
       async () => {
         const { data, error } = await supabase
@@ -82,7 +97,7 @@ export const contentCache = {
   async getTrending(
     supabase: SupabaseClient,
     limit: number = 10
-  ): Promise<{ data: any; error: any; cached?: boolean }> {
+  ): Promise<QueryResult<CachedContentRow[]>> {
     return cachedQuery(
       async () => {
         const { data, error } = await supabase
@@ -119,7 +134,7 @@ export const userCache = {
   async getUser(
     supabase: SupabaseClient,
     userId: string
-  ): Promise<{ data: any; error: any; cached?: boolean }> {
+  ): Promise<QueryResult<Tables<'users'>>> {
     return cachedQuery(
       async () => {
         const { data, error } = await supabase
@@ -144,7 +159,7 @@ export const userCache = {
   async getUserStats(
     supabase: SupabaseClient,
     userId: string
-  ): Promise<{ data: any; error: any; cached?: boolean }> {
+  ): Promise<QueryResult<CachedUserStats>> {
     return cachedQuery(
       async () => {
         const [contents, followers, following] = await Promise.all([
@@ -188,8 +203,8 @@ export const searchCache = {
   async search(
     supabase: SupabaseClient,
     query: string,
-    filters: Record<string, any> = {}
-  ): Promise<{ data: any; error: any; cached?: boolean }> {
+    filters: SearchFilters = {}
+  ): Promise<QueryResult<CachedContentRow[]>> {
     const filterKey = Object.entries(filters)
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([k, v]) => `${k}:${v}`)

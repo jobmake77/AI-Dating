@@ -38,6 +38,16 @@ export interface PerformanceMetrics {
   timestamp: number
 }
 
+interface PerformanceMemory {
+  usedJSHeapSize: number
+  totalJSHeapSize: number
+  jsHeapSizeLimit: number
+}
+
+type BrowserPerformance = Performance & {
+  memory?: PerformanceMemory
+}
+
 /**
  * 收集导航时间指标
  */
@@ -104,7 +114,7 @@ function collectResourceMetrics(): PerformanceMetrics['resources'] {
 function collectMemoryMetrics(): PerformanceMetrics['memory'] | undefined {
   if (typeof window === 'undefined') return undefined
 
-  const memory = (performance as any).memory
+  const memory = (performance as BrowserPerformance).memory
   if (!memory) return undefined
 
   return {

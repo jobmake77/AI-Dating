@@ -4,8 +4,6 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Calendar, MapPin, Users, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { formatDistanceToNow } from "date-fns";
-import { zhCN } from "date-fns/locale";
 
 interface CompactEventCardProps {
   event: {
@@ -117,4 +115,3 @@ export function CompactEventCard({ event, index = 0 }: CompactEventCardProps) {
     </motion.article>
   );
 }
-

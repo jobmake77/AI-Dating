@@ -6,28 +6,10 @@ import { Heart, MessageCircle, Eye, Repeat2, Flame, Pin, Trophy, Medal, Award } 
 import { formatDistanceToNow } from "date-fns";
 import { zhCN } from "date-fns/locale";
 import { getCategoryColor } from "@/lib/utils/categories";
+import type { TrendingContentItem } from "@/lib/types/content";
 
 interface TrendingContentCardProps {
-  content: {
-    id: string;
-    title: string;
-    excerpt: string;
-    tags: string[] | null;
-    category?: string;
-    price_type: string;
-    view_count: number;
-    likes_count: number;
-    reposts_count: number;
-    comments_count: number;
-    created_at: string;
-    users: {
-      username: string;
-      avatar: string | null;
-      full_name: string | null;
-    };
-    is_pinned?: boolean;
-    is_hot?: boolean;
-  };
+  content: TrendingContentItem;
   rank: number;
 }
 

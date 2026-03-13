@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/utils/logger'
 import { normalizeSingleRelation } from '@/lib/utils/normalize'
+import { isValidUuid } from '@/lib/utils/is-valid-uuid'
 
 export interface ContentListParams {
   page?: number
@@ -46,6 +47,23 @@ export interface FeedItem {
     full_name: string | null
   }
   reposted_at?: string
+}
+
+type FeedUser = FeedItem['users']
+type FeedContentRow = Omit<FeedItem, 'content_id' | 'is_repost' | 'reposted_by' | 'reposted_at'> & {
+  users: FeedUser | FeedUser[] | null
+}
+type RepostRow = {
+  id: string
+  created_at: string
+  contents: FeedContentRow | FeedContentRow[] | null
+  users: FeedUser | FeedUser[] | null
+}
+type LikeWithContent = {
+  contents: FeedContentRow | FeedContentRow[] | null
+}
+type RepostWithContent = {
+  contents: FeedContentRow | FeedContentRow[] | null
 }
 
 // 获取包含转发的内容时间线
@@ -121,10 +139,13 @@ export async function getContentsFeed(params: ContentListParams = {}) {
 
   // 添加原创内容
   if (originalContents) {
-    originalContents.forEach((content: any) => {
+    originalContents.forEach((content: FeedContentRow) => {
+      const normalizedUser = normalizeSingleRelation(content.users)
+      if (!normalizedUser) return
+
       feedItems.push({
         ...content,
-        users: normalizeSingleRelation(content.users),
+        users: normalizedUser,
         content_id: content.id,
         is_repost: false,
       })
@@ -133,15 +154,21 @@ export async function getContentsFeed(params: ContentListParams = {}) {
 
   // 添加转发内容
   if (reposts) {
-    reposts.forEach((repost: any) => {
-      if (repost.contents) {
+    reposts.forEach((repost: RepostRow) => {
+      const repostedContent = normalizeSingleRelation(repost.contents)
+      const repostedBy = normalizeSingleRelation(repost.users)
+      const repostedContentUser = repostedContent
+        ? normalizeSingleRelation(repostedContent.users)
+        : null
+
+      if (repostedContent && repostedBy && repostedContentUser) {
         feedItems.push({
-          ...repost.contents,
-          users: normalizeSingleRelation(repost.contents.users),
+          ...repostedContent,
+          users: repostedContentUser,
           id: `repost-${repost.id}`, // Use repost ID to make it unique
-          content_id: repost.contents.id,
+          content_id: repostedContent.id,
           is_repost: true,
-          reposted_by: normalizeSingleRelation(repost.users),
+          reposted_by: repostedBy,
           reposted_at: repost.created_at,
         })
       }
@@ -240,6 +267,10 @@ export async function getContents(params: ContentListParams = {}) {
 }
 
 export async function getContentById(id: string) {
+  if (!isValidUuid(id)) {
+    return null
+  }
+
   const supabase = await createClient()
 
   const { data, error } = await supabase
@@ -327,7 +358,9 @@ export async function getUserLikedContents(userId: string, params: { page?: numb
   }
 
   // 提取内容数据
-  const contents = data?.map((like: any) => like.contents).filter(Boolean) || []
+  const contents = data
+    ?.map((like: LikeWithContent) => normalizeSingleRelation(like.contents))
+    .filter((content): content is FeedContentRow => Boolean(content)) || []
 
   return {
     contents,
@@ -372,7 +405,9 @@ export async function getUserRepostedContents(userId: string, params: { page?: n
   }
 
   // 提取内容数据
-  const contents = data?.map((repost: any) => repost.contents).filter(Boolean) || []
+  const contents = data
+    ?.map((repost: RepostWithContent) => normalizeSingleRelation(repost.contents))
+    .filter((content): content is FeedContentRow => Boolean(content)) || []
 
   return {
     contents,

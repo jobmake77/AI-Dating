@@ -48,6 +48,35 @@ const filterTabs = [
   { key: 'system', label: '系统' },
 ]
 
+async function loadNotificationsPageData(page: number, filter: string) {
+  try {
+    await markAllAsReadSilent()
+
+    const { notifications, totalPages } = await getNotifications(page)
+    const filteredNotifications = filter === 'all'
+      ? notifications
+      : filter === 'system'
+        ? notifications.filter((notification) =>
+            ['event_reminder', 'community_invite'].includes(notification.type)
+          )
+        : notifications.filter((notification) => notification.type === filter)
+
+    return {
+      filteredNotifications,
+      totalPages,
+      hasError: false,
+    }
+  } catch (error) {
+    console.error('Get notifications error:', error)
+
+    return {
+      filteredNotifications: [],
+      totalPages: 0,
+      hasError: true,
+    }
+  }
+}
+
 export default async function NotificationsPage({ searchParams }: NotificationsPageProps) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -57,21 +86,23 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
   const params = await searchParams
   const page = Number(params.page) || 1
   const filter = params.filter || 'all'
+  const { filteredNotifications, totalPages, hasError } = await loadNotificationsPageData(page, filter)
 
-  try {
-    // 进入页面时自动标记全部已读
-    await markAllAsReadSilent()
-
-    const { notifications, totalPages } = await getNotifications(page)
-
-    // 客户端筛选（简化版，生产环境应在服务端筛选）
-    const filteredNotifications = filter === 'all'
-      ? notifications
-      : filter === 'system'
-      ? notifications.filter(n => ['event_reminder', 'community_invite'].includes(n.type))
-      : notifications.filter(n => n.type === filter)
-
+  if (hasError) {
     return (
+      <div className="min-h-screen bg-background">
+        <div className="mx-auto max-w-2xl px-4 py-20">
+          <EmptyState
+            icon={AlertCircle}
+            title="加载通知失败"
+            description="请稍后重试"
+          />
+        </div>
+      </div>
+    )
+  }
+
+  return (
       <div className="min-h-screen bg-background">
         <div className="mx-auto max-w-2xl px-4 py-6">
           {/* 页面头部 */}
@@ -115,7 +146,7 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
             </div>
           ) : (
             <div className="rounded-lg border border-border bg-card overflow-hidden divide-y divide-border shadow-sm">
-              {filteredNotifications.map((n, i) => {
+              {filteredNotifications.map((n) => {
                 const Icon = iconMap[n.type] || Bell
                 const colors = colorMap[n.type] || 'text-gray-500 bg-gray-500/10'
                 const actorName = n.actor.full_name || n.actor.username
@@ -195,19 +226,5 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
           )}
         </div>
       </div>
-    )
-  } catch (error) {
-    console.error('Get notifications error:', error)
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="mx-auto max-w-2xl px-4 py-20">
-          <EmptyState
-            icon={AlertCircle}
-            title="加载通知失败"
-            description="请稍后重试"
-          />
-        </div>
-      </div>
-    )
-  }
+  )
 }

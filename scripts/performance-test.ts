@@ -47,7 +47,7 @@ export async function measurePerformance<T>(
  * 批量性能测试
  */
 export async function runPerformanceTests(
-  tests: Array<{ name: string; fn: () => Promise<any> }>
+  tests: Array<{ name: string; fn: () => Promise<unknown> }>
 ): Promise<PerformanceTestResult[]> {
   const results: PerformanceTestResult[] = []
 

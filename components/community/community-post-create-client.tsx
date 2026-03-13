@@ -73,7 +73,7 @@ export function CommunityPostCreateClient({ community, slug }: CommunityPostCrea
         editor.chain().focus().setImage({ src: result.url }).run()
         toast.success('图片上传成功')
       }
-    } catch (error) {
+    } catch {
       toast.error('图片上传失败，请重试')
     } finally {
       setIsUploadingImage(false)
@@ -112,7 +112,7 @@ export function CommunityPostCreateClient({ community, slug }: CommunityPostCrea
           toast.success('视频上传成功')
         }
       }
-    } catch (error) {
+    } catch {
       toast.error('视频上传失败，请重试')
     } finally {
       setIsUploadingVideo(false)

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import Cropper from 'react-easy-crop'
+import Cropper, { type Area, type Point } from 'react-easy-crop'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import {
@@ -30,10 +30,10 @@ export function ImageCropper({
 }: ImageCropperProps) {
   const [crop, setCrop] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null)
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
 
-  const onCropChange = useCallback((crop: any) => {
+  const onCropChange = useCallback((crop: Point) => {
     setCrop(crop)
   }, [])
 
@@ -42,7 +42,7 @@ export function ImageCropper({
   }, [])
 
   const onCropCompleteCallback = useCallback(
-    (croppedArea: any, croppedAreaPixels: any) => {
+    (_croppedArea: Area, croppedAreaPixels: Area) => {
       setCroppedAreaPixels(croppedAreaPixels)
     },
     []
@@ -116,7 +116,7 @@ export function ImageCropper({
 }
 
 // Helper function to create cropped image
-async function getCroppedImg(imageSrc: string, pixelCrop: any): Promise<Blob> {
+async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<Blob> {
   const image = await createImage(imageSrc)
   const canvas = document.createElement('canvas')
   const ctx = canvas.getContext('2d')

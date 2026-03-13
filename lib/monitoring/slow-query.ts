@@ -12,7 +12,7 @@ export interface SlowQueryLog {
   timestamp: number
   table: string
   operation: string
-  params?: Record<string, any>
+  params?: Record<string, unknown>
   stackTrace?: string
 }
 
@@ -28,7 +28,7 @@ export async function monitorQuery<T>(
   options: {
     table?: string
     operation?: string
-    params?: Record<string, any>
+    params?: Record<string, unknown>
   } = {}
 ): Promise<T> {
   const startTime = performance.now()

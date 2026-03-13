@@ -1,13 +1,14 @@
 import { CompactContentCard } from './compact-content-card'
 import { EmptyState } from '@/components/empty-state'
 import { FileText } from 'lucide-react'
+import type { ContentListItem } from '@/lib/types/content'
 
 interface ContentListCompactProps {
-  contents: any[]
+  contents: ContentListItem[]
   isAuthenticated?: boolean
 }
 
-export function ContentListCompact({ contents, isAuthenticated = false }: ContentListCompactProps) {
+export function ContentListCompact({ contents }: ContentListCompactProps) {
   if (contents.length === 0) {
     return (
       <div className="p-8">

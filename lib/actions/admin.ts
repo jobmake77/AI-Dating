@@ -2,7 +2,6 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
 import { trackEvent } from '@/lib/analytics/events'
 
 // 检查是否为管理员

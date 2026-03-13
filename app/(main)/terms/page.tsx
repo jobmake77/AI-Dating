@@ -18,7 +18,7 @@ export default function TermsOfServicePage() {
         <section className="mt-8">
           <h2>1. 接受条款</h2>
           <p>
-            欢迎使用 AI-Dating。通过访问或使用我们的服务，您同意受这些服务条款（"条款"）的约束。
+            欢迎使用 AI-Dating。通过访问或使用我们的服务，您同意受这些服务条款（&ldquo;条款&rdquo;）的约束。
             如果您不同意这些条款，请不要使用我们的服务。
           </p>
         </section>
@@ -130,7 +130,7 @@ export default function TermsOfServicePage() {
         <section className="mt-8">
           <h2>8. 免责声明</h2>
           <p>
-            我们的服务按"原样"和"可用"基础提供，不提供任何明示或暗示的保证。
+            我们的服务按 &ldquo;原样&rdquo; 和 &ldquo;可用&rdquo; 基础提供，不提供任何明示或暗示的保证。
             我们不保证：
           </p>
           <ul>
@@ -185,7 +185,7 @@ export default function TermsOfServicePage() {
           <h2>13. 条款变更</h2>
           <p>
             我们可能会不时修改这些条款。
-            我们会在此页面上发布新的条款，并更新"最后更新日期"。
+            我们会在此页面上发布新的条款，并更新 &ldquo;最后更新日期&rdquo;。
             继续使用服务即表示您接受修改后的条款。
           </p>
         </section>

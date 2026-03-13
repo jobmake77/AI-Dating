@@ -64,7 +64,6 @@ function displayPosts(data) {
 
   const posts = data.posts || [];
   const page = data.page || 1;
-  const limit = data.limit || 20;
 
   console.log(`\n=== 第 ${page} 页，共 ${posts.length} 条内容 ===\n`);
 

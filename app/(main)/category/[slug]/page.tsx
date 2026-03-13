@@ -24,7 +24,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
 
   // Fetch contents for this category
   // Note: Category filtering is removed, showing all contents for now
-  const { contents, totalPages } = await getContents({
+  const { contents } = await getContents({
     page,
     limit: 12,
   })

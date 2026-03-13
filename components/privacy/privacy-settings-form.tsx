@@ -28,15 +28,15 @@ export function PrivacySettingsForm({ userId }: PrivacySettingsFormProps) {
   })
 
   useEffect(() => {
-    loadSettings()
-  }, [userId])
-
-  const loadSettings = async () => {
-    const result = await getUserPrivacySettings(userId)
-    if (result.success && result.data) {
-      setSettings(result.data)
+    async function loadSettings() {
+      const result = await getUserPrivacySettings(userId)
+      if (result.success && result.data) {
+        setSettings(result.data)
+      }
     }
-  }
+
+    void loadSettings()
+  }, [userId])
 
   const handleExportData = async () => {
     setExporting(true)
@@ -59,7 +59,7 @@ export function PrivacySettingsForm({ userId }: PrivacySettingsFormProps) {
       } else {
         toast.error(result.error || "导出失败")
       }
-    } catch (error) {
+    } catch {
       toast.error("导出数据时出错")
     } finally {
       setExporting(false)
@@ -77,7 +77,7 @@ export function PrivacySettingsForm({ userId }: PrivacySettingsFormProps) {
       } else {
         toast.error(result.error || "删除失败")
       }
-    } catch (error) {
+    } catch {
       toast.error("删除账户时出错")
     } finally {
       setDeleting(false)
@@ -93,7 +93,7 @@ export function PrivacySettingsForm({ userId }: PrivacySettingsFormProps) {
       } else {
         toast.error(result.error || "更新失败")
       }
-    } catch (error) {
+    } catch {
       toast.error("更新设置时出错")
     } finally {
       setLoading(false)
@@ -119,8 +119,8 @@ export function PrivacySettingsForm({ userId }: PrivacySettingsFormProps) {
             <Label htmlFor="profile_visibility">个人资料可见性</Label>
             <Select
               value={settings.profile_visibility}
-              onValueChange={(value: any) =>
-                setSettings({ ...settings, profile_visibility: value })
+              onValueChange={(value: "public" | "private" | "followers_only") =>
+                setSettings((current) => ({ ...current, profile_visibility: value }))
               }
             >
               <SelectTrigger id="profile_visibility">
@@ -281,7 +281,7 @@ export function PrivacySettingsForm({ userId }: PrivacySettingsFormProps) {
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
             删除账户后，您的所有数据将被匿名化处理。此操作无法撤销。
-            您的内容将被标记为"已删除"，但会保留用于审计目的。
+            您的内容将被标记为 &ldquo;已删除&rdquo;，但会保留用于审计目的。
           </p>
           <AlertDialog>
             <AlertDialogTrigger asChild>

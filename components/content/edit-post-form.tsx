@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Send, X, Upload } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -146,7 +147,7 @@ export function EditPostForm({ content: initialContent }: EditPostFormProps) {
                 <label className="text-sm font-medium text-foreground mb-2 block">封面图片（可选）</label>
                 {coverImage ? (
                   <div className="relative rounded-lg overflow-hidden border border-border">
-                    <img src={coverImage} alt="Cover" className="w-full h-48 object-cover" />
+                    <Image src={coverImage} alt="Cover" fill unoptimized sizes="768px" className="h-48 object-cover" />
                     <button
                       onClick={() => setCoverImage(null)}
                       className="absolute top-2 right-2 p-1.5 rounded-full bg-destructive text-white hover:bg-destructive/90"

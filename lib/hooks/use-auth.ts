@@ -11,6 +11,8 @@ interface AuthState {
   isLoading: boolean
 }
 
+type SessionResult = Awaited<ReturnType<ReturnType<typeof createClient>['auth']['getSession']>>
+
 export function useAuth() {
   const [state, setState] = useState<AuthState>({
     user: null,
@@ -33,10 +35,10 @@ export function useAuth() {
 
         const sessionPromise = supabase.auth.getSession()
 
-        const { data: { session } } = await Promise.race([
+        const { data: { session } } = await Promise.race<SessionResult>([
           sessionPromise,
-          timeoutPromise
-        ]) as any
+          timeoutPromise as Promise<never>
+        ])
 
         if (!mounted) return
 
@@ -56,7 +58,7 @@ export function useAuth() {
               role: data?.role || null,
               isLoading: false,
             })
-          } catch (error) {
+          } catch {
             if (!mounted) return
             setState({
               user: session.user,
@@ -108,7 +110,7 @@ export function useAuth() {
             role: data?.role || null,
             isLoading: false,
           })
-        } catch (error) {
+        } catch {
           if (!mounted) return
           setState({
             user: session.user,

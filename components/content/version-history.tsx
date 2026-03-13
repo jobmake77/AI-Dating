@@ -43,25 +43,30 @@ export function VersionHistory({ contentId, isAuthor }: VersionHistoryProps) {
   const { toast } = useToast()
 
   useEffect(() => {
-    loadVersions()
-  }, [contentId])
+    let active = true
 
-  const loadVersions = async () => {
-    setLoading(true)
-    const result = await getContentVersions(contentId)
+    void getContentVersions(contentId).then((result) => {
+      if (!active) {
+        return
+      }
 
-    if (result.error) {
-      toast({
-        variant: 'destructive',
-        title: '加载失败',
-        description: result.error,
-      })
-    } else if (result.data) {
-      setVersions(result.data as ContentVersion[])
+      if (result.error) {
+        toast({
+          variant: 'destructive',
+          title: '加载失败',
+          description: result.error,
+        })
+      } else if (result.data) {
+        setVersions(result.data as ContentVersion[])
+      }
+
+      setLoading(false)
+    })
+
+    return () => {
+      active = false
     }
-
-    setLoading(false)
-  }
+  }, [contentId, toast])
 
   const handleRestore = async (versionId: string) => {
     if (!confirm('确定要恢复到这个版本吗？当前内容将被替换。')) {

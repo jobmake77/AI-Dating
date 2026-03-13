@@ -33,24 +33,30 @@ export function normalizeArrayRelation<T>(data: T | T[] | null | undefined): T[]
  * @param path - Dot-separated path to the property
  * @returns The value at the path or null
  */
-export function safeExtract<T = any>(obj: any, path: string): T | null {
-  if (!obj) return null
+type LooseRecord = Record<string, unknown>
+
+function isLooseRecord(value: unknown): value is LooseRecord {
+  return typeof value === 'object' && value !== null
+}
+
+export function safeExtract<T = unknown>(obj: unknown, path: string): T | null {
+  if (!isLooseRecord(obj)) return null
 
   const keys = path.split('.')
-  let current = obj
+  let current: unknown = obj
 
   for (const key of keys) {
-    if (current === null || current === undefined) return null
+    if (!isLooseRecord(current) || !(key in current)) return null
     current = current[key]
   }
 
-  return current ?? null
+  return (current as T | null | undefined) ?? null
 }
 
 /**
  * Type guard to check if a value is a non-empty array
  */
-export function isNonEmptyArray<T>(value: any): value is T[] {
+export function isNonEmptyArray<T>(value: unknown): value is T[] {
   return Array.isArray(value) && value.length > 0
 }
 
@@ -69,25 +75,51 @@ export interface NormalizedUser {
   following_count?: number
 }
 
-export function normalizeUser(user: any): NormalizedUser | null {
-  if (!user) return null
+type RawUserRecord = LooseRecord & {
+  id?: unknown
+  username?: unknown
+  full_name?: unknown
+  display_name?: unknown
+  avatar?: unknown
+  avatar_url?: unknown
+  bio?: unknown
+  role?: unknown
+  followers_count?: unknown
+  following_count?: unknown
+}
+
+export function normalizeUser(user: unknown): NormalizedUser | null {
+  if (!isLooseRecord(user)) return null
+
+  const rawUser = user as RawUserRecord
+  if (typeof rawUser.id !== 'string' || typeof rawUser.username !== 'string') {
+    return null
+  }
 
   return {
-    id: user.id,
-    username: user.username,
-    full_name: user.full_name || user.display_name || null,
-    avatar: user.avatar || user.avatar_url || null,
-    bio: user.bio || null,
-    role: user.role || 'user',
-    followers_count: user.followers_count || 0,
-    following_count: user.following_count || 0,
+    id: rawUser.id,
+    username: rawUser.username,
+    full_name: typeof rawUser.full_name === 'string'
+      ? rawUser.full_name
+      : typeof rawUser.display_name === 'string'
+        ? rawUser.display_name
+        : null,
+    avatar: typeof rawUser.avatar === 'string'
+      ? rawUser.avatar
+      : typeof rawUser.avatar_url === 'string'
+        ? rawUser.avatar_url
+        : null,
+    bio: typeof rawUser.bio === 'string' ? rawUser.bio : null,
+    role: typeof rawUser.role === 'string' ? rawUser.role : 'user',
+    followers_count: typeof rawUser.followers_count === 'number' ? rawUser.followers_count : 0,
+    following_count: typeof rawUser.following_count === 'number' ? rawUser.following_count : 0,
   }
 }
 
 /**
  * Normalize an array of users
  */
-export function normalizeUsers(users: any[]): NormalizedUser[] {
+export function normalizeUsers(users: unknown[]): NormalizedUser[] {
   if (!Array.isArray(users)) return []
   return users.map(normalizeUser).filter((u): u is NormalizedUser => u !== null)
 }

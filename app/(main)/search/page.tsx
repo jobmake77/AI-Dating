@@ -10,14 +10,10 @@ import { ContentCard } from '@/components/content/content-card-twitter'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
+import type { SearchResult, SearchTag } from '@/lib/types/search'
 
 const searchTabs = ['内容', '用户', '标签'] as const
 type SearchTab = typeof searchTabs[number]
-type SearchTag = {
-  name: string
-  slug: string
-  count: number
-}
 
 export default function SearchPage() {
   const searchParams = useSearchParams()
@@ -26,10 +22,11 @@ export default function SearchPage() {
 
   const [query, setQuery] = useState(initialQuery)
   const [activeTab, setActiveTab] = useState<SearchTab>('内容')
-  const [results, setResults] = useState<{ contents: any[]; users: any[]; tags: SearchTag[] }>({
+  const [results, setResults] = useState<SearchResult>({
     contents: [],
     users: [],
     tags: [],
+    total: 0,
   })
   const [popularTags, setPopularTags] = useState<SearchTag[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -37,7 +34,7 @@ export default function SearchPage() {
   // 防抖搜索
   const debouncedSearch = useDebouncedCallback(async (searchQuery: string) => {
     if (!searchQuery.trim()) {
-      setResults({ contents: [], users: [], tags: [] })
+      setResults({ contents: [], users: [], tags: [], total: 0 })
       setIsLoading(false)
       return
     }
@@ -92,7 +89,7 @@ export default function SearchPage() {
 
   const handleClearQuery = () => {
     setQuery('')
-    setResults({ contents: [], users: [], tags: [] })
+    setResults({ contents: [], users: [], tags: [], total: 0 })
     router.push('/search')
   }
 
@@ -163,7 +160,7 @@ export default function SearchPage() {
                   <div className="space-y-2">
                     {filteredContents.length > 0 ? (
                       <div className="border border-border rounded-xl bg-card overflow-hidden shadow-sm">
-                        {filteredContents.map((content: any) => (
+                        {filteredContents.map((content) => (
                           <ContentCard key={content.id} content={content} />
                         ))}
                       </div>
@@ -181,7 +178,7 @@ export default function SearchPage() {
                   <div>
                     {filteredUsers.length > 0 ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {filteredUsers.map((user: any) => (
+                        {filteredUsers.map((user) => (
                           <Link key={user.id} href={`/u/${user.username}`}>
                             <Card className="hover:border-primary/30 transition-all cursor-pointer shadow-sm">
                               <CardContent className="p-4">

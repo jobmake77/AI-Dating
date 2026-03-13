@@ -5,11 +5,13 @@
 
 const isDevelopment = process.env.NODE_ENV === 'development'
 
+type LogArgs = unknown[]
+
 export const logger = {
   /**
    * 调试日志 - 仅开发环境
    */
-  debug: (message: string, ...args: any[]) => {
+  debug: (message: string, ...args: LogArgs) => {
     if (isDevelopment) {
       console.log(`[DEBUG] ${message}`, ...args)
     }
@@ -18,7 +20,7 @@ export const logger = {
   /**
    * 信息日志 - 仅开发环境
    */
-  info: (message: string, ...args: any[]) => {
+  info: (message: string, ...args: LogArgs) => {
     if (isDevelopment) {
       console.info(`[INFO] ${message}`, ...args)
     }
@@ -27,14 +29,14 @@ export const logger = {
   /**
    * 警告日志 - 所有环境
    */
-  warn: (message: string, ...args: any[]) => {
+  warn: (message: string, ...args: LogArgs) => {
     console.warn(`[WARN] ${message}`, ...args)
   },
 
   /**
    * 错误日志 - 所有环境
    */
-  error: (message: string, error?: any, ...args: any[]) => {
+  error: (message: string, error?: unknown, ...args: LogArgs) => {
     console.error(`[ERROR] ${message}`, error, ...args)
   },
 }

@@ -9,25 +9,24 @@ interface EditPageProps {
 
 export default async function EditPage({ params }: EditPageProps) {
   const { id } = await params
+  const content = await getContentById(id)
 
-  try {
-    const content = await getContentById(id)
-
-    // Check authentication
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      redirect('/login')
-    }
-
-    // Check if user is the author
-    if (content.author_id !== user.id) {
-      redirect(`/post/${id}`)
-    }
-
-    return <EditPostForm content={content} />
-  } catch (error) {
+  if (!content) {
     notFound()
   }
+
+  // Check authentication
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect('/login')
+  }
+
+  // Check if user is the author
+  if (content.author_id !== user.id) {
+    redirect(`/post/${id}`)
+  }
+
+  return <EditPostForm content={content} />
 }

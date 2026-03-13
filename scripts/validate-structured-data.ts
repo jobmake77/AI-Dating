@@ -13,6 +13,7 @@
  */
 
 import { JSDOM } from 'jsdom'
+import { createClient } from '@supabase/supabase-js'
 
 interface ValidationResult {
   url: string
@@ -22,22 +23,42 @@ interface ValidationResult {
   warnings: string[]
 }
 
-// 测试 URL 列表
-const TEST_URLS = [
-  '/post/example-id',
-  '/u/example-username',
-  '/events/example-event-id',
-  '/communities/example-slug',
+interface ValidationTarget {
+  path: string
+  expectedTypes: string[]
+}
+
+type StructuredDataValue = string | number | boolean | null | undefined | StructuredDataValue[] | { [key: string]: StructuredDataValue }
+type StructuredDataObject = {
+  [key: string]: StructuredDataValue
+  '@context'?: string
+  '@type'?: string
+  headline?: string
+  author?: StructuredDataValue
+  datePublished?: string
+  publisher?: StructuredDataValue
+  name?: string
+  startDate?: string
+  location?: StructuredDataValue
+  itemListElement?: StructuredDataObject[]
+  position?: number
+}
+
+const FALLBACK_TARGETS: ValidationTarget[] = [
+  { path: '/post/example-id', expectedTypes: ['Article'] },
+  { path: '/u/example-username', expectedTypes: ['Person'] },
+  { path: '/events/example-event-id', expectedTypes: ['Event'] },
+  { path: '/communities/example-slug', expectedTypes: ['Organization'] },
 ]
 
 /**
  * 从 HTML 中提取结构化数据
  */
-function extractStructuredData(html: string): any[] {
+function extractStructuredData(html: string): StructuredDataObject[] {
   const dom = new JSDOM(html)
   const scripts = dom.window.document.querySelectorAll('script[type="application/ld+json"]')
 
-  const data: any[] = []
+  const data: StructuredDataObject[] = []
   scripts.forEach((script: Element) => {
     try {
       const json = JSON.parse(script.textContent || '')
@@ -50,10 +71,104 @@ function extractStructuredData(html: string): any[] {
   return data
 }
 
+function inferExpectedTypes(url: string) {
+  const pathname = new URL(url).pathname
+
+  if (pathname.startsWith('/post/')) return ['Article']
+  if (pathname.startsWith('/u/')) return ['Person']
+  if (pathname.startsWith('/events/')) return ['Event']
+  if (pathname.startsWith('/communities/')) return ['Organization']
+
+  return []
+}
+
+function isLikelyNotFoundPage(html: string) {
+  const dom = new JSDOM(html)
+  const bodyText = dom.window.document.body.textContent || ''
+
+  return bodyText.includes('页面未找到')
+}
+
+async function resolveDefaultTargets(baseUrl: string): Promise<Array<{ url: string; expectedTypes: string[] }>> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl || !supabaseKey) {
+    console.log('⚠️  未检测到可用的 Supabase 环境变量，回退到示例路径。')
+    return FALLBACK_TARGETS.map((target) => ({
+      url: `${baseUrl}${target.path}`,
+      expectedTypes: target.expectedTypes,
+    }))
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
+
+  const [postResult, userResult, eventResult, communityResult] = await Promise.all([
+    supabase
+      .from('contents')
+      .select('id')
+      .eq('status', 'approved')
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from('users')
+      .select('username')
+      .not('username', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from('events')
+      .select('id')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from('communities')
+      .select('slug')
+      .eq('type', 'public')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ])
+
+  const targets: Array<{ url: string; expectedTypes: string[] }> = []
+
+  if (postResult.data?.id) {
+    targets.push({ url: `${baseUrl}/post/${postResult.data.id}`, expectedTypes: ['Article'] })
+  }
+
+  if (userResult.data?.username) {
+    targets.push({ url: `${baseUrl}/u/${userResult.data.username}`, expectedTypes: ['Person'] })
+  }
+
+  if (eventResult.data?.id) {
+    targets.push({ url: `${baseUrl}/events/${eventResult.data.id}`, expectedTypes: ['Event'] })
+  }
+
+  if (communityResult.data?.slug) {
+    targets.push({ url: `${baseUrl}/communities/${communityResult.data.slug}`, expectedTypes: ['Organization'] })
+  }
+
+  if (targets.length === 0) {
+    console.log('⚠️  未查询到可用的真实数据，回退到示例路径。')
+    return FALLBACK_TARGETS.map((target) => ({
+      url: `${baseUrl}${target.path}`,
+      expectedTypes: target.expectedTypes,
+    }))
+  }
+
+  return targets
+}
+
 /**
  * 验证结构化数据
  */
-function validateStructuredData(data: any): { errors: string[]; warnings: string[] } {
+function validateStructuredData(data: StructuredDataObject): { errors: string[]; warnings: string[] } {
   const errors: string[] = []
   const warnings: string[] = []
 
@@ -94,7 +209,7 @@ function validateStructuredData(data: any): { errors: string[]; warnings: string
       if (!data.itemListElement || !Array.isArray(data.itemListElement)) {
         errors.push('BreadcrumbList missing itemListElement array')
       } else {
-        data.itemListElement.forEach((item: any, index: number) => {
+        data.itemListElement.forEach((item, index) => {
           if (!item['@type'] || item['@type'] !== 'ListItem') {
             errors.push(`BreadcrumbList item ${index} missing @type ListItem`)
           }
@@ -115,7 +230,7 @@ function validateStructuredData(data: any): { errors: string[]; warnings: string
 /**
  * 验证单个 URL
  */
-async function validateUrl(url: string): Promise<ValidationResult> {
+async function validateUrl(url: string, expectedTypes: string[] = inferExpectedTypes(url)): Promise<ValidationResult> {
   const result: ValidationResult = {
     url,
     valid: true,
@@ -139,6 +254,13 @@ async function validateUrl(url: string): Promise<ValidationResult> {
     }
 
     const html = await response.text()
+
+    if (isLikelyNotFoundPage(html)) {
+      result.valid = false
+      result.errors.push('Resolved to not-found page')
+      return result
+    }
+
     const structuredData = extractStructuredData(html)
 
     if (structuredData.length === 0) {
@@ -158,6 +280,10 @@ async function validateUrl(url: string): Promise<ValidationResult> {
       result.errors.push(...validation.errors)
       result.warnings.push(...validation.warnings)
     })
+
+    if (expectedTypes.length > 0 && !expectedTypes.some((type) => result.schemas.includes(type))) {
+      result.errors.push(`Expected schema type missing: ${expectedTypes.join(' or ')}`)
+    }
 
     if (result.errors.length > 0) {
       result.valid = false
@@ -181,18 +307,18 @@ async function main() {
   const urlArg = args.find((arg) => arg.startsWith('--url='))
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
-  let urls: string[]
+  let targets: Array<{ url: string; expectedTypes: string[] }>
   if (urlArg) {
     const url = urlArg.split('=')[1]
-    urls = [url]
+    targets = [{ url, expectedTypes: inferExpectedTypes(url) }]
   } else {
-    urls = TEST_URLS.map((path) => `${baseUrl}${path}`)
+    targets = await resolveDefaultTargets(baseUrl)
   }
 
   const results: ValidationResult[] = []
 
-  for (const url of urls) {
-    const result = await validateUrl(url)
+  for (const target of targets) {
+    const result = await validateUrl(target.url, target.expectedTypes)
     results.push(result)
 
     // 打印结果
@@ -245,4 +371,3 @@ if (require.main === module) {
 }
 
 export { validateUrl, validateStructuredData, extractStructuredData }
-

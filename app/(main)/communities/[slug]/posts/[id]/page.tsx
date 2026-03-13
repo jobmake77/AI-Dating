@@ -6,6 +6,7 @@ import { getUserMembershipStatus } from '@/lib/queries/communities'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
+import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft, ThumbsUp, MessageCircle, Pin, Lock, Trash, Users } from 'lucide-react'
 import { togglePostLike, togglePostPin, togglePostLock, deleteCommunityPost, createPostComment } from '@/lib/actions/community-posts'
@@ -56,10 +57,13 @@ async function PostDetail({ postId }: { postId: string }) {
     <div>
       <Card className="p-5 shadow-sm">
         <div className="flex items-start gap-4">
-          <img
+          <Image
             src={post.author.avatar_url || '/default-avatar.png'}
             alt={post.author.display_name || post.author.username}
-            className="w-10 h-10 rounded-full"
+            width={40}
+            height={40}
+            unoptimized
+            className="w-10 h-10 rounded-full object-cover"
           />
           <div className="flex-1">
             <div className="flex items-center justify-between">
@@ -112,10 +116,13 @@ async function PostDetail({ postId }: { postId: string }) {
             {post.images && post.images.length > 0 && (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-4">
                 {post.images.map((img: string, idx: number) => (
-                  <img
+                  <Image
                     key={idx}
                     src={img}
                     alt=""
+                    width={400}
+                    height={160}
+                    unoptimized
                     className="w-full h-40 rounded object-cover"
                   />
                 ))}
@@ -145,6 +152,7 @@ async function PostDetail({ postId }: { postId: string }) {
 
 async function CommentsList({ postId }: { postId: string }) {
   const { data: comments } = await getPostComments(postId)
+  type CommunityPostComment = Awaited<ReturnType<typeof getPostComments>>['data'][number]
 
   if (comments.length === 0) {
     return (
@@ -156,13 +164,16 @@ async function CommentsList({ postId }: { postId: string }) {
 
   return (
     <div className="space-y-3">
-      {comments.map((comment: any) => (
+      {comments.map((comment: CommunityPostComment) => (
         <Card key={comment.id} className="p-3 shadow-sm">
           <div className="flex items-start gap-3">
-            <img
+            <Image
               src={comment.author.avatar_url || '/default-avatar.png'}
               alt={comment.author.display_name || comment.author.username}
-              className="w-8 h-8 rounded-full"
+              width={32}
+              height={32}
+              unoptimized
+              className="w-8 h-8 rounded-full object-cover"
             />
             <div className="flex-1">
               <div className="flex items-center gap-2">
@@ -258,9 +269,12 @@ export default async function PostDetailPage({
           <div className="px-4 pb-3 -mt-4">
             <div className="flex items-end gap-2">
               {post.community.icon_url ? (
-                <img
+                <Image
                   src={post.community.icon_url}
                   alt={post.community.name}
+                  width={40}
+                  height={40}
+                  unoptimized
                   className="w-10 h-10 rounded-lg bg-card shadow-sm border border-border object-cover"
                 />
               ) : (

@@ -3,7 +3,6 @@
  * 基础 PWA 支持 - 离线缓存和资源管理
  */
 
-const CACHE_NAME = 'ai-dating-v1'
 const STATIC_CACHE = 'ai-dating-static-v1'
 const DYNAMIC_CACHE = 'ai-dating-dynamic-v1'
 

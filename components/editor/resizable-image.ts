@@ -1,5 +1,4 @@
 import Image from '@tiptap/extension-image'
-import { NodeViewWrapper } from '@tiptap/react'
 
 export const ResizableImage = Image.extend({
   addAttributes() {

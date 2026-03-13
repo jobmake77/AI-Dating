@@ -8,18 +8,20 @@ const filters = [
   { id: "past", label: "已结束" },
 ] as const;
 
+export type EventFilterId = (typeof filters)[number]["id"];
+
 interface EventFilterTabsProps {
-  activeFilter?: string;
-  onFilterChange?: (filterId: string) => void;
+  activeFilter?: EventFilterId;
+  onFilterChange?: (filterId: EventFilterId) => void;
 }
 
 export function EventFilterTabs({
   activeFilter = "upcoming",
   onFilterChange,
 }: EventFilterTabsProps) {
-  const [active, setActive] = useState(activeFilter);
+  const [active, setActive] = useState<EventFilterId>(activeFilter);
 
-  const handleFilterClick = (filterId: string) => {
+  const handleFilterClick = (filterId: EventFilterId) => {
     setActive(filterId);
     onFilterChange?.(filterId);
   };

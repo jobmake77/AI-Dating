@@ -1,7 +1,17 @@
 import { requireAdmin } from '@/lib/middleware/admin'
 import { createClient } from '@/lib/supabase/server'
 import { AdminDashboard } from '@/components/admin/admin-dashboard'
-import { Activity } from 'lucide-react'
+
+type PendingContentUser = {
+  username: string | null
+}
+
+type PendingContentRecord = {
+  id: string
+  title: string
+  created_at: string
+  users: PendingContentUser | PendingContentUser[] | null
+}
 
 function buildLast30Days() {
   const days: { date: string; users: number; contents: number }[] = []
@@ -27,7 +37,6 @@ export default async function AdminPage() {
 
   const [
     { count: totalUsers },
-    { count: totalContents },
     { count: pendingContents },
     { count: approvedContents },
     { data: recentUsers },
@@ -36,7 +45,6 @@ export default async function AdminPage() {
     { data: pendingContentData },
   ] = await Promise.all([
     supabase.from('users').select('*', { count: 'exact', head: true }),
-    supabase.from('contents').select('*', { count: 'exact', head: true }),
     supabase.from('contents').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
     supabase.from('contents').select('*', { count: 'exact', head: true }).eq('status', 'approved'),
     supabase.from('users').select('created_at').gte('created_at', since.toISOString()),
@@ -85,7 +93,8 @@ export default async function AdminPage() {
   ]
 
   // 格式化待审核内容
-  const pendingContent = (pendingContentData ?? []).map((item) => {
+  const pendingContent = ((pendingContentData ?? []) as PendingContentRecord[]).map((item) => {
+    const authorRecord = Array.isArray(item.users) ? item.users[0] : item.users
     const createdAt = new Date(item.created_at)
     const now = new Date()
     const diffMs = now.getTime() - createdAt.getTime()
@@ -105,7 +114,7 @@ export default async function AdminPage() {
     return {
       id: item.id,
       title: item.title,
-      author: (item.users as any)?.username ?? '未知用户',
+      author: authorRecord?.username ?? '未知用户',
       time,
       reason: '待审核',
       severity: 'medium',

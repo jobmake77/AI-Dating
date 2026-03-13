@@ -34,7 +34,7 @@ export async function createOrGetTag(name: string): Promise<{ tag: Tag | null; e
     const slug = name.toLowerCase().trim().replace(/\s+/g, '-')
 
     // 先尝试查找现有标签
-    const { data: existingTag, error: findError } = await supabase
+    const { data: existingTag } = await supabase
       .from('tags')
       .select('*')
       .eq('slug', slug)

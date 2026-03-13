@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Heart, Repeat2, MessageCircle, Eye, Flame, Pin } from "lucide-react";
+import { Heart, MessageCircle, Eye, Flame, Pin } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { zhCN } from "date-fns/locale";
 import { getCategoryColor } from "@/lib/utils/categories";
@@ -14,7 +14,7 @@ interface CompactContentCardProps {
     title: string;
     excerpt: string;
     tags: string[] | null;
-    category?: string; // Category slug
+    category?: string | null; // Category slug
     price_type: string;
     view_count: number;
     likes_count: number;

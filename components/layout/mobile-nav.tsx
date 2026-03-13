@@ -1,12 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Separator } from '@/components/ui/separator'
 import { Menu, Home, Search, Bell, User, Settings, LogOut, PenSquare, MessageCircle, Users } from 'lucide-react'
+import { useHydrated } from '@/lib/hooks/use-hydrated'
 
 interface MobileNavProps {
   isAuthenticated: boolean
@@ -22,12 +24,8 @@ interface MobileNavProps {
 
 export function MobileNav({ isAuthenticated, username, onSignOut, userCommunities = [] }: MobileNavProps) {
   const [open, setOpen] = useState(false)
-  const [mounted, setMounted] = useState(false)
+  const mounted = useHydrated()
   const pathname = usePathname()
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   const navItems = [
     { href: '/', label: '首页', icon: Home },
@@ -106,9 +104,11 @@ export function MobileNav({ isAuthenticated, username, onSignOut, userCommunitie
                   aria-current={pathname === `/communities/${community.slug}` ? 'page' : undefined}
                 >
                   {community.icon_url ? (
-                    <img
+                    <Image
                       src={community.icon_url}
                       alt=""
+                      width={32}
+                      height={32}
                       className="w-8 h-8 rounded object-cover"
                       aria-hidden="true"
                     />

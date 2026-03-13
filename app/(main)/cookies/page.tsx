@@ -218,7 +218,7 @@ export default function CookiePolicyPage() {
           <h2>7. Cookie 政策更新</h2>
           <p>
             我们可能会不时更新本 Cookie 政策，以反映我们使用 Cookie 的变化。
-            我们会在此页面上发布新的政策，并更新"最后更新日期"。
+            我们会在此页面上发布新的政策，并更新 &ldquo;最后更新日期&rdquo;。
           </p>
         </section>
 

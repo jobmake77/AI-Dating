@@ -1,8 +1,9 @@
 import { ContentCard } from './content-card'
 import { FileText } from 'lucide-react'
+import type { ContentListItem } from '@/lib/types/content'
 
 interface ContentListProps {
-  contents: any[]
+  contents: ContentListItem[]
 }
 
 export function ContentList({ contents }: ContentListProps) {

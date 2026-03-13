@@ -21,11 +21,13 @@ export interface CommunityRecommendation {
   reason: string
 }
 
+type CommunityScoreInput = Pick<CommunityRecommendation, 'members_count' | 'posts_count'>
+
 /**
  * 计算社区热度分数
  * 基于成员数、帖子数和活跃度
  */
-function calculateHotScore(community: any): number {
+function calculateHotScore(community: CommunityScoreInput): number {
   const membersWeight = 0.4
   const postsWeight = 0.6
 

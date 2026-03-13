@@ -125,6 +125,8 @@ export async function trackPageView(
   pageUrl: string,
   pageTitle?: string
 ): Promise<void> {
+  void pageUrl
+  void pageTitle
   // 页面浏览由 Google Analytics 自动追踪
   // 这里可以添加额外的自定义逻辑
 }

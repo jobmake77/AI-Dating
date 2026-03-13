@@ -1,8 +1,8 @@
 "use client"
 
-import { Flame, Clock, TrendingUp, Sparkles } from "lucide-react"
+import { Flame, Clock, TrendingUp } from "lucide-react"
 import Link from "next/link"
-import { usePathname, useSearchParams } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 
 const tabs = [
   { id: "new", label: "最新", icon: Clock, color: "text-info" },
@@ -16,7 +16,6 @@ interface FeedTabsProps {
 }
 
 export function FeedTabs({ activeTab = "new", basePath }: FeedTabsProps) {
-  const pathname = usePathname()
   const searchParams = useSearchParams()
 
   const createTabUrl = (tabId: string) => {

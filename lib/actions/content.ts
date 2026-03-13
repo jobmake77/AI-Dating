@@ -55,13 +55,6 @@ function extractExcerpt(htmlContent: string): string {
   return text.substring(0, 200) + (text.length > 200 ? '...' : '')
 }
 
-// Extract hashtags from HTML content
-function extractTags(htmlContent: string): string[] {
-  const text = htmlContent.replace(/<[^>]*>/g, '')
-  const hashtags = text.match(/#[\w\u4e00-\u9fa5]+/g) || []
-  return [...new Set(hashtags.map(tag => tag.slice(1)))]
-}
-
 export async function createContent(formData: FormData) {
   const supabase = await createClient()
 

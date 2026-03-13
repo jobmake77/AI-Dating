@@ -15,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { CheckCircle, XCircle, Eye, User, Calendar } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
+import Image from 'next/image'
 import { useToast } from '@/hooks/use-toast'
 import Link from 'next/link'
 
@@ -118,10 +119,13 @@ export function ModerationList({ contents }: ModerationListProps) {
                 {/* 作者信息 */}
                 <div className="flex items-center gap-2 mb-2">
                   {content.users.avatar ? (
-                    <img
+                    <Image
                       src={content.users.avatar}
                       alt={content.users.username}
-                      className="w-6 h-6 rounded-full"
+                      width={24}
+                      height={24}
+                      unoptimized
+                      className="w-6 h-6 rounded-full object-cover"
                     />
                   ) : (
                     <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">

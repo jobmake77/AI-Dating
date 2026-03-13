@@ -16,7 +16,7 @@ async function testOnboarding() {
 
   // 1. 测试基本连接
   console.log('\n1️⃣ Testing basic connection...')
-  const { data: healthCheck, error: healthError } = await supabase
+  const { error: healthError } = await supabase
     .from('users')
     .select('count')
     .limit(1)
@@ -52,7 +52,7 @@ async function testOnboarding() {
 
   // 4. 检查表结构
   console.log('\n4️⃣ Checking table structure...')
-  const { data: structure, error: structureError } = await supabase
+  const { error: structureError } = await supabase
     .from('user_onboarding')
     .select('*')
     .limit(0)

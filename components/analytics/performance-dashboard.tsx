@@ -6,8 +6,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   LineChart,
   Line,
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -17,9 +15,11 @@ import {
 } from 'recharts'
 import { formatMetricValue, getMetricDescription } from '@/lib/analytics/web-vitals'
 
+type WebVitalMetricName = 'LCP' | 'FID' | 'CLS' | 'FCP' | 'TTFB' | 'INP'
+
 interface WebVital {
   id: string
-  metric_name: string
+  metric_name: WebVitalMetricName
   metric_value: number
   metric_rating: 'good' | 'needs-improvement' | 'poor'
   created_at: string
@@ -41,11 +41,36 @@ interface Props {
   performanceMetrics: PerformanceMetric[]
 }
 
+interface WebVitalStats {
+  name: WebVitalMetricName
+  description: string
+  avg: number
+  p75: number
+  p95: number
+  count: number
+  goodPercentage: number
+  ratings: {
+    good: number
+    needsImprovement: number
+    poor: number
+  }
+}
+
+type TimeSeriesGroupedEntry = {
+  date: string
+} & Partial<Record<WebVitalMetricName, number[]>>
+
+type TimeSeriesDataPoint = {
+  date: string
+} & Partial<Record<WebVitalMetricName, number>>
+
+const metricNames: WebVitalMetricName[] = ['LCP', 'FID', 'CLS', 'FCP', 'TTFB', 'INP']
+
 export function PerformanceDashboard({ webVitals, performanceMetrics }: Props) {
   // 计算 Web Vitals 统计
   const webVitalsStats = useMemo(() => {
-    const metrics = ['LCP', 'FID', 'CLS', 'FCP', 'TTFB', 'INP']
-    return metrics.map((metricName) => {
+    return metricNames
+      .map((metricName): WebVitalStats | null => {
       const data = webVitals.filter((v) => v.metric_name === metricName)
       if (data.length === 0) return null
 
@@ -72,32 +97,38 @@ export function PerformanceDashboard({ webVitals, performanceMetrics }: Props) {
         goodPercentage,
         ratings,
       }
-    }).filter(Boolean)
+      })
+      .filter((stat): stat is WebVitalStats => stat !== null)
   }, [webVitals])
 
   // 准备时间序列数据
   const timeSeriesData = useMemo(() => {
-    const grouped = new Map<string, any>()
+    const grouped = new Map<string, TimeSeriesGroupedEntry>()
 
     webVitals.forEach((v) => {
       const date = new Date(v.created_at).toLocaleDateString()
-      if (!grouped.has(date)) {
-        grouped.set(date, { date })
+      let entry = grouped.get(date)
+
+      if (!entry) {
+        entry = { date }
+        grouped.set(date, entry)
       }
-      const entry = grouped.get(date)!
-      if (!entry[v.metric_name]) {
-        entry[v.metric_name] = []
-      }
-      entry[v.metric_name].push(v.metric_value)
+
+      const values = entry[v.metric_name] ?? []
+      values.push(v.metric_value)
+      entry[v.metric_name] = values
     })
 
     return Array.from(grouped.values()).map((entry) => {
-      const result: any = { date: entry.date }
-      Object.keys(entry).forEach((key) => {
-        if (key !== 'date' && Array.isArray(entry[key])) {
-          result[key] = entry[key].reduce((a: number, b: number) => a + b, 0) / entry[key].length
+      const result: TimeSeriesDataPoint = { date: entry.date }
+
+      metricNames.forEach((metricName) => {
+        const values = entry[metricName]
+        if (values && values.length > 0) {
+          result[metricName] = values.reduce((a, b) => a + b, 0) / values.length
         }
       })
+
       return result
     })
   }, [webVitals])
@@ -131,7 +162,7 @@ export function PerformanceDashboard({ webVitals, performanceMetrics }: Props) {
 
       <TabsContent value="overview" className="space-y-4">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {webVitalsStats.slice(0, 4).map((stat: any) => (
+          {webVitalsStats.slice(0, 4).map((stat) => (
             <Card key={stat.name}>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium">{stat.name}</CardTitle>
@@ -202,7 +233,7 @@ export function PerformanceDashboard({ webVitals, performanceMetrics }: Props) {
         </Card>
 
         <div className="grid gap-4 md:grid-cols-2">
-          {webVitalsStats.map((stat: any) => (
+          {webVitalsStats.map((stat) => (
             <Card key={stat.name}>
               <CardHeader>
                 <CardTitle>{stat.name}</CardTitle>

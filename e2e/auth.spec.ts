@@ -13,7 +13,7 @@ test.describe('认证流程测试', () => {
   })
 
   test('应该显示注册页面', async ({ page }) => {
-    await page.goto('/signup')
+    await page.goto('/register')
 
     // 验证注册表单元素
     const form = page.locator('form')

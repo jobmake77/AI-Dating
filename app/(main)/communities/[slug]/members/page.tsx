@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getCommunityBySlug, getCommunityMembers, getUserMembershipStatus } from '@/lib/queries/communities'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft, Shield, Crown, Users } from 'lucide-react'
 import { updateMemberRole, removeMember } from '@/lib/actions/communities'
@@ -20,6 +21,7 @@ async function handleRemoveMember(communityId: string, memberId: string): Promis
 
 async function MembersList({ communityId, currentUserRole }: { communityId: string; currentUserRole: string | null }) {
   const { data: members } = await getCommunityMembers(communityId, { limit: 100 })
+  type CommunityMember = Awaited<ReturnType<typeof getCommunityMembers>>['data'][number]
 
   if (members.length === 0) {
     return (
@@ -34,13 +36,16 @@ async function MembersList({ communityId, currentUserRole }: { communityId: stri
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {members.map((member: any) => (
+      {members.map((member: CommunityMember) => (
         <Card key={member.id} className="p-4 hover:shadow-sm transition-shadow">
           <div className="flex flex-col items-center text-center">
-            <img
+            <Image
               src={member.user.avatar_url || '/default-avatar.png'}
               alt={member.user.display_name || member.user.username}
-              className="w-16 h-16 rounded-full mb-3"
+              width={64}
+              height={64}
+              unoptimized
+              className="w-16 h-16 rounded-full mb-3 object-cover"
             />
             <div className="flex items-center gap-2 mb-1">
               <Link
@@ -142,9 +147,12 @@ export default async function MembersPage({
           <div className="px-5 pb-5 -mt-6">
             <div className="flex items-end gap-3">
               {community.icon_url ? (
-                <img
+                <Image
                   src={community.icon_url}
                   alt={community.name}
+                  width={56}
+                  height={56}
+                  unoptimized
                   className="w-14 h-14 rounded-xl bg-card shadow-sm border border-border object-cover"
                 />
               ) : (

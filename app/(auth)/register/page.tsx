@@ -11,6 +11,13 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { signUpWithEmail, signInWithGitHub } from '@/lib/actions/auth'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
+const DECORATION_BLOBS = Array.from({ length: 20 }, (_, index) => ({
+  width: 72 + (index % 5) * 38,
+  height: 72 + ((index + 2) % 5) * 42,
+  top: `${(index * 17) % 100}%`,
+  left: `${(index * 23) % 100}%`,
+}))
+
 export default function RegisterPage() {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
@@ -77,16 +84,11 @@ export default function RegisterPage() {
         style={{ background: 'linear-gradient(135deg, hsl(262, 83%, 58%), hsl(221, 83%, 53%), hsl(199, 89%, 48%))' }}
       >
         <div className="absolute inset-0 opacity-10">
-          {Array.from({ length: 20 }).map((_, i) => (
+          {DECORATION_BLOBS.map((blob, index) => (
             <div
-              key={i}
+              key={`${blob.top}-${blob.left}-${index}`}
               className="absolute rounded-full bg-white/20"
-              style={{
-                width: Math.random() * 300 + 50,
-                height: Math.random() * 300 + 50,
-                top: `${Math.random() * 100}%`,
-                left: `${Math.random() * 100}%`,
-              }}
+              style={blob}
             />
           ))}
         </div>

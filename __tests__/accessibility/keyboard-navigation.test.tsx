@@ -8,17 +8,17 @@ const MockNavigation = () => {
     <nav aria-label="主导航">
       <ul>
         <li>
-          <a href="/" tabIndex={0}>
+          <a href="https://example.com/" tabIndex={0}>
             首页
           </a>
         </li>
         <li>
-          <a href="/trending" tabIndex={0}>
+          <a href="https://example.com/trending" tabIndex={0}>
             热门
           </a>
         </li>
         <li>
-          <a href="/communities" tabIndex={0}>
+          <a href="https://example.com/communities" tabIndex={0}>
             社区
           </a>
         </li>

@@ -4,13 +4,14 @@ import { normalizeSingleRelation } from '@/lib/utils/normalize'
 import { z } from 'zod'
 
 import { createClient } from '@/lib/supabase/server'
+import type { ContentAuthorSummary, RelatedContentItem, TrendingContentItem } from '@/lib/types/content'
 
 // Validation schemas
 const contentIdSchema = z.string().uuid('无效的内容ID')
 const limitSchema = z.number().int('限制数量必须是整数').min(1, '限制数量必须大于0').max(50, '限制数量不能超过50')
 
 // 获取相关内容推荐（基于标签）
-export async function getRelatedContents(contentId: string, limit: number = 5) {
+export async function getRelatedContents(contentId: string, limit: number = 5): Promise<RelatedContentItem[]> {
   // Validate input
   const contentIdValidation = contentIdSchema.safeParse(contentId)
   if (!contentIdValidation.success) {
@@ -69,8 +70,9 @@ export async function getRelatedContents(contentId: string, limit: number = 5) {
     }
 
     // 计算相关度分数并排序
-    const scoredContents = (data || []).map(content => {
+    const scoredContents = (data || []).map((content): RelatedContentItem => {
       let score = 0
+      const author = normalizeSingleRelation(content.users) as ContentAuthorSummary | null
 
       // 相同标签数量
       const commonTags = content.tags?.filter((tag: string) =>
@@ -82,12 +84,20 @@ export async function getRelatedContents(contentId: string, limit: number = 5) {
       score += Math.log(content.view_count + 1) * 0.5
       score += Math.log(content.likes_count + 1) * 1
 
-      return { ...content, score }
+      return {
+        ...content,
+        users: author ?? {
+          username: 'unknown',
+          avatar: null,
+          full_name: null,
+        },
+        score,
+      }
     })
 
     // 按分数排序并返回前 N 个
     return scoredContents
-      .sort((a, b) => b.score - a.score)
+      .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
       .slice(0, limit)
   } catch (error) {
     logger.error('Get related contents error:', error)
@@ -99,7 +109,7 @@ export async function getRelatedContents(contentId: string, limit: number = 5) {
 export async function getTrendingContents(params: {
   timeRange?: 'day' | 'week' | 'month' | 'all'
   limit?: number
-} = {}) {
+} = {}): Promise<TrendingContentItem[]> {
   const { timeRange = 'week', limit = 10 } = params
 
   try {
@@ -163,13 +173,18 @@ export async function getTrendingContents(params: {
     }
 
     // 计算热度分数
-    const scoredContents = (data || []).map(content => {
+    const scoredContents = (data || []).map((content): TrendingContentItem => {
       let score = 0
+      const author = normalizeSingleRelation(content.users) as ContentAuthorSummary | null
 
       // 处理 Supabase 嵌套查询返回的数组
       const normalizedContent = {
         ...content,
-        users: normalizeSingleRelation(content.users)
+        users: author ?? {
+          username: 'unknown',
+          avatar: null,
+          full_name: null,
+        },
       }
 
       // 浏览量权重
@@ -194,7 +209,7 @@ export async function getTrendingContents(params: {
 
     // 按分数排序并返回前 N 个
     return scoredContents
-      .sort((a, b) => b.score - a.score)
+      .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
       .slice(0, limit)
   } catch (error) {
     logger.error('Get trending contents error:', error)
@@ -227,7 +242,7 @@ export async function getRecommendedContents(limit: number = 10) {
     // 收集用户感兴趣的标签
     const interestedTags = new Set<string>()
     userLikes?.forEach(like => {
-      const tags = (like as any).contents?.tags || []
+      const tags = normalizeSingleRelation(like.contents)?.tags || []
       tags.forEach((tag: string) => interestedTags.add(tag))
     })
 
@@ -290,7 +305,7 @@ export async function getRecommendedContents(limit: number = 10) {
 
     // 按分数排序并返回前 N 个
     return scoredContents
-      .sort((a, b) => b.score - a.score)
+      .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
       .slice(0, limit)
   } catch (error) {
     logger.error('Get recommended contents error:', error)

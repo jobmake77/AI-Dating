@@ -1,4 +1,4 @@
-import { Search, Wrench, Building2, Bot, Briefcase, LucideIcon } from 'lucide-react'
+import { Search, Wrench, Building2, Bot, Briefcase } from 'lucide-react'
 
 export const CATEGORIES = {
   'source-code': {

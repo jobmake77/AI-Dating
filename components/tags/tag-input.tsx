@@ -1,10 +1,9 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
-import { X, Plus } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { searchTags } from '@/lib/actions/tags'
 import type { Tag } from '@/lib/types/tag'
 
@@ -19,20 +18,27 @@ export function TagInput({ value, onChange, placeholder = '添加标签...', max
   const [inputValue, setInputValue] = useState('')
   const [suggestions, setSuggestions] = useState<Tag[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
 
   // 搜索标签建议
   useEffect(() => {
-    if (inputValue.trim().length > 0) {
-      searchTags(inputValue).then(tags => {
+    if (!inputValue.trim()) {
+      return
+    }
+
+    let active = true
+    searchTags(inputValue).then(tags => {
+      if (!active) {
+        return
+      }
+
         // 过滤掉已选择的标签
         const filtered = tags.filter(tag => !value.includes(tag.name))
         setSuggestions(filtered)
         setShowSuggestions(true)
-      })
-    } else {
-      setSuggestions([])
-      setShowSuggestions(false)
+    })
+
+    return () => {
+      active = false
     }
   }, [inputValue, value])
 
@@ -61,6 +67,15 @@ export function TagInput({ value, onChange, placeholder = '添加标签...', max
     }
   }
 
+  const handleInputChange = (nextValue: string) => {
+    setInputValue(nextValue)
+
+    if (!nextValue.trim()) {
+      setSuggestions([])
+      setShowSuggestions(false)
+    }
+  }
+
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap gap-2 p-3 border rounded-md bg-background min-h-[42px]">
@@ -81,10 +96,9 @@ export function TagInput({ value, onChange, placeholder = '添加标签...', max
         {value.length < maxTags && (
           <div className="flex-1 min-w-[120px] relative">
             <Input
-              ref={inputRef}
               type="text"
               value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
+              onChange={(e) => handleInputChange(e.target.value)}
               onKeyDown={handleKeyDown}
               onFocus={() => inputValue && setShowSuggestions(true)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}

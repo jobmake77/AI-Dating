@@ -1,13 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Calendar, Eye, Tag, Trash2 } from "lucide-react";
+import { Calendar, Eye, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { zhCN } from "date-fns/locale";
 import { getCategoryColor } from "@/lib/utils/categories";
 import DOMPurify from "dompurify";
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,12 +47,21 @@ interface ContentDetailCardProps {
 }
 
 export function ContentDetailCard({ content, canViewFullContent, currentUserId }: ContentDetailCardProps) {
-  const [sanitizedContent, setSanitizedContent] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
   const catColorHsl = content.category ? getCategoryColor(content.category) : "221 83% 53%";
   const primaryTag = content.tags?.[0] || "讨论";
   const isAuthor = currentUserId === content.author_id;
+  const sanitizedContent = useMemo(() => {
+    const displayContent = canViewFullContent
+      ? content.content
+      : content.content.substring(0, 500) + "...";
+
+    return DOMPurify.sanitize(displayContent, {
+      ALLOWED_TAGS: ["p", "br", "strong", "em", "u", "h1", "h2", "h3", "h4", "h5", "h6", "ul", "ol", "li", "img", "a", "code", "pre", "blockquote", "div", "span", "table", "thead", "tbody", "tr", "th", "td"],
+      ALLOWED_ATTR: ["href", "src", "alt", "width", "height", "class", "style", "target", "rel"],
+    });
+  }, [canViewFullContent, content.content]);
 
   const handleDelete = async () => {
     try {
@@ -64,18 +73,6 @@ export function ContentDetailCard({ content, canViewFullContent, currentUserId }
       setIsDeleting(false);
     }
   };
-
-  useEffect(() => {
-    const displayContent = canViewFullContent
-      ? content.content
-      : content.content.substring(0, 500) + "...";
-
-    const clean = DOMPurify.sanitize(displayContent, {
-      ALLOWED_TAGS: ["p", "br", "strong", "em", "u", "h1", "h2", "h3", "h4", "h5", "h6", "ul", "ol", "li", "img", "a", "code", "pre", "blockquote", "div", "span", "table", "thead", "tbody", "tr", "th", "td"],
-      ALLOWED_ATTR: ["href", "src", "alt", "width", "height", "class", "style", "target", "rel"],
-    });
-    setSanitizedContent(clean);
-  }, [content.content, canViewFullContent]);
 
   return (
     <motion.article
@@ -177,4 +174,3 @@ export function ContentDetailCard({ content, canViewFullContent, currentUserId }
     </motion.article>
   );
 }
-

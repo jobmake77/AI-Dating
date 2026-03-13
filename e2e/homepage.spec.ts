@@ -26,8 +26,6 @@ test.describe('首页测试', () => {
     await page.goto('/')
 
     // 移动端导航应该可见
-    const mobileNav = page.locator('[data-testid="mobile-nav"]').or(page.locator('button[aria-label*="menu"]'))
-
     // 至少有一个导航元素应该存在
     const navCount = await page.locator('nav').count()
     expect(navCount).toBeGreaterThan(0)

@@ -19,13 +19,6 @@ const r2Client = new S3Client({
 const BUCKET_NAME = process.env.R2_BUCKET_NAME!
 const PUBLIC_URL = process.env.R2_PUBLIC_URL!
 
-const ALLOWED_VIDEO_TYPES = [
-  'video/mp4',
-  'video/quicktime',
-  'video/webm',
-  'video/x-msvideo',
-]
-
 // Map contentType -> allowed extensions
 const TYPE_EXT_MAP: Record<string, string[]> = {
   'video/mp4': ['mp4'],

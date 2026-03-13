@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { notFound } from 'next/navigation'
 
 async function testAuth() {
   'use server'
@@ -31,10 +32,14 @@ async function testAuth() {
 }
 
 export default async function TestAuthPage() {
+  if (process.env.NODE_ENV === 'production') {
+    notFound()
+  }
+
   const supabase = await createClient()
 
   // 测试连接
-  const { data: testData, error: testError } = await supabase
+  const { error: testError } = await supabase
     .from('users')
     .select('count')
     .limit(1)

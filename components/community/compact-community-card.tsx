@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Users, FileText, TrendingUp } from "lucide-react";
+import { Users, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface CompactCommunityCardProps {
@@ -108,4 +108,3 @@ export function CompactCommunityCard({
     </motion.article>
   );
 }
-

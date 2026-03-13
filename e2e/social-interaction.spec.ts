@@ -4,9 +4,7 @@ test.describe('社交互动功能测试', () => {
   test.describe('点赞功能', () => {
     test('应该显示点赞按钮', async ({ page }) => {
       await page.goto('/')
-
-      // 等待页面加载
-      await page.waitForLoadState('networkidle')
+      await expect(page.locator('#main-content')).toBeVisible()
 
       // 查找点赞按钮（可能在内容卡片中）
       const likeButtons = page.locator('button[aria-label*="赞"], button[aria-label*="like"]')
@@ -19,8 +17,10 @@ test.describe('社交互动功能测试', () => {
     })
 
     test('未登录用户点赞应该跳转到登录页', async ({ page }) => {
+      test.slow()
+
       await page.goto('/')
-      await page.waitForLoadState('networkidle')
+      await expect(page.locator('#main-content')).toBeVisible()
 
       const likeButton = page.locator('button[aria-label*="赞"], button[aria-label*="like"]').first()
 
@@ -40,7 +40,7 @@ test.describe('社交互动功能测试', () => {
   test.describe('评论功能', () => {
     test('应该能查看评论区', async ({ page }) => {
       await page.goto('/')
-      await page.waitForLoadState('networkidle')
+      await expect(page.locator('#main-content')).toBeVisible()
 
       // 查找评论按钮或评论区
       const commentButtons = page.locator('button[aria-label*="评论"], button[aria-label*="comment"]')
@@ -53,7 +53,7 @@ test.describe('社交互动功能测试', () => {
 
     test('未登录用户评论应该提示登录', async ({ page }) => {
       await page.goto('/')
-      await page.waitForLoadState('networkidle')
+      await expect(page.locator('#main-content')).toBeVisible()
 
       const commentButton = page.locator('button[aria-label*="评论"], button[aria-label*="comment"]').first()
 
@@ -71,7 +71,7 @@ test.describe('社交互动功能测试', () => {
   test.describe('关注功能', () => {
     test('应该能访问用户主页', async ({ page }) => {
       await page.goto('/')
-      await page.waitForLoadState('networkidle')
+      await expect(page.locator('#main-content')).toBeVisible()
 
       // 查找用户链接
       const userLinks = page.locator('a[href*="/u/"]')
@@ -81,18 +81,15 @@ test.describe('社交互动功能测试', () => {
         const firstUserLink = userLinks.first()
         await firstUserLink.click()
 
-        // 等待导航完成
-        await page.waitForLoadState('networkidle')
-
         // 验证在用户主页
-        expect(page.url()).toContain('/u/')
+        await expect(page).toHaveURL(/\/u\//)
       }
     })
 
     test('用户主页应该显示关注按钮', async ({ page }) => {
       // 直接访问一个用户主页（如果存在）
       await page.goto('/')
-      await page.waitForLoadState('networkidle')
+      await expect(page.locator('#main-content')).toBeVisible()
 
       const userLinks = page.locator('a[href*="/u/"]')
       const count = await userLinks.count()
@@ -101,7 +98,7 @@ test.describe('社交互动功能测试', () => {
         const href = await userLinks.first().getAttribute('href')
         if (href) {
           await page.goto(href)
-          await page.waitForLoadState('networkidle')
+          await expect(page).toHaveURL(/\/u\//)
 
           // 查找关注按钮
           const followButton = page.locator('button:has-text("关注"), button:has-text("Follow")')
@@ -116,7 +113,7 @@ test.describe('社交互动功能测试', () => {
   test.describe('分享功能', () => {
     test('应该显示分享按钮', async ({ page }) => {
       await page.goto('/')
-      await page.waitForLoadState('networkidle')
+      await expect(page.locator('#main-content')).toBeVisible()
 
       // 查找分享按钮
       const shareButtons = page.locator('button[aria-label*="分享"], button[aria-label*="share"]')

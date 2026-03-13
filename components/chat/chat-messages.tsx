@@ -46,7 +46,7 @@ function formatTime(dateString: string): string {
 
 export function ChatMessages({ conversationId, initialMessages, otherUserLastReadAt, currentUserId }: ChatMessagesProps) {
   const [messages, setMessages] = useState<Message[]>(initialMessages)
-  const [otherLastReadAt, setOtherLastReadAt] = useState<string | null>(otherUserLastReadAt)
+  const [, setOtherLastReadAt] = useState<string | null>(otherUserLastReadAt)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 

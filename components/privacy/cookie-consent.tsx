@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
@@ -14,29 +14,46 @@ interface CookiePreferences {
   marketing: boolean
 }
 
+type ConsentUpdateParams = {
+  analytics_storage: 'granted' | 'denied'
+  ad_storage: 'granted' | 'denied'
+}
+
+type WindowWithGtag = Window & {
+  gtag?: (command: 'consent', action: 'update', params: ConsentUpdateParams) => void
+}
+
 const COOKIE_CONSENT_KEY = "cookie-consent"
 const COOKIE_PREFERENCES_KEY = "cookie-preferences"
+const DEFAULT_PREFERENCES: CookiePreferences = {
+  necessary: true,
+  analytics: false,
+  marketing: false,
+}
+
+function getStoredPreferences(): CookiePreferences {
+  if (typeof window === "undefined") {
+    return DEFAULT_PREFERENCES
+  }
+
+  const savedPreferences = localStorage.getItem(COOKIE_PREFERENCES_KEY)
+  if (!savedPreferences) {
+    return DEFAULT_PREFERENCES
+  }
+
+  try {
+    return JSON.parse(savedPreferences) as CookiePreferences
+  } catch {
+    return DEFAULT_PREFERENCES
+  }
+}
 
 export function CookieConsent() {
-  const [showBanner, setShowBanner] = useState(false)
+  const [showBanner, setShowBanner] = useState(() =>
+    typeof window === "undefined" ? false : !localStorage.getItem(COOKIE_CONSENT_KEY)
+  )
   const [showSettings, setShowSettings] = useState(false)
-  const [preferences, setPreferences] = useState<CookiePreferences>({
-    necessary: true,
-    analytics: false,
-    marketing: false,
-  })
-
-  useEffect(() => {
-    const consent = localStorage.getItem(COOKIE_CONSENT_KEY)
-    if (!consent) {
-      setShowBanner(true)
-    } else {
-      const savedPreferences = localStorage.getItem(COOKIE_PREFERENCES_KEY)
-      if (savedPreferences) {
-        setPreferences(JSON.parse(savedPreferences))
-      }
-    }
-  }, [])
+  const [preferences, setPreferences] = useState<CookiePreferences>(getStoredPreferences)
 
   const savePreferences = (prefs: CookiePreferences) => {
     localStorage.setItem(COOKIE_CONSENT_KEY, "true")
@@ -46,8 +63,9 @@ export function CookieConsent() {
     setShowSettings(false)
 
     // Trigger analytics consent update
-    if (typeof window !== "undefined" && (window as any).gtag) {
-      (window as any).gtag("consent", "update", {
+    const windowWithGtag = window as WindowWithGtag
+    if (windowWithGtag.gtag) {
+      windowWithGtag.gtag("consent", "update", {
         analytics_storage: prefs.analytics ? "granted" : "denied",
         ad_storage: prefs.marketing ? "granted" : "denied",
       })
@@ -95,7 +113,7 @@ export function CookieConsent() {
                   <h3 className="font-semibold text-lg">我们使用 Cookie</h3>
                   <p className="text-sm text-muted-foreground">
                     我们使用 Cookie 来改善您的浏览体验、提供个性化内容和分析网站流量。
-                    通过点击"接受全部"，您同意我们使用 Cookie。
+                    通过点击 &ldquo;接受全部&rdquo;，您同意我们使用 Cookie。
                     {" "}
                     <Link href="/privacy" className="underline hover:text-primary">
                       隐私政策
@@ -232,4 +250,3 @@ export function CookieConsent() {
     </>
   )
 }
-

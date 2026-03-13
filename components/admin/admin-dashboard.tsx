@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Users, FileText, Shield, BarChart3, AlertTriangle, Check, X, TrendingUp, Eye, Activity } from "lucide-react"
+import { Users, FileText, Shield, BarChart3, AlertTriangle, Check, X, TrendingUp, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
 

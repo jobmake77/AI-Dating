@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getCommunityBySlug, getUserMembershipStatus } from '@/lib/queries/communities'
 import { getCommunityPosts } from '@/lib/queries/community-posts'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
+import Image from 'next/image'
 import Link from 'next/link'
 import { Users, Settings, Plus, Lock, ArrowLeft, ThumbsUp, MessageCircle, Pin, Shield, Calendar } from 'lucide-react'
 import { joinCommunity, leaveCommunity } from '@/lib/actions/communities'
@@ -14,51 +14,40 @@ import { CommunityFeedTabs } from '@/components/community/community-feed-tabs'
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
+  const { data: community } = await getCommunityBySlug(slug)
+  if (!community) {
+    notFound()
+  }
 
-  try {
-    const { data: community } = await getCommunityBySlug(slug)
-    if (!community) {
-      return {
-        title: '社区未找到',
-        description: '该社区不存在',
-      }
-    }
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+  const ogImageUrl = `${baseUrl}/api/og?type=community&name=${encodeURIComponent(community.name)}&desc=${encodeURIComponent(community.description || '')}&members=${community.members_count}`
 
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-    const ogImageUrl = `${baseUrl}/api/og?type=community&name=${encodeURIComponent(community.name)}&desc=${encodeURIComponent(community.description || '')}&members=${community.members_count}`
-
-    return {
-      title: `${community.name} - AI-Dating 社区`,
-      description: community.description || `${community.name} 社区，${community.members_count} 位成员`,
-      keywords: ['社区', 'AI', community.name],
-      openGraph: {
-        type: 'website',
-        locale: 'zh_CN',
-        url: `${baseUrl}/communities/${community.slug}`,
-        title: community.name,
-        description: community.description || `${community.name} 社区`,
-        siteName: 'AI-Dating',
-        images: [
-          {
-            url: ogImageUrl,
-            width: 1200,
-            height: 630,
-            alt: community.name,
-          },
-        ],
-      },
-      twitter: {
-        card: 'summary_large_image',
-        title: community.name,
-        description: community.description || `${community.name} 社区`,
-        images: [ogImageUrl],
-      },
-    }
-  } catch (error) {
-    return {
-      title: '社区未找到',
-      description: '该社区不存在',
-    }
+  return {
+    title: `${community.name} - AI-Dating 社区`,
+    description: community.description || `${community.name} 社区，${community.members_count} 位成员`,
+    keywords: ['社区', 'AI', community.name],
+    openGraph: {
+      type: 'website',
+      locale: 'zh_CN',
+      url: `${baseUrl}/communities/${community.slug}`,
+      title: community.name,
+      description: community.description || `${community.name} 社区`,
+      siteName: 'AI-Dating',
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: community.name,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: community.name,
+      description: community.description || `${community.name} 社区`,
+      images: [ogImageUrl],
+    },
   }
 }
 
@@ -88,9 +77,12 @@ async function CommunityHeader({ slug }: { slug: string }) {
           <div className="flex items-end gap-3">
             {/* Community Avatar */}
             {community.icon_url ? (
-              <img
+              <Image
                 src={community.icon_url}
                 alt={community.name}
+                width={64}
+                height={64}
+                unoptimized
                 className="w-16 h-16 rounded-xl bg-card shadow-sm border border-border object-cover"
               />
             ) : (
@@ -180,6 +172,7 @@ async function CommunityHeader({ slug }: { slug: string }) {
 
 async function PostsList({ communityId, sortBy }: { communityId: string; sortBy: 'latest' | 'popular' }) {
   const { data: posts } = await getCommunityPosts(communityId, { sortBy, limit: 50 })
+  type CommunityPost = Awaited<ReturnType<typeof getCommunityPosts>>['data'][number]
 
   if (posts.length === 0) {
     return (
@@ -191,7 +184,7 @@ async function PostsList({ communityId, sortBy }: { communityId: string; sortBy:
 
   return (
     <div className="space-y-2">
-      {posts.map((post: any) => (
+      {posts.map((post: CommunityPost) => (
         <Link key={post.id} href={`/communities/${post.community.slug}/posts/${post.id}`}>
           <article className="group flex items-start gap-0 rounded-lg border border-border bg-card transition-all hover:border-primary/20 hover:shadow-sm">
             {/* Category color bar */}
@@ -200,12 +193,12 @@ async function PostsList({ communityId, sortBy }: { communityId: string; sortBy:
             <div className="flex-1 min-w-0 flex items-start gap-3 p-3">
               {/* Vote column */}
               <div className="flex flex-col items-center gap-0 shrink-0">
-                <button
-                  className="rounded p-0.5 text-muted-foreground transition-all hover:text-primary hover:bg-primary/10"
-                  onClick={(e) => e.preventDefault()}
+                <span
+                  className="rounded p-0.5 text-muted-foreground transition-all group-hover:text-primary"
+                  aria-hidden="true"
                 >
                   <ThumbsUp className="h-4 w-4" />
-                </button>
+                </span>
                 <span className="font-mono text-[11px] font-bold text-foreground leading-none my-0.5">
                   {post.likes_count}
                 </span>
@@ -325,9 +318,12 @@ async function CommunityRulesSidebar({ communityId }: { communityId: string }) {
                     href={`/u/${user.username}`}
                     className="flex items-center gap-2 p-2 rounded-lg hover:bg-secondary/50 transition-colors"
                   >
-                    <img
+                    <Image
                       src={user.avatar || '/default-avatar.png'}
                       alt={user.full_name || user.username}
+                      width={32}
+                      height={32}
+                      unoptimized
                       className="h-8 w-8 rounded-full object-cover"
                     />
                     <div className="flex-1 min-w-0">
@@ -365,7 +361,7 @@ async function CommunityRulesSidebar({ communityId }: { communityId: string }) {
   )
 }
 
-async function CommunityContent({ communityId, slug }: { communityId: string; slug: string }) {
+async function CommunityContent({ communityId }: { communityId: string }) {
   return (
     <div className="flex gap-4">
       <main className="flex-1 min-w-0 space-y-3">
@@ -441,7 +437,7 @@ export default async function CommunityPage({
 
         <CommunityHeader slug={slug} />
 
-        <CommunityContent communityId={community.id} slug={slug} />
+          <CommunityContent communityId={community.id} />
       </div>
     </div>
   )

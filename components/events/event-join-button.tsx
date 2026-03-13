@@ -21,7 +21,7 @@ export function EventJoinButton({
   isAuthenticated,
 }: EventJoinButtonProps) {
   const [isJoined, setIsJoined] = useState(initialJoined)
-  const [count, setCount] = useState(initialCount)
+  const [, setCount] = useState(initialCount)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 

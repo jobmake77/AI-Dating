@@ -35,7 +35,7 @@ export function ContentModerationQueue({ communityId, posts }: ContentModeration
     try {
       // TODO: 实现审核通过逻辑
       toast.success('帖子已通过审核')
-    } catch (error) {
+    } catch {
       toast.error('操作失败')
     } finally {
       setLoading(null)
@@ -47,7 +47,7 @@ export function ContentModerationQueue({ communityId, posts }: ContentModeration
     try {
       // TODO: 实现审核拒绝逻辑
       toast.success('帖子已被拒绝')
-    } catch (error) {
+    } catch {
       toast.error('操作失败')
     } finally {
       setLoading(null)

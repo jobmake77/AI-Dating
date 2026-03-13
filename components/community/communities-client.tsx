@@ -8,12 +8,15 @@ import { CommunityTabs } from "@/components/community/community-tabs";
 import { CommunityList } from "@/components/community/community-list";
 import { joinCommunity, leaveCommunity } from "@/lib/actions/communities";
 import { toast } from "sonner";
+import type { CommunityListItem } from '@/lib/types/community'
+
+type CommunityTab = 'all' | 'joined' | 'trending'
 
 interface CommunitiesClientProps {
-  initialTab: "all" | "joined" | "trending";
-  allCommunities: any[];
-  joinedCommunities: any[];
-  trendingCommunities: any[];
+  initialTab: CommunityTab;
+  allCommunities: CommunityListItem[];
+  joinedCommunities: CommunityListItem[];
+  trendingCommunities: CommunityListItem[];
   showJoined: boolean;
 }
 
@@ -26,7 +29,7 @@ export function CommunitiesClient({
 }: CommunitiesClientProps) {
   const [activeTab, setActiveTab] = useState(initialTab);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
   const router = useRouter();
 
   const handleJoinToggle = async (communityId: string, isJoined: boolean) => {
@@ -49,32 +52,26 @@ export function CommunitiesClient({
             toast.error(result.error || "加入失败");
           }
         }
-      } catch (error) {
+      } catch {
         toast.error("操作失败，请重试");
       }
     });
   };
 
-  const getCurrentCommunities = () => {
-    switch (activeTab) {
-      case "joined":
-        return joinedCommunities;
-      case "trending":
-        return trendingCommunities;
-      default:
-        return allCommunities;
-    }
-  };
-
   // Filter communities based on search query
   const filteredCommunities = useMemo(() => {
-    const communities = getCurrentCommunities();
+    const communities = activeTab === 'joined'
+      ? joinedCommunities
+      : activeTab === 'trending'
+        ? trendingCommunities
+        : allCommunities
+
     if (!searchQuery.trim()) return communities;
 
     const query = searchQuery.toLowerCase();
-    return communities.filter((c: any) =>
-      c.name?.toLowerCase().includes(query) ||
-      c.description?.toLowerCase().includes(query)
+    return communities.filter((community) =>
+      community.name.toLowerCase().includes(query) ||
+      community.description?.toLowerCase().includes(query)
     );
   }, [activeTab, searchQuery, allCommunities, joinedCommunities, trendingCommunities]);
 
@@ -103,4 +100,3 @@ export function CommunitiesClient({
     </div>
   );
 }
-

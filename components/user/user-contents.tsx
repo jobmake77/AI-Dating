@@ -1,8 +1,9 @@
 import { ContentList } from '@/components/content/content-list'
 import { Pagination } from '@/components/content/pagination'
+import type { ContentListItem } from '@/lib/types/content'
 
 interface UserContentsProps {
-  contents: any[]
+  contents: ContentListItem[]
   username: string
   currentPage: number
   totalPages: number

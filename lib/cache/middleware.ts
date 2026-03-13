@@ -13,6 +13,8 @@ export interface CacheOptions {
   shouldCache?: (req: NextRequest, res: NextResponse) => boolean
 }
 
+type JsonLike = null | boolean | number | string | JsonLike[] | { [key: string]: JsonLike }
+
 /**
  * API 响应缓存中间件
  */
@@ -37,7 +39,7 @@ export function withApiCache(
     const cacheKey = buildCacheKey(prefix, keyGenerator(req))
 
     // 尝试从缓存获取
-    const cached = await getCached<any>(cacheKey)
+    const cached = await getCached<JsonLike>(cacheKey)
     if (cached) {
       return NextResponse.json(cached, {
         headers: {

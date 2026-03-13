@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Upload, Users } from 'lucide-react'
 import { toast } from 'sonner'
 import { ImageCropper } from '@/components/ui/image-cropper'
+import Image from 'next/image'
 
 interface CommunityIconUploadProps {
   currentIcon?: string | null
@@ -58,7 +59,7 @@ export function CommunityIconUpload({ currentIcon, onUploadSuccess }: CommunityI
     <div className="flex items-center gap-4">
       <div className="w-20 h-20 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
         {previewUrl ? (
-          <img src={previewUrl} alt="社区图标" className="w-full h-full object-cover" />
+          <Image src={previewUrl} alt="社区图标" fill unoptimized sizes="80px" className="object-cover" />
         ) : (
           <Users className="w-10 h-10 text-muted-foreground" />
         )}

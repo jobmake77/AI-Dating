@@ -1,20 +1,30 @@
 "use server"
 
+import type { User } from '@supabase/supabase-js'
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 import { z } from 'zod'
+import type { Tables } from '@/types/database.types'
+
+type ExportedAuthUser = Pick<User, 'id' | 'email' | 'created_at'>
+type CommunityExport = Tables<'community_members'> & {
+  communities: Tables<'communities'> | null
+}
+type EventExport = Tables<'event_participants'> & {
+  events: Tables<'events'> | null
+}
 
 export interface UserDataExport {
-  user: any
-  profile: any
-  contents: any[]
-  comments: any[]
-  likes: any[]
-  follows: any[]
-  communities: any[]
-  events: any[]
-  messages: any[]
-  notifications: any[]
+  user: ExportedAuthUser
+  profile: Tables<'users'> | null
+  contents: Tables<'contents'>[]
+  comments: Tables<'comments'>[]
+  likes: Tables<'likes'>[]
+  follows: Tables<'follows'>[]
+  communities: CommunityExport[]
+  events: EventExport[]
+  messages: Tables<'messages'>[]
+  notifications: Tables<'notifications'>[]
 }
 
 // Validation schema
@@ -153,7 +163,6 @@ export async function requestAccountDeletion(userId: string, reason?: string): P
     }
 
     // Anonymize user data (soft delete)
-    const anonymousEmail = `deleted_${userId}@anonymous.local`
     const anonymousUsername = `deleted_user_${userId.substring(0, 8)}`
 
     // Update profile

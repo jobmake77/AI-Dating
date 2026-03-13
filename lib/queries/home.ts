@@ -26,6 +26,16 @@ export interface HomepageData {
   popularTags: HomepageTagItem[]
 }
 
+interface JoinedCommunityRecord {
+  community: HomepageCommunityItem | HomepageCommunityItem[] | null
+}
+
+function isHomepageCommunityItem(
+  community: HomepageCommunityItem | null
+): community is HomepageCommunityItem {
+  return community !== null
+}
+
 export async function getHomepageData(userId?: string): Promise<HomepageData> {
   const supabase = await createClient()
 
@@ -93,9 +103,9 @@ export async function getHomepageData(userId?: string): Promise<HomepageData> {
       totalContents: totalContents || 0,
       totalCommunities: totalCommunities || 0,
     },
-    userCommunities: (joinedCommunities || [])
-      .map((item: any) => item.community)
-      .filter(Boolean),
+    userCommunities: ((joinedCommunities || []) as JoinedCommunityRecord[])
+      .map((item) => Array.isArray(item.community) ? item.community[0] : item.community)
+      .filter(isHomepageCommunityItem),
     trendingCommunities: trendingCommunities || [],
     popularTags: (popularTags || []).map((tag) => ({
       name: tag.name,

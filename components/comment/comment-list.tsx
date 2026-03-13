@@ -96,8 +96,8 @@ function CommentItem({ comment, isOwner, contentId, currentUserId, isAuthenticat
       setReplyText('')
       setShowReply(false)
       router.refresh()
-    } catch (e: any) {
-      setReplyError(e?.message ?? '回复失败')
+    } catch (error) {
+      setReplyError(error instanceof Error ? error.message : '回复失败')
     } finally {
       setIsReplying(false)
     }

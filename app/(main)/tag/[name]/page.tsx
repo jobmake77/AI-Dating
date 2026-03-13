@@ -53,7 +53,7 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
 
   const tagName = decodeURIComponent(name)
 
-  const { contents, totalPages, total } = await getContents({ page, tag: tagName })
+  const { contents, total } = await getContents({ page, tag: tagName })
 
   return (
     <div className="min-h-screen bg-background">

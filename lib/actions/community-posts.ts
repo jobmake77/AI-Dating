@@ -7,7 +7,9 @@ import { logger } from '@/lib/utils/logger'
 import { normalizeSingleRelation } from '@/lib/utils/normalize'
 
 // Helper to extract slug from Supabase join result (can be object or array)
-function getSlug(community: any): string | null {
+type CommunitySlugRelation = { slug: string }
+
+function getSlug(community: CommunitySlugRelation | CommunitySlugRelation[] | null | undefined): string | null {
   const normalized = normalizeSingleRelation(community)
   return normalized?.slug ?? null
 }
@@ -138,10 +140,14 @@ export async function updateCommunityPost(postId: string, formData: FormData) {
     }
 
     // 验证表单数据
-    const data: any = {}
-    if (formData.get('title') !== null) data.title = formData.get('title')
-    if (formData.get('content')) data.content = formData.get('content')
-    if (formData.get('images')) data.images = JSON.parse(formData.get('images') as string)
+    const data: Record<string, FormDataEntryValue | string[]> = {}
+    const title = formData.get('title')
+    const content = formData.get('content')
+    const images = formData.get('images')
+
+    if (title !== null) data.title = title
+    if (content) data.content = content
+    if (images) data.images = JSON.parse(images as string)
 
     const validatedData = updatePostSchema.parse(data)
 

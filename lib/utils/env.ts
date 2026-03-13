@@ -32,19 +32,6 @@ const requiredEnvVars = [
   'NEXT_PUBLIC_SUPABASE_ANON_KEY',
 ] as const
 
-const optionalEnvVars = [
-  'SUPABASE_SERVICE_ROLE_KEY',
-  'R2_ACCOUNT_ID',
-  'R2_ACCESS_KEY_ID',
-  'R2_SECRET_ACCESS_KEY',
-  'R2_BUCKET_NAME',
-  'R2_PUBLIC_URL',
-  'NEXT_PUBLIC_SITE_URL',
-  'BOOTSTRAP_ADMIN_SECRET',
-  'TENCENT_SECRET_ID',
-  'TENCENT_SECRET_KEY',
-] as const
-
 /**
  * 验证必需的环境变量
  * @throws Error 如果缺少必需的环境变量

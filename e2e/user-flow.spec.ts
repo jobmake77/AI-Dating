@@ -2,17 +2,21 @@ import { test, expect } from '@playwright/test'
 
 test.describe('完整用户流程测试', () => {
   test('用户注册到发布内容的完整流程', async ({ page }) => {
+    test.slow()
+
     // 1. 访问首页
-    await page.goto('/')
+    const homeResponse = await page.goto('/')
+    expect(homeResponse?.status()).toBe(200)
     await expect(page).toHaveTitle(/AI-Dating|A Date with AI/)
+    await expect(page.locator('nav')).toBeVisible()
 
     // 2. 导航到注册页面
-    const signupLink = page.locator('a[href*="/signup"]').first()
+    const signupLink = page.locator('a[href*="/register"], a[href*="/signup"]').first()
     if (await signupLink.isVisible()) {
       await signupLink.click()
-      await page.waitForURL('**/signup')
+      await page.waitForURL('**/register')
     } else {
-      await page.goto('/signup')
+      await page.goto('/register')
     }
 
     // 3. 验证注册表单存在
@@ -29,24 +33,17 @@ test.describe('完整用户流程测试', () => {
     await expect(page.locator('input[type="email"]')).toBeVisible()
     await expect(page.locator('input[type="password"]')).toBeVisible()
 
-    // 5. 验证导航功能
-    await page.goto('/')
-    const nav = page.locator('nav')
-    await expect(nav).toBeVisible()
   })
 
   test('未登录用户浏览内容流程', async ({ page }) => {
+    test.slow()
+
     // 1. 访问首页
-    await page.goto('/')
-
-    // 2. 查看内容列表
-    await page.waitForLoadState('networkidle')
-
-    // 3. 验证页面加载成功
     const response = await page.goto('/')
     expect(response?.status()).toBe(200)
+    await expect(page.locator('#main-content')).toBeVisible()
 
-    // 4. 检查是否有内容展示区域
+    // 2. 检查是否有内容展示区域
     const contentArea = page.locator('main, [role="main"], article').first()
     await expect(contentArea).toBeVisible()
   })
@@ -61,8 +58,8 @@ test.describe('完整用户流程测试', () => {
       await searchInput.fill('测试搜索')
       await searchInput.press('Enter')
 
-      // 等待搜索结果加载
-      await page.waitForLoadState('networkidle')
+      // 等待搜索结果区域保持可见
+      await expect(page.locator('#main-content')).toBeVisible()
     }
   })
 

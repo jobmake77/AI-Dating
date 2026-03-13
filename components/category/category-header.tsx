@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Bell, BellOff } from "lucide-react"
+import { Bell, BellOff, type LucideIcon } from "lucide-react"
 import { useState } from "react"
 
 interface CategoryHeaderProps {
@@ -9,7 +9,7 @@ interface CategoryHeaderProps {
     name: string
     slug: string
     description: string
-    icon: any
+    icon: LucideIcon
     color: string
   }
 }

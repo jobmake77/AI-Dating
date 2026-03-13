@@ -4,13 +4,14 @@ import Link from 'next/link'
 import { Clock, Eye } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
+import type { RelatedContentItem } from '@/lib/types/content'
 
 interface RelatedContentsProps {
   contentId: string
 }
 
 export async function RelatedContents({ contentId }: RelatedContentsProps) {
-  const relatedContents = await getRelatedContents(contentId, 5)
+  const relatedContents: RelatedContentItem[] = await getRelatedContents(contentId, 5)
 
   if (relatedContents.length === 0) {
     return null
@@ -22,7 +23,7 @@ export async function RelatedContents({ contentId }: RelatedContentsProps) {
         <CardTitle className="text-lg">相关推荐</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {relatedContents.map((content: any) => (
+        {relatedContents.map((content) => (
           <Link
             key={content.id}
             href={`/post/${content.id}`}

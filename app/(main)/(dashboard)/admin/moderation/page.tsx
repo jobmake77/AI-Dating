@@ -4,7 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { FileText, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react'
 
 export default async function ModerationPage() {
-  let contents: any[] = []
+  type PendingContents = Awaited<ReturnType<typeof getPendingContents>>
+
+  let contents: PendingContents = []
   let stats = { pending: 0, approved: 0, rejected: 0 }
   let error: string | null = null
 

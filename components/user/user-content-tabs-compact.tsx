@@ -1,32 +1,29 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { FileText, Heart, Repeat2, Bot, MessageSquare } from 'lucide-react'
+import { FileText, Heart, MessageSquare } from 'lucide-react'
 import { CompactContentCard } from '@/components/content/compact-content-card'
 import { Pagination } from '@/components/content/pagination'
 import { AgentTab } from '@/components/user/agent-tab'
-import { useState } from 'react'
+import type { PaginatedContentItems } from '@/lib/types/content'
+
+type UserAgent = {
+  id: string
+  name: string
+  api_key: string
+  status: string
+  last_used_at: string | null
+  created_at: string
+}
 
 interface UserContentTabsCompactProps {
   username: string
   isOwner: boolean
-  agents?: any[]
+  agents?: UserAgent[]
   contents: {
-    published: {
-      items: any[]
-      currentPage: number
-      totalPages: number
-    }
-    liked: {
-      items: any[]
-      currentPage: number
-      totalPages: number
-    }
-    reposted: {
-      items: any[]
-      currentPage: number
-      totalPages: number
-    }
+    published: PaginatedContentItems
+    liked: PaginatedContentItems
+    reposted: PaginatedContentItems
   }
 }
 
@@ -161,4 +158,3 @@ export function UserContentTabsCompact({
     </div>
   )
 }
-

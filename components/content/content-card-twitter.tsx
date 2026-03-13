@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { TagList } from '@/components/tag/tag-list'
 import { Clock, Eye, User } from 'lucide-react'
 import { ContentCardActions } from './content-card-actions'
@@ -46,9 +47,12 @@ export function ContentCard({ content, isAuthenticated = false }: ContentCardPro
         {/* Avatar */}
         <Link href={`/u/${content.users.username}`} className="flex-shrink-0 mt-0.5">
           {content.users.avatar ? (
-            <img
+            <Image
               src={content.users.avatar}
               alt={content.users.full_name || content.users.username}
+              width={40}
+              height={40}
+              unoptimized
               className="w-10 h-10 rounded-full object-cover hover:opacity-90 transition-opacity"
             />
           ) : (

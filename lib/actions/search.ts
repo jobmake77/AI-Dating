@@ -3,17 +3,7 @@ import { logger } from '@/lib/utils/logger'
 import { z } from 'zod'
 
 import { createClient } from '@/lib/supabase/server'
-
-export interface SearchResult {
-  contents: any[]
-  users: any[]
-  tags: Array<{
-    name: string
-    slug: string
-    count: number
-  }>
-  total: number
-}
+import type { SearchResult } from '@/lib/types/search'
 
 // Validation schemas
 const searchQuerySchema = z.string().min(1, '搜索关键词不能为空').max(100, '搜索关键词过长')
@@ -130,7 +120,7 @@ export async function searchUsers(query: string, page: number = 1, limit: number
   }
 }
 
-export async function searchAll(query: string) {
+export async function searchAll(query: string): Promise<SearchResult> {
   const supabase = await createClient()
 
   if (!query || query.trim().length === 0) {

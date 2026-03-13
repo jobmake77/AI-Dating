@@ -28,33 +28,33 @@ export function ActivityCalendar({ communityId }: ActivityCalendarProps) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
 
   useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        setLoading(true)
+        const params = new URLSearchParams({
+          month: selectedDate.getMonth().toString(),
+          year: selectedDate.getFullYear().toString(),
+        })
+
+        if (communityId) {
+          params.append('community_id', communityId)
+        }
+
+        const response = await fetch(`/api/events?${params}`)
+        const data = await response.json()
+
+        if (data.success) {
+          setEvents(data.events || [])
+        }
+      } catch (error) {
+        console.error('获取活动失败:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
     fetchEvents()
   }, [communityId, selectedDate])
-
-  async function fetchEvents() {
-    try {
-      setLoading(true)
-      const params = new URLSearchParams({
-        month: selectedDate.getMonth().toString(),
-        year: selectedDate.getFullYear().toString(),
-      })
-
-      if (communityId) {
-        params.append('community_id', communityId)
-      }
-
-      const response = await fetch(`/api/events?${params}`)
-      const data = await response.json()
-
-      if (data.success) {
-        setEvents(data.events || [])
-      }
-    } catch (error) {
-      console.error('获取活动失败:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear()

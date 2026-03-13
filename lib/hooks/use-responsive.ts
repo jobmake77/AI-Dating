@@ -4,7 +4,7 @@
 
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 
 // 断点定义（与 Tailwind 保持一致）
 export const BREAKPOINTS = {
@@ -21,21 +21,20 @@ export type Breakpoint = keyof typeof BREAKPOINTS
  * 检测当前屏幕尺寸
  */
 export function useMediaQuery(query: string): boolean {
-  const [matches, setMatches] = useState(false)
+  return useSyncExternalStore(
+    (callback) => {
+      if (typeof window === 'undefined') {
+        return () => {}
+      }
 
-  useEffect(() => {
-    const media = window.matchMedia(query)
-    if (media.matches !== matches) {
-      setMatches(media.matches)
-    }
+      const media = window.matchMedia(query)
+      media.addEventListener('change', callback)
 
-    const listener = () => setMatches(media.matches)
-    media.addEventListener('change', listener)
-
-    return () => media.removeEventListener('change', listener)
-  }, [matches, query])
-
-  return matches
+      return () => media.removeEventListener('change', callback)
+    },
+    () => (typeof window === 'undefined' ? false : window.matchMedia(query).matches),
+    () => false
+  )
 }
 
 /**
@@ -99,15 +98,13 @@ export function useBreakpoint(): Breakpoint | 'xs' {
  * 检测触摸设备
  */
 export function useIsTouchDevice(): boolean {
-  const [isTouch, setIsTouch] = useState(false)
-
-  useEffect(() => {
-    setIsTouch(
-      'ontouchstart' in window ||
+  const [isTouch] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      ('ontouchstart' in window ||
         navigator.maxTouchPoints > 0 ||
-        (navigator as Navigator & { msMaxTouchPoints?: number }).msMaxTouchPoints! > 0
-    )
-  }, [])
+        ((navigator as Navigator & { msMaxTouchPoints?: number }).msMaxTouchPoints ?? 0) > 0)
+  )
 
   return isTouch
 }

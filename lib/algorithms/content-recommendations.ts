@@ -1,9 +1,23 @@
 import { createClient } from '@/lib/supabase/server'
+import { normalizeSingleRelation } from '@/lib/utils/normalize'
 
 export interface RecommendationScore {
   content_id: string
   score: number
   reason: string
+}
+
+interface ReadingHistoryContent {
+  id: string
+  tags: string[] | null
+  category: string | null
+  author_id: string | null
+}
+
+interface ReadingHistoryItem {
+  content_id: string
+  read_percentage: number
+  contents: ReadingHistoryContent | ReadingHistoryContent[] | null
 }
 
 /**
@@ -61,17 +75,18 @@ export async function getPersonalizedRecommendations(
   const readAuthors = new Set<string>()
   const readContentIds = new Set<string>()
 
-  history.forEach((item: any) => {
-    if (item.contents) {
-      readContentIds.add(item.contents.id)
-      if (item.contents.tags) {
-        item.contents.tags.forEach((tag: string) => readTags.add(tag))
+  ;(history as ReadingHistoryItem[]).forEach((item) => {
+    const content = normalizeSingleRelation(item.contents)
+    if (content) {
+      readContentIds.add(content.id)
+      if (content.tags) {
+        content.tags.forEach((tag) => readTags.add(tag))
       }
-      if (item.contents.category) {
-        readCategories.add(item.contents.category)
+      if (content.category) {
+        readCategories.add(content.category)
       }
-      if (item.contents.author_id) {
-        readAuthors.add(item.contents.author_id)
+      if (content.author_id) {
+        readAuthors.add(content.author_id)
       }
     }
   })

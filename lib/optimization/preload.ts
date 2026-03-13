@@ -3,6 +3,20 @@
  * 优化关键资源的加载顺序
  */
 
+declare global {
+  interface Window {
+    installPWA?: () => void
+  }
+}
+
+type WindowWithNextRouter = Window & {
+  __NEXT_DATA__?: {
+    router?: {
+      prefetch: (route: string) => void
+    }
+  }
+}
+
 /**
  * 预加载关键资源
  */
@@ -133,7 +147,7 @@ export function preloadRoute(route: string) {
   if (typeof window === 'undefined') return
 
   // 使用 Next.js 的 prefetch
-  const router = (window as any).__NEXT_DATA__?.router
+  const router = (window as WindowWithNextRouter).__NEXT_DATA__?.router
   if (router) {
     router.prefetch(route)
   }

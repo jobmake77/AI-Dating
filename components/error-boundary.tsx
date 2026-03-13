@@ -1,6 +1,6 @@
 'use client'
 
-import { Component, ReactNode } from 'react'
+import { Component, ReactNode, type ErrorInfo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { AlertCircle, RefreshCw, ArrowLeft } from 'lucide-react'
@@ -10,7 +10,7 @@ import { getFriendlyErrorMessage } from '@/lib/utils/error-handler'
 interface Props {
   children: ReactNode
   fallback?: ReactNode
-  onError?: (error: Error, errorInfo: any) => void
+  onError?: (error: Error, errorInfo: ErrorInfo) => void
   showDetails?: boolean
 }
 
@@ -34,11 +34,13 @@ export class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, error, errorCount: 0 }
   }
 
-  componentDidCatch(error: Error, errorInfo: any) {
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // 记录错误
     logClientError(error, {
       component: 'ErrorBoundary',
-      metadata: errorInfo,
+      metadata: {
+        componentStack: errorInfo.componentStack,
+      },
     })
 
     // 调用自定义错误处理器

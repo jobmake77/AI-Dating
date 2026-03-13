@@ -6,10 +6,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
 import { User, Search, SearchX } from 'lucide-react'
+import type { SearchContent, SearchUser } from '@/lib/types/search'
 
 interface SearchResultsProps {
-  contents: any[]
-  users: any[]
+  contents: SearchContent[]
+  users: SearchUser[]
   query: string
 }
 
@@ -49,7 +50,7 @@ export function SearchResults({ contents, users, query }: SearchResultsProps) {
             用户 <span className="text-muted-foreground text-sm ml-2">({users.length})</span>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {users.map((user: any) => (
+            {users.map((user) => (
               <Link key={user.id} href={`/u/${user.username}`}>
                 <Card className="hover:border-primary transition-colors cursor-pointer">
                   <CardContent className="p-4">
@@ -89,7 +90,7 @@ export function SearchResults({ contents, users, query }: SearchResultsProps) {
             内容 <span className="text-muted-foreground text-sm ml-2">({contents.length})</span>
           </h2>
           <div className="border border-border rounded-xl bg-card overflow-hidden shadow-sm">
-            {contents.map((content: any) => (
+            {contents.map((content) => (
               <ContentCard key={content.id} content={content} />
             ))}
           </div>

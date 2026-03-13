@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/middleware/admin'
+import { normalizeSingleRelation } from '@/lib/utils/normalize'
 
 /**
  * 概览统计数据
@@ -260,6 +261,10 @@ export interface TopContent {
   comments: number
 }
 
+interface ContentAuthorRelation {
+  username: string
+}
+
 /**
  * 获取热门内容 Top 10
  */
@@ -284,13 +289,13 @@ export async function getTopContents(limit: number = 10): Promise<TopContent[]> 
     .limit(limit)
 
   return (
-    contents?.map((c: any) => ({
-      id: c.id,
-      title: c.title,
-      author: c.author?.username || 'Unknown',
-      views: c.view_count || 0,
-      likes: c.likes_count || 0,
-      comments: c.comments_count || 0,
+    contents?.map((content) => ({
+      id: content.id,
+      title: content.title,
+      author: normalizeSingleRelation(content.author as ContentAuthorRelation | ContentAuthorRelation[] | null)?.username || 'Unknown',
+      views: content.view_count || 0,
+      likes: content.likes_count || 0,
+      comments: content.comments_count || 0,
     })) || []
   )
 }

@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { CommunityIconUpload } from '@/components/community/community-icon-upload'
 import { CommunityCoverUpload } from '@/components/community/community-cover-upload'
+import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft, Users, Send } from 'lucide-react'
 import { toast } from 'sonner'
@@ -155,13 +156,20 @@ export default function CreateCommunityPage() {
                 <div className="h-2 gradient-primary" />
                 {coverUrl && (
                   <div className="h-24 bg-gradient-to-r from-primary/20 via-accent/10 to-info/20 relative">
-                    <img src={coverUrl} alt="封面预览" className="w-full h-full object-cover" />
+                    <Image src={coverUrl} alt="封面预览" fill unoptimized sizes="320px" className="object-cover" />
                   </div>
                 )}
                 <div className="p-4">
                   <div className="flex items-start gap-3 mb-3">
                     {iconUrl ? (
-                      <img src={iconUrl} alt="图标预览" className="w-12 h-12 rounded-lg object-cover border border-border" />
+                      <Image
+                        src={iconUrl}
+                        alt="图标预览"
+                        width={48}
+                        height={48}
+                        unoptimized
+                        className="w-12 h-12 rounded-lg object-cover border border-border"
+                      />
                     ) : (
                       <div className="w-12 h-12 rounded-lg bg-secondary/60 flex items-center justify-center text-2xl">
                         🏘️

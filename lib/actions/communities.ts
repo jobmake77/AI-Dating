@@ -144,7 +144,7 @@ export async function createCommunity(formData: FormData) {
     logger.error('创建社区错误:', error)
     if (error instanceof z.ZodError) {
       logger.error('Zod 验证错误详情:', error.issues)
-      return { success: false, error: `表单数据验证失败: ${error.issues.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', ')}` }
+      return { success: false, error: `表单数据验证失败: ${error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join(', ')}` }
     }
     return { success: false, error: '创建社区失败' }
   }
@@ -173,12 +173,18 @@ export async function updateCommunity(communityId: string, formData: FormData) {
     }
 
     // 验证表单数据
-    const data: any = {}
-    if (formData.get('name')) data.name = formData.get('name')
-    if (formData.get('description')) data.description = formData.get('description')
-    if (formData.get('type')) data.type = formData.get('type')
-    if (formData.get('icon_url')) data.icon_url = formData.get('icon_url')
-    if (formData.get('cover_url')) data.cover_url = formData.get('cover_url')
+    const data: Record<string, FormDataEntryValue> = {}
+    const name = formData.get('name')
+    const description = formData.get('description')
+    const type = formData.get('type')
+    const iconUrl = formData.get('icon_url')
+    const coverUrl = formData.get('cover_url')
+
+    if (name) data.name = name
+    if (description) data.description = description
+    if (type) data.type = type
+    if (iconUrl) data.icon_url = iconUrl
+    if (coverUrl) data.cover_url = coverUrl
 
     const validatedData = updateCommunitySchema.parse(data)
 
@@ -514,4 +520,3 @@ export async function removeMember(communityId: string, memberId: string) {
     return { success: false, error: '移除成员失败' }
   }
 }
-

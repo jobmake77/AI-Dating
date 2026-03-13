@@ -6,15 +6,23 @@ import { MobileSearchModal } from '@/components/search/mobile-search-modal'
 import { createClient } from '@/lib/supabase/client'
 import { Search, User, Code2, MessageSquare, Plus, Menu, X } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter, usePathname } from 'next/navigation'
 import { useState, FormEvent, useEffect } from 'react'
 import { useToast } from '@/hooks/use-toast'
 import { NotificationDropdown } from '@/components/notifications/notification-dropdown'
+import type { RealtimePostgresInsertPayload } from '@supabase/supabase-js'
+import type { Tables } from '@/types/database.types'
+
+type UserMetadata = {
+  user_name?: string | null
+  avatar_url?: string | null
+}
 
 interface ServerUser {
   id: string
   email: string | undefined
-  user_metadata: any
+  user_metadata: UserMetadata | null
   username: string | null
   role: string | null
   avatar: string | null
@@ -82,9 +90,9 @@ export function SiteHeader({ serverUser }: SiteHeaderProps) {
           table: 'notifications',
           filter: `user_id=eq.${user.id}`,
         },
-        (payload) => {
+        (payload: RealtimePostgresInsertPayload<Tables<'notifications'>>) => {
           setUnreadCount((prev) => prev + 1)
-          const notification = payload.new as any
+          const notification = payload.new
           let message = '你有新的通知'
           if (notification.type === 'like') message = '有人赞了你的内容'
           else if (notification.type === 'comment') message = '有人评论了你的内容'
@@ -233,9 +241,11 @@ export function SiteHeader({ serverUser }: SiteHeaderProps) {
               <Button variant="ghost" size="icon" asChild className="hidden sm:flex h-8 w-8">
                 <Link href={profileLink}>
                   {avatarUrl ? (
-                    <img
+                    <Image
                       src={avatarUrl}
                       alt={displayName}
+                      width={24}
+                      height={24}
                       className="w-6 h-6 rounded-full object-cover"
                     />
                   ) : (

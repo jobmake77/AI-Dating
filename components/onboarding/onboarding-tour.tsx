@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { onboardingSteps, onboardingStyles } from '@/lib/config/onboarding-steps'
+import { useHydrated } from '@/lib/hooks/use-hydrated'
 
 interface OnboardingTourProps {
   run: boolean
@@ -21,20 +22,10 @@ interface OnboardingTourProps {
 const HIGHLIGHT_STYLE = '0 0 0 4px hsl(var(--primary) / 0.35), 0 0 0 9999px rgba(0, 0, 0, 0.45)'
 
 export function OnboardingTour({ run, onComplete, onSkip }: OnboardingTourProps) {
-  const [mounted, setMounted] = useState(false)
+  const mounted = useHydrated()
   const [stepIndex, setStepIndex] = useState(0)
 
   const currentStep = useMemo(() => onboardingSteps[stepIndex], [stepIndex])
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  useEffect(() => {
-    if (!run) {
-      setStepIndex(0)
-    }
-  }, [run])
 
   useEffect(() => {
     if (!run || !currentStep) return
@@ -72,6 +63,7 @@ export function OnboardingTour({ run, onComplete, onSkip }: OnboardingTourProps)
 
   const handleNext = () => {
     if (isLastStep) {
+      setStepIndex(0)
       onComplete()
       return
     }
@@ -81,6 +73,11 @@ export function OnboardingTour({ run, onComplete, onSkip }: OnboardingTourProps)
 
   const handleBack = () => {
     setStepIndex((current) => Math.max(0, current - 1))
+  }
+
+  const handleSkip = () => {
+    setStepIndex(0)
+    onSkip()
   }
 
   return (
@@ -93,7 +90,7 @@ export function OnboardingTour({ run, onComplete, onSkip }: OnboardingTourProps)
           zIndex: onboardingStyles.options.zIndex,
         }}
         onInteractOutside={(event) => event.preventDefault()}
-        onEscapeKeyDown={onSkip}
+        onEscapeKeyDown={handleSkip}
       >
         <DialogHeader>
           <div className="text-xs font-medium text-muted-foreground">
@@ -104,7 +101,7 @@ export function OnboardingTour({ run, onComplete, onSkip }: OnboardingTourProps)
         </DialogHeader>
 
         <DialogFooter className="items-center justify-between gap-2 sm:justify-between">
-          <Button type="button" variant="ghost" onClick={onSkip}>
+          <Button type="button" variant="ghost" onClick={handleSkip}>
             跳过引导
           </Button>
           <div className="flex items-center gap-2">

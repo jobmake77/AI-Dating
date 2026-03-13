@@ -20,7 +20,7 @@ import {
   Code,
   Link as LinkIcon,
 } from 'lucide-react'
-import { useEffect, useImperativeHandle, forwardRef, useRef, useCallback } from 'react'
+import { useImperativeHandle, forwardRef, useRef, useCallback } from 'react'
 import { uploadImage } from '@/lib/actions/upload'
 import { useToast } from '@/hooks/use-toast'
 import { VideoExtension } from './video-extension'
@@ -122,7 +122,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
 
     const { fileInputRef: videoInputRef, uploading: videoUploading, progress: videoProgress, handleFileChange: handleVideoFileChange } = useVideoUpload({
       onUploadSuccess: (url) => {
-        ;(editor as any)?.chain().focus().setVideo({ src: url }).run()
+        editor?.chain().focus().setVideo({ src: url }).run()
         toast({ title: '上传成功', description: '视频已插入到内容中' })
       },
       onError: (message) => {

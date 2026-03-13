@@ -1,4 +1,12 @@
-import { Node, mergeAttributes } from '@tiptap/core'
+import { Node, mergeAttributes, type CommandProps, type RawCommands } from '@tiptap/core'
+
+declare module '@tiptap/core' {
+  interface Commands<ReturnType> {
+    video: {
+      setVideo: (options: { src: string }) => ReturnType
+    }
+  }
+}
 
 export const VideoExtension = Node.create({
   name: 'video',
@@ -31,12 +39,12 @@ export const VideoExtension = Node.create({
     return {
       setVideo:
         (options: { src: string }) =>
-        ({ commands }: { commands: any }) => {
+        ({ commands }: CommandProps) => {
           return commands.insertContent({
             type: this.name,
             attrs: options,
           })
         },
-    } as any
+    } satisfies Partial<RawCommands>
   },
 })

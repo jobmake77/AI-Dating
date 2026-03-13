@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { mockSupabaseClient, mockServerAction } from '../../helpers/test-utils'
+import { mockSupabaseClient } from '../../helpers/test-utils'
 import { mockUser } from '../../helpers/mock-data'
 
 // Mock Supabase

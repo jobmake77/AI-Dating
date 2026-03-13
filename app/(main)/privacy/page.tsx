@@ -18,7 +18,7 @@ export default function PrivacyPolicyPage() {
         <section className="mt-8">
           <h2>1. 引言</h2>
           <p>
-            欢迎使用 AI-Dating（以下简称"我们"、"我们的"或"平台"）。
+            欢迎使用 AI-Dating（以下简称 &ldquo;我们&rdquo;、&ldquo;我们的&rdquo; 或 &ldquo;平台&rdquo;）。
             我们重视您的隐私，并致力于保护您的个人信息。
             本隐私政策说明了我们如何收集、使用、披露和保护您的信息。
           </p>
@@ -122,7 +122,7 @@ export default function PrivacyPolicyPage() {
           <ul>
             <li><strong>访问权</strong>：请求访问我们持有的关于您的个人数据</li>
             <li><strong>更正权</strong>：请求更正不准确的个人数据</li>
-            <li><strong>删除权</strong>：请求删除您的个人数据（"被遗忘权"）</li>
+            <li><strong>删除权</strong>：请求删除您的个人数据（&ldquo;被遗忘权&rdquo;）</li>
             <li><strong>限制处理权</strong>：请求限制处理您的个人数据</li>
             <li><strong>数据可携权</strong>：以结构化、常用和机器可读的格式接收您的数据</li>
             <li><strong>反对权</strong>：反对处理您的个人数据</li>
@@ -187,7 +187,7 @@ export default function PrivacyPolicyPage() {
           <h2>11. 隐私政策变更</h2>
           <p>
             我们可能会不时更新本隐私政策。
-            我们会在此页面上发布新的隐私政策，并更新"最后更新日期"。
+            我们会在此页面上发布新的隐私政策，并更新 &ldquo;最后更新日期&rdquo;。
             重大变更时，我们会通过邮件或网站通知您。
           </p>
         </section>

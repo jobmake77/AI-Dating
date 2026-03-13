@@ -102,7 +102,7 @@ export default async function ChatPage({ params }: ChatPageProps) {
         </div>
       </div>
     )
-  } catch (error) {
+  } catch {
     notFound()
   }
 }

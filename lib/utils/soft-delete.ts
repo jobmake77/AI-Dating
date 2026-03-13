@@ -3,13 +3,17 @@
  * Helper functions for implementing soft delete in queries
  */
 
-import { SupabaseClient } from '@supabase/supabase-js'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 /**
  * Add soft delete filter to a query
  * Excludes records where deleted_at IS NOT NULL
  */
-export function excludeDeleted<T>(query: any): any {
+type SoftDeleteQueryable<T> = {
+  is: (column: string, value: null) => T
+}
+
+export function excludeDeleted<T>(query: SoftDeleteQueryable<T>): T {
   return query.is('deleted_at', null)
 }
 

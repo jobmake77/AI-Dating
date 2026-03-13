@@ -4,10 +4,11 @@ import { NavLink } from './nav-link'
 import { CommunityNavItem } from './community-nav-item'
 import { Home, MessageCircle, Users, Bell, PenSquare, ChevronDown, ChevronRight, Calendar, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
-import { Separator } from '@/components/ui/separator'
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { usePathname } from 'next/navigation'
+import type { User } from '@supabase/supabase-js'
 
 interface Community {
   id: string
@@ -23,21 +24,19 @@ interface UserData {
   role: string | null
 }
 
+interface CommunityMembership {
+  community: Community | null
+}
+
 export function LeftSidebar() {
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [userData, setUserData] = useState<UserData | null>(null)
   const [userCommunities, setUserCommunities] = useState<Community[]>([])
   const [unreadMessages, setUnreadMessages] = useState(0)
   const [unreadNotifications, setUnreadNotifications] = useState(0)
   const [communitiesOpen, setCommunitiesOpen] = useState(true)
   const pathname = usePathname()
-
-  // 进入通知页面时清除红点
-  useEffect(() => {
-    if (pathname === '/notifications') {
-      setUnreadNotifications(0)
-    }
-  }, [pathname])
+  const visibleUnreadNotifications = pathname === '/notifications' ? 0 : unreadNotifications
 
   useEffect(() => {
     async function loadData() {
@@ -68,7 +67,11 @@ export function LeftSidebar() {
         .limit(8)
 
       if (communities) {
-        setUserCommunities(communities.map((item: any) => item.community).filter(Boolean))
+        setUserCommunities(
+          (communities as CommunityMembership[])
+            .map((item) => item.community)
+            .filter((community): community is Community => Boolean(community))
+        )
       }
 
       try {
@@ -129,7 +132,7 @@ export function LeftSidebar() {
           <NavLink href="/" icon={Home}>首页</NavLink>
           <NavLink href="/messages" icon={MessageCircle} badge={unreadMessages}>消息</NavLink>
           <NavLink href="/communities" icon={Users}>社区</NavLink>
-          <NavLink href="/notifications" icon={Bell} badge={unreadNotifications}>通知</NavLink>
+          <NavLink href="/notifications" icon={Bell} badge={visibleUnreadNotifications}>通知</NavLink>
           <NavLink href="/events" icon={Calendar}>活动</NavLink>
 
           {userData?.role === 'admin' && (
@@ -206,9 +209,11 @@ export function LeftSidebar() {
             aria-label={`查看 ${displayName} 的个人资料`}
           >
             {avatarUrl ? (
-              <img
+              <Image
                 src={avatarUrl}
                 alt=""
+                width={36}
+                height={36}
                 className="w-9 h-9 rounded-full object-cover flex-shrink-0"
                 aria-hidden="true"
               />

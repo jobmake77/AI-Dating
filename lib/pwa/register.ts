@@ -2,6 +2,19 @@
  * PWA Service Worker 注册
  */
 
+type NavigatorWithStandalone = Navigator & {
+  standalone?: boolean
+}
+
+type BeforeInstallPromptEvent = Event & {
+  prompt: () => Promise<void>
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>
+}
+
+type WindowWithInstallPrompt = Window & {
+  installPWA?: () => Promise<void>
+}
+
 export function registerServiceWorker() {
   if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
     return
@@ -78,7 +91,7 @@ export function checkPWAInstallation() {
   // 检查是否在独立模式下运行（已安装）
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-  const isIOSStandalone = (window.navigator as any).standalone === true
+  const isIOSStandalone = (window.navigator as NavigatorWithStandalone).standalone === true
 
   return isStandalone || (isIOS && isIOSStandalone)
 }
@@ -89,19 +102,19 @@ export function checkPWAInstallation() {
 export function showPWAInstallPrompt() {
   if (typeof window === 'undefined') return
 
-  let deferredPrompt: any = null
+  let deferredPrompt: BeforeInstallPromptEvent | null = null
 
   window.addEventListener('beforeinstallprompt', (e) => {
     // 阻止默认的安装提示
     e.preventDefault()
-    deferredPrompt = e
+    deferredPrompt = e as BeforeInstallPromptEvent
 
     // 显示自定义安装按钮
     showInstallButton()
   })
 
   // 安装按钮点击处理
-  ;(window as any).installPWA = async () => {
+  ;(window as WindowWithInstallPrompt).installPWA = async () => {
     if (!deferredPrompt) return
 
     // 显示安装提示

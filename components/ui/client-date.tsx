@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useHydrated } from '@/lib/hooks/use-hydrated'
 import { formatDate, formatDateTime, formatRelativeTime } from '@/lib/utils/date'
 
 interface ClientDateProps {
@@ -14,11 +14,7 @@ interface ClientDateProps {
  * 避免 SSR hydration 错误
  */
 export function ClientDate({ date, format = 'date', options }: ClientDateProps) {
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  const mounted = useHydrated()
 
   if (!mounted) {
     // 服务端渲染时返回 ISO 格式

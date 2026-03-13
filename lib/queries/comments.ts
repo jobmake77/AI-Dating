@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { normalizeSingleRelation } from '@/lib/utils/normalize'
 
 export interface Comment {
   id: string
@@ -15,11 +16,23 @@ export interface Comment {
   replies?: Comment[]
 }
 
+type CommentUser = Comment['user']
+
+type CommentQueryRow = {
+  id: string
+  content_id: string
+  user_id: string
+  content: string
+  parent_id?: string | null
+  created_at: string | null
+  user: CommentUser | CommentUser[] | null
+}
+
 export async function getCommentsByContentId(contentId: string): Promise<Comment[]> {
   const supabase = await createClient()
 
   // 先尝试带 parent_id 的查询（需要迁移 024 已执行）
-  let data: any[] | null = null
+  let data: CommentQueryRow[] | null = null
   let hasParentId = true
 
   const { data: d1, error: e1 } = await supabase
@@ -71,12 +84,20 @@ export async function getCommentsByContentId(contentId: string): Promise<Comment
     data = d1
   }
 
-  const normalized: Comment[] = (data || []).map((c: any) => ({
-    ...c,
-    parent_id: hasParentId ? (c.parent_id ?? null) : null,
-    user: Array.isArray(c.user) ? c.user[0] : c.user,
-    replies: [],
-  }))
+  const normalized: Comment[] = (data || []).flatMap((comment) => {
+    const user = normalizeSingleRelation(comment.user)
+    if (!comment.created_at || !user) {
+      return []
+    }
+
+    return [{
+      ...comment,
+      created_at: comment.created_at,
+      parent_id: hasParentId ? (comment.parent_id ?? null) : null,
+      user,
+      replies: [],
+    }]
+  })
 
   if (!hasParentId) {
     // 没有 parent_id 列，直接返回平铺列表（倒序已在查询中处理）

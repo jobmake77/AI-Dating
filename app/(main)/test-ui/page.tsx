@@ -5,12 +5,17 @@ import { Pagination } from "@/components/content/pagination";
 import { TrendingTags } from "@/components/tag/trending-tags";
 import { TrendingContents } from "@/components/content/trending-contents";
 import { createClient } from "@/lib/supabase/server";
+import { notFound } from "next/navigation";
 
 interface TestPageProps {
   searchParams: Promise<{ page?: string }>;
 }
 
 export default async function TestPage({ searchParams }: TestPageProps) {
+  if (process.env.NODE_ENV === "production") {
+    notFound();
+  }
+
   const params = await searchParams;
   const page = Number(params.page) || 1;
 

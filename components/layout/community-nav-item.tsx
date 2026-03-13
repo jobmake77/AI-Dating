@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
@@ -31,9 +32,12 @@ export function CommunityNavItem({ community, unreadCount = 0 }: CommunityNavIte
       )}
     >
       {community.icon_url ? (
-        <img
+        <Image
           src={community.icon_url}
           alt={community.name}
+          width={32}
+          height={32}
+          unoptimized
           className="w-8 h-8 rounded-md object-cover flex-shrink-0"
         />
       ) : (

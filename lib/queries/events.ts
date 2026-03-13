@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { isValidUuid } from '@/lib/utils/is-valid-uuid'
 
 export async function getEvents(options?: {
   type?: 'official' | 'offline' | 'all'
@@ -32,6 +33,10 @@ export async function getEvents(options?: {
 }
 
 export async function getEventById(id: string) {
+  if (!isValidUuid(id)) {
+    return { data: null, error: null }
+  }
+
   const supabase = await createClient()
 
   const { data: event, error } = await supabase
@@ -41,7 +46,9 @@ export async function getEventById(id: string) {
     .single()
 
   if (error) {
-    console.error('获取活动详情失败:', error)
+    if (error.code !== 'PGRST116') {
+      console.error('获取活动详情失败:', error)
+    }
     return { data: null, error }
   }
 

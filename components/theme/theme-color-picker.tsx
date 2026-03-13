@@ -9,7 +9,6 @@ import React from 'react'
 import { useTheme } from './theme-provider'
 import { ThemeColor, THEME_COLORS } from '@/types/theme'
 import { Label } from '@/components/ui/label'
-import { Card } from '@/components/ui/card'
 
 export function ThemeColorPicker() {
   const { preferences, setColor } = useTheme()

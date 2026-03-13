@@ -8,6 +8,7 @@ import { sendMessage } from '@/lib/actions/chat'
 import { uploadImage } from '@/lib/actions/upload'
 import { useToast } from '@/hooks/use-toast'
 import dynamic from 'next/dynamic'
+import type { EmojiClickData } from 'emoji-picker-react'
 
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false })
 
@@ -99,7 +100,7 @@ export function ChatInput({ conversationId }: ChatInputProps) {
     }
   }
 
-  const handleEmojiClick = (emojiData: any) => {
+  const handleEmojiClick = (emojiData: EmojiClickData) => {
     setContent(prev => prev + emojiData.emoji)
     setShowEmojiPicker(false)
     textareaRef.current?.focus()

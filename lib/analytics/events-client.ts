@@ -2,6 +2,10 @@
 
 import { AnalyticsEvent, BaseEventParams, EVENT_CATEGORY_MAP } from './types'
 
+type WindowWithGtag = Window & {
+  gtag?: (action: 'event', eventName: string, params?: Record<string, unknown>) => void
+}
+
 /**
  * 客户端事件追踪（用于 Google Analytics）
  * 这个函数应该在客户端组件中调用
@@ -12,10 +16,11 @@ export function trackEventClient(
 ): void {
   try {
     // 检查 gtag 是否可用
-    if (typeof window !== 'undefined' && (window as any).gtag) {
+    const windowWithGtag = window as WindowWithGtag
+    if (windowWithGtag.gtag) {
       const category = EVENT_CATEGORY_MAP[eventName]
 
-      ;(window as any).gtag('event', eventName, {
+      windowWithGtag.gtag('event', eventName, {
         event_category: category,
         ...params,
       })

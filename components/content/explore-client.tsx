@@ -9,21 +9,26 @@ import { Button } from "@/components/ui/button";
 import { ExploreSidebar } from "@/components/content/explore-sidebar";
 import { CompactContentCard } from "@/components/content/compact-content-card";
 import { getCategoryColor } from "@/lib/utils/categories";
+import type { ContentListItem } from "@/lib/types/content";
+
+interface ExploreCategory {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  postCount: number;
+}
+
+interface ExploreTag {
+  name: string;
+  count: number;
+  color: string;
+}
 
 interface ExploreClientProps {
-  initialContents: any[];
-  categories: Array<{
-    id: string;
-    name: string;
-    slug: string;
-    description?: string;
-    postCount: number;
-  }>;
-  tags: Array<{
-    name: string;
-    count: number;
-    color: string;
-  }>;
+  initialContents: ContentListItem[];
+  categories: ExploreCategory[];
+  tags: ExploreTag[];
   activeCategory: string;
   activeTag: string;
 }

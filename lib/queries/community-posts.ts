@@ -94,7 +94,7 @@ export async function getPostComments(postId: string, options?: {
 export async function getUserPostLikeStatus(postId: string, userId: string) {
   const supabase = await createClient()
 
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from('community_post_likes')
     .select('id')
     .eq('post_id', postId)
@@ -153,7 +153,7 @@ export async function getHotPosts(options?: {
   // 时间范围筛选
   if (timeRange !== 'all') {
     const now = new Date()
-    let startDate = new Date()
+    const startDate = new Date()
 
     switch (timeRange) {
       case 'day':

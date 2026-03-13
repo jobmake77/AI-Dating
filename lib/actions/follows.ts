@@ -1,5 +1,6 @@
 'use server'
 import { logger } from '@/lib/utils/logger'
+import { normalizeSingleRelation } from '@/lib/utils/normalize'
 import { z } from 'zod'
 
 import { createClient } from '@/lib/supabase/server'
@@ -14,6 +15,26 @@ const checkFollowingSchema = z.object({
   userId: z.string().uuid('无效的用户ID'),
   currentUserId: z.string().uuid('无效的当前用户ID'),
 })
+
+interface FollowProfile {
+  id: string
+  username: string
+  full_name: string | null
+  avatar: string | null
+  bio: string | null
+}
+
+export interface FollowerListItem {
+  id: string
+  created_at: string
+  follower: FollowProfile
+}
+
+export interface FollowingListItem {
+  id: string
+  created_at: string
+  following: FollowProfile
+}
 
 export async function toggleFollow(userId: string) {
   // Validate input
@@ -126,7 +147,17 @@ export async function getFollowers(userId: string) {
     return []
   }
 
-  return data
+  return (data ?? []).flatMap((item) => {
+    const follower = normalizeSingleRelation(item.follower) as FollowProfile | null
+    if (!follower) {
+      return []
+    }
+
+    return [{
+      ...item,
+      follower,
+    }]
+  })
 }
 
 export async function getFollowing(userId: string) {
@@ -153,5 +184,15 @@ export async function getFollowing(userId: string) {
     return []
   }
 
-  return data
+  return (data ?? []).flatMap((item) => {
+    const following = normalizeSingleRelation(item.following) as FollowProfile | null
+    if (!following) {
+      return []
+    }
+
+    return [{
+      ...item,
+      following,
+    }]
+  })
 }

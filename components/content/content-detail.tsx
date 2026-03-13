@@ -17,7 +17,7 @@ import { TagList } from '@/components/tag/tag-list'
 import { PostActions } from '@/components/content/post-actions'
 import { formatDistanceToNow } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
-import { useEffect, useState } from 'react'
+import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { Edit, Trash2, Eye, Clock } from 'lucide-react'
 import { deleteContent } from '@/lib/actions/content'
@@ -43,18 +43,15 @@ interface ContentDetailProps {
 }
 
 export function ContentDetail({ content, isAuthenticated, isAuthor, isLiked, isReposted, contentId }: ContentDetailProps) {
-  const [sanitizedContent, setSanitizedContent] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
-
-  // Sanitize HTML content on client side
-  useEffect(() => {
-    // Configure DOMPurify to allow images and common HTML tags
-    const clean = DOMPurify.sanitize(content.content, {
+  const sanitizedContent = useMemo(
+    () =>
+      DOMPurify.sanitize(content.content, {
       ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'img', 'a', 'code', 'pre', 'blockquote', 'div', 'span', 'table', 'thead', 'tbody', 'tr', 'th', 'td'],
       ALLOWED_ATTR: ['href', 'src', 'alt', 'width', 'height', 'class', 'style', 'target', 'rel'],
-    })
-    setSanitizedContent(clean)
-  }, [content.content])
+    }),
+    [content.content]
+  )
 
   const handleDelete = async () => {
     setIsDeleting(true)

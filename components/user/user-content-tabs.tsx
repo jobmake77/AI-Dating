@@ -6,27 +6,25 @@ import { Pagination } from '@/components/content/pagination'
 import { AgentTab } from '@/components/user/agent-tab'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { FileText, Heart, Repeat2, Bot } from 'lucide-react'
+import type { PaginatedContentItems } from '@/lib/types/content'
+
+type UserAgent = {
+  id: string
+  name: string
+  api_key: string
+  status: string
+  last_used_at: string | null
+  created_at: string
+}
 
 interface UserContentTabsProps {
   username: string
   isOwner: boolean
-  agents?: any[]
+  agents?: UserAgent[]
   contents: {
-    published: {
-      items: any[]
-      currentPage: number
-      totalPages: number
-    }
-    liked: {
-      items: any[]
-      currentPage: number
-      totalPages: number
-    }
-    reposted: {
-      items: any[]
-      currentPage: number
-      totalPages: number
-    }
+    published: PaginatedContentItems
+    liked: PaginatedContentItems
+    reposted: PaginatedContentItems
   }
 }
 

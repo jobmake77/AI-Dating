@@ -3,6 +3,7 @@ import { TrendingContentCard } from '@/components/content/trending-content-card'
 import { TrendingTimeFilter } from '@/components/content/trending-time-filter'
 import { Flame } from 'lucide-react'
 import { Metadata } from 'next'
+import type { TrendingContentItem } from '@/lib/types/content'
 
 export const metadata: Metadata = {
   title: '热门内容 - AI-Dating',
@@ -40,7 +41,7 @@ export default async function TrendingPage({ searchParams }: TrendingPageProps) 
   const params = await searchParams
   const timeRange = (params.range as 'day' | 'week' | 'month' | 'all') || 'week'
 
-  const trendingContents = await getTrendingContents({
+  const trendingContents: TrendingContentItem[] = await getTrendingContents({
     timeRange,
     limit: 20,
   })
@@ -63,7 +64,7 @@ export default async function TrendingPage({ searchParams }: TrendingPageProps) 
         </div>
 
         <div className="space-y-2">
-          {trendingContents.map((content: any, index: number) => (
+          {trendingContents.map((content, index) => (
             <TrendingContentCard
               key={content.id}
               content={content}

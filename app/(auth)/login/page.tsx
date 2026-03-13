@@ -17,7 +17,7 @@ export default function LoginPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [warning, setWarning] = useState<string | null>(null)
+  const warning: string | null = null
   const [success, setSuccess] = useState<string | null>(null)
 
   useEffect(() => {

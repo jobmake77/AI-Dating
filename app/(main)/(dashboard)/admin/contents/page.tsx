@@ -5,15 +5,17 @@ import { TagList } from '@/components/tag/tag-list'
 import { AlertCircle } from 'lucide-react'
 import Link from 'next/link'
 
+type PendingContents = Awaited<ReturnType<typeof getContents>>['contents']
+
 export default async function AdminContentsPage() {
-  let contents: any[] = []
+  let contents: PendingContents = []
   let fetchError: string | null = null
 
   try {
     const result = await getContents({ status: 'pending', limit: 50 })
     contents = result.contents
-  } catch (e: any) {
-    fetchError = e?.message ?? '加载失败'
+  } catch (error) {
+    fetchError = error instanceof Error ? error.message : '加载失败'
   }
 
   return (

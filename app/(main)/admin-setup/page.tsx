@@ -29,7 +29,7 @@ export default function AdminSetupPage() {
           router.refresh()
         }, 2000)
       }
-    } catch (error) {
+    } catch {
       setResult({ error: 'Failed to call API' })
     } finally {
       setLoading(false)

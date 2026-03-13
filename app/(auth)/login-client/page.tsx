@@ -1,20 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Github } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { useClientOrigin } from '@/lib/hooks/use-hydrated'
 
 export default function LoginClientPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [origin, setOrigin] = useState<string>('')
-
-  useEffect(() => {
-    setOrigin(window.location.origin)
-  }, [])
+  const origin = useClientOrigin()
 
   const handleGitHubLogin = async () => {
     setLoading(true)

@@ -11,6 +11,8 @@ import { useDebouncedCallback } from 'use-debounce'
 import Link from 'next/link'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent } from '@/components/ui/card'
+import type { SearchResult } from '@/lib/types/search'
+import type { Tag } from '@/lib/types/tag'
 
 interface MobileSearchModalProps {
   open: boolean
@@ -22,13 +24,13 @@ const MAX_HISTORY_ITEMS = 10
 
 export function MobileSearchModal({ open, onOpenChange }: MobileSearchModalProps) {
   const [query, setQuery] = useState('')
-  const [results, setResults] = useState<{ contents: any[]; users: any[] }>({
+  const [results, setResults] = useState<Pick<SearchResult, 'contents' | 'users'>>({
     contents: [],
     users: [],
   })
   const [isLoading, setIsLoading] = useState(false)
   const [searchHistory, setSearchHistory] = useState<string[]>([])
-  const [popularTags, setPopularTags] = useState<any[]>([])
+  const [popularTags, setPopularTags] = useState<Tag[]>([])
   const [showResults, setShowResults] = useState(false)
 
   // 加载搜索历史
@@ -38,7 +40,7 @@ export function MobileSearchModal({ open, onOpenChange }: MobileSearchModalProps
       if (history) {
         try {
           setSearchHistory(JSON.parse(history))
-        } catch (e) {
+        } catch {
           setSearchHistory([])
         }
       }
@@ -231,7 +233,7 @@ export function MobileSearchModal({ open, onOpenChange }: MobileSearchModalProps
                         用户 ({results.users.length})
                       </h3>
                       <div className="space-y-2">
-                        {results.users.map((user: any) => (
+                        {results.users.map((user) => (
                           <Link
                             key={user.id}
                             href={`/u/${user.username}`}
@@ -268,7 +270,7 @@ export function MobileSearchModal({ open, onOpenChange }: MobileSearchModalProps
                         内容 ({results.contents.length})
                       </h3>
                       <div className="space-y-2">
-                        {results.contents.map((content: any) => (
+                        {results.contents.map((content) => (
                           <Link
                             key={content.id}
                             href={`/post/${content.id}`}

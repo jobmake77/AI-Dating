@@ -8,7 +8,7 @@
 // ============================================
 
 // app/api/contents/route.ts
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { withApiCache } from '@/lib/cache/middleware'
 import { withApiMetrics } from '@/lib/monitoring/api-metrics'
 import { createClient } from '@/lib/supabase/server'
@@ -17,7 +17,7 @@ import { CACHE_TTL } from '@/lib/cache/redis'
 // 组合使用缓存和性能监控
 export const GET = withApiMetrics(
   withApiCache(
-    async (req: NextRequest) => {
+    async () => {
       const supabase = await createClient()
       const { data, error } = await supabase
         .from('contents')
@@ -102,7 +102,7 @@ export async function getRecommendations(userId: string) {
   )
 }
 
-async function calculateRecommendations(userId: string) {
+async function calculateRecommendations() {
   // 实现推荐逻辑
   return []
 }
@@ -113,8 +113,20 @@ async function calculateRecommendations(userId: string) {
 
 // lib/actions/content.ts
 import { cacheInvalidation } from '@/lib/cache/redis'
+import type { TablesUpdate } from '@/types/database.types'
 
-export async function updateContent(id: string, updates: any) {
+type ContentUpdatePayload = TablesUpdate<'contents'>
+
+interface ExampleContentCardData {
+  title: string
+  cover_image: string
+  author: {
+    avatar: string
+    name: string
+  }
+}
+
+export async function updateContent(id: string, updates: ContentUpdatePayload) {
   const supabase = await createClient()
 
   const { data, error } = await supabase
@@ -152,9 +164,9 @@ export async function deleteContent(id: string) {
 // ============================================
 
 // components/content/content-editor.tsx
-'use client'
+// "use client"
 
-import { Suspense, lazy } from 'react'
+import { Suspense } from 'react'
 import { TiptapEditor } from '@/lib/dynamic-imports'
 
 export function ContentEditor() {
@@ -177,7 +189,7 @@ export function ContentEditor() {
 // components/content/content-card.tsx
 import { OptimizedImage, OptimizedCover } from '@/components/ui/optimized-image'
 
-export function ContentCard({ content }: { content: any }) {
+export function ContentCard({ content }: { content: ExampleContentCardData }) {
   return (
     <div className="card">
       {/* 自动优化的封面图 */}
@@ -208,7 +220,7 @@ export function ContentCard({ content }: { content: any }) {
 // ============================================
 
 // app/layout.tsx
-'use client'
+// "use client"
 
 import { useEffect } from 'react'
 import { initResourcePreloading, smartPreload } from '@/lib/optimization/preload'
@@ -228,10 +240,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="zh-CN">
-      <head>
+      <div data-slot="head">
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#000000" />
-      </head>
+      </div>
       <body>{children}</body>
     </html>
   )
@@ -299,7 +311,7 @@ export async function checkPerformance() {
 // ============================================
 
 // components/pwa/install-prompt.tsx
-'use client'
+// "use client"
 
 import { useState, useEffect } from 'react'
 import { checkPWAInstallation, showPWAInstallPrompt } from '@/lib/pwa/register'
@@ -322,7 +334,7 @@ export function InstallPrompt() {
   return (
     <div className="install-prompt">
       <p>安装 AI Dating 应用，获得更好的体验</p>
-      <Button onClick={() => (window as any).installPWA()}>
+      <Button onClick={() => window.installPWA?.()}>
         立即安装
       </Button>
       <Button variant="ghost" onClick={() => setShowPrompt(false)}>
@@ -337,7 +349,7 @@ export function InstallPrompt() {
 // ============================================
 
 // components/notifications/enable-notifications.tsx
-'use client'
+// "use client"
 
 import { requestNotificationPermission, subscribeToPushNotifications } from '@/lib/pwa/register'
 import { Button } from '@/components/ui/button'

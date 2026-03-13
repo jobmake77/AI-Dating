@@ -1,4 +1,4 @@
-const { createClient } = require('@supabase/supabase-js')
+import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -24,7 +24,7 @@ async function setAdmin() {
     console.log(`🔑 User ID: ${user.id}`)
 
     // Update the user's role to admin
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('users')
       .update({ role: 'admin' })
       .eq('id', user.id)

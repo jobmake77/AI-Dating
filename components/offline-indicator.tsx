@@ -9,13 +9,12 @@ import { WifiOff, Wifi } from 'lucide-react'
  * 检测网络状态并显示提示
  */
 export function OfflineIndicator() {
-  const [isOnline, setIsOnline] = useState(true)
+  const [isOnline, setIsOnline] = useState(() =>
+    typeof navigator === 'undefined' ? true : navigator.onLine
+  )
   const [showReconnected, setShowReconnected] = useState(false)
 
   useEffect(() => {
-    // 初始化状态
-    setIsOnline(navigator.onLine)
-
     // 监听网络状态变化
     const handleOnline = () => {
       setIsOnline(true)

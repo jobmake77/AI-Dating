@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { isValidUuid } from '@/lib/utils/is-valid-uuid'
 
 // 内存限流：IP -> { count, resetAt }
 // 注意：多实例部署时需换用 Redis
@@ -11,6 +12,110 @@ const RATE_LIMITS: Record<string, { max: number; windowMs: number }> = {
   'POST:/api/admin':       { max: 20, windowMs: 60_000 },
 }
 const DEFAULT_API_LIMIT = { max: 60, windowMs: 60_000 }
+
+function rewriteToNotFound(request: NextRequest) {
+  const url = request.nextUrl.clone()
+  url.pathname = '/_not-found'
+  url.search = ''
+  return NextResponse.rewrite(url)
+}
+
+async function resolveMissingContentRoute(request: NextRequest, supabase: ReturnType<typeof createServerClient>) {
+  const { pathname } = request.nextUrl
+
+  if (process.env.NODE_ENV === 'production' && (pathname === '/test-auth' || pathname === '/test-ui')) {
+    return rewriteToNotFound(request)
+  }
+
+  const postMatch = pathname.match(/^\/post\/([^/]+)$/)
+  if (postMatch) {
+    const id = decodeURIComponent(postMatch[1])
+
+    if (!isValidUuid(id)) {
+      return rewriteToNotFound(request)
+    }
+
+    const { data } = await supabase
+      .from('contents')
+      .select('id')
+      .eq('id', id)
+      .is('deleted_at', null)
+      .maybeSingle()
+
+    if (!data) {
+      return rewriteToNotFound(request)
+    }
+  }
+
+  const editMatch = pathname.match(/^\/edit\/([^/]+)$/)
+  if (editMatch) {
+    const id = decodeURIComponent(editMatch[1])
+
+    if (!isValidUuid(id)) {
+      return rewriteToNotFound(request)
+    }
+
+    const { data } = await supabase
+      .from('contents')
+      .select('id')
+      .eq('id', id)
+      .is('deleted_at', null)
+      .maybeSingle()
+
+    if (!data) {
+      return rewriteToNotFound(request)
+    }
+  }
+
+  const userMatch = pathname.match(/^\/u\/([^/]+)(?:\/(?:followers|following))?$/)
+  if (userMatch) {
+    const username = decodeURIComponent(userMatch[1])
+    const { data } = await supabase
+      .from('users')
+      .select('id')
+      .eq('username', username)
+      .maybeSingle()
+
+    if (!data) {
+      return rewriteToNotFound(request)
+    }
+  }
+
+  const eventMatch = pathname.match(/^\/events\/([^/]+)$/)
+  if (eventMatch && eventMatch[1] !== 'create') {
+    const id = decodeURIComponent(eventMatch[1])
+
+    if (!isValidUuid(id)) {
+      return rewriteToNotFound(request)
+    }
+
+    const { data } = await supabase
+      .from('events')
+      .select('id')
+      .eq('id', id)
+      .maybeSingle()
+
+    if (!data) {
+      return rewriteToNotFound(request)
+    }
+  }
+
+  const communityMatch = pathname.match(/^\/communities\/([^/]+)(?:\/.*)?$/)
+  if (communityMatch && communityMatch[1] !== 'create') {
+    const slug = decodeURIComponent(communityMatch[1])
+    const { data } = await supabase
+      .from('communities')
+      .select('id')
+      .eq('slug', slug)
+      .maybeSingle()
+
+    if (!data) {
+      return rewriteToNotFound(request)
+    }
+  }
+
+  return null
+}
 
 function getRateLimit(method: string, pathname: string) {
   for (const [pattern, limit] of Object.entries(RATE_LIMITS)) {
@@ -118,6 +223,11 @@ export async function proxy(request: NextRequest) {
       },
     }
   )
+
+  const missingRouteResponse = await resolveMissingContentRoute(request, supabase)
+  if (missingRouteResponse) {
+    return missingRouteResponse
+  }
 
   await supabase.auth.getUser()
 

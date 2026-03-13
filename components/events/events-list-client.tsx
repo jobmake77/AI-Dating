@@ -2,14 +2,15 @@
 
 import { useState } from "react";
 import { CompactEventCard } from "@/components/events/compact-event-card";
-import { EventFilterTabs } from "@/components/events/event-filter-tabs";
+import { EventFilterTabs, type EventFilterId } from "@/components/events/event-filter-tabs";
+import type { EventListItem } from "@/lib/types/events";
 
 interface EventsListClientProps {
-  events: any[];
+  events: EventListItem[];
 }
 
 export function EventsListClient({ events }: EventsListClientProps) {
-  const [filter, setFilter] = useState<"upcoming" | "all" | "past">("upcoming");
+  const [filter, setFilter] = useState<EventFilterId>("upcoming");
 
   const now = new Date();
   const filteredEvents = events.filter((event) => {
@@ -26,7 +27,7 @@ export function EventsListClient({ events }: EventsListClientProps) {
 
   return (
     <>
-      <EventFilterTabs activeFilter={filter} onFilterChange={(f) => setFilter(f as any)} />
+      <EventFilterTabs activeFilter={filter} onFilterChange={setFilter} />
 
       {filteredEvents.length === 0 ? (
         <div className="text-center py-12">

@@ -11,21 +11,21 @@ import {
   Legend,
 } from 'recharts'
 
-interface LineChartComponentProps {
-  data: any[]
+interface LineChartComponentProps<T extends { date: string }> {
+  data: T[]
   lines: Array<{
-    dataKey: string
+    dataKey: keyof T & string
     stroke: string
     name: string
   }>
   height?: number
 }
 
-export function LineChartComponent({
+export function LineChartComponent<T extends { date: string }>({
   data,
   lines,
   height = 300,
-}: LineChartComponentProps) {
+}: LineChartComponentProps<T>) {
   return (
     <ResponsiveContainer width="100%" height={height}>
       <LineChart data={data} margin={{ top: 4, right: 16, left: -16, bottom: 0 }}>

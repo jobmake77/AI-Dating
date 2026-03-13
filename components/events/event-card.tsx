@@ -1,5 +1,6 @@
 import { MapPin, Clock, Users } from 'lucide-react'
 import { Card } from '@/components/ui/card'
+import Image from 'next/image'
 import Link from 'next/link'
 
 interface EventCardProps {
@@ -31,11 +32,7 @@ export function EventCard({ event }: EventCardProps) {
       <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
         {event.cover_url ? (
           <div className="relative w-full aspect-video bg-muted">
-            <img
-              src={event.cover_url}
-              alt={event.title}
-              className="w-full h-full object-cover"
-            />
+            <Image src={event.cover_url} alt={event.title} fill unoptimized sizes="480px" className="object-cover" />
           </div>
         ) : (
           <div className="w-full aspect-video bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">

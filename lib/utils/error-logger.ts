@@ -5,7 +5,7 @@
  */
 
 import { logger } from './logger'
-import { classifyError, ErrorType } from './error-handler'
+import { classifyError } from './error-handler'
 
 /**
  * 错误上下文信息
@@ -16,7 +16,7 @@ interface ErrorContext {
   url?: string
   component?: string
   action?: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 /**

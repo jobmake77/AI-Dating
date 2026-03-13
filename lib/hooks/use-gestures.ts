@@ -4,7 +4,7 @@
 
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 interface SwipeHandlers {
   onSwipeLeft?: () => void
@@ -164,7 +164,7 @@ export function useDrag() {
     }
   }
 
-  const onDragMove = (e: MouseEvent | TouchEvent) => {
+  const onDragMove = useCallback((e: MouseEvent | TouchEvent) => {
     if (!isDragging) return
 
     let clientX: number, clientY: number
@@ -181,11 +181,11 @@ export function useDrag() {
       x: clientX - startPos.current.x,
       y: clientY - startPos.current.y,
     })
-  }
+  }, [isDragging])
 
-  const onDragEnd = () => {
+  const onDragEnd = useCallback(() => {
     setIsDragging(false)
-  }
+  }, [])
 
   useEffect(() => {
     if (isDragging) {
@@ -201,7 +201,7 @@ export function useDrag() {
         window.removeEventListener('touchend', onDragEnd)
       }
     }
-  }, [isDragging])
+  }, [isDragging, onDragEnd, onDragMove])
 
   return {
     isDragging,

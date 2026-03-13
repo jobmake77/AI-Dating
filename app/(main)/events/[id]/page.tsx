@@ -7,6 +7,7 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 import { MapPin, Clock, Users, Calendar } from 'lucide-react'
 import type { Metadata } from 'next'
 import { getEventSchema, getBreadcrumbSchema } from '@/lib/seo/structured-data'
+import Image from 'next/image'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -15,7 +16,9 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
   const { data: event } = await getEventById(id)
-  if (!event) return { title: '活动不存在' }
+  if (!event) {
+    notFound()
+  }
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
   const dateStr = new Date(event.start_time).toLocaleDateString('zh-CN')
@@ -64,7 +67,9 @@ function formatDateTime(dateStr: string) {
 export default async function EventDetailPage({ params }: Props) {
   const { id } = await params
   const { data: event } = await getEventById(id)
-  if (!event) notFound()
+  if (!event) {
+    notFound()
+  }
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -75,6 +80,7 @@ export default async function EventDetailPage({ params }: Props) {
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || ''
   const shareUrl = `${siteUrl}/events/${event.id}`
+  const organizerName = event.creator?.full_name || event.creator?.username || 'AI-Dating'
 
   // Generate structured data
   const eventSchema = getEventSchema({
@@ -84,7 +90,7 @@ export default async function EventDetailPage({ params }: Props) {
     endDate: event.end_time,
     location: event.location,
     image: event.cover_url,
-    organizer: (event.creator as any)?.full_name || (event.creator as any)?.username || 'AI-Dating',
+    organizer: organizerName,
     attendeeCount: event.participants_count,
   })
 
@@ -109,9 +115,11 @@ export default async function EventDetailPage({ params }: Props) {
       {/* Hero Banner with Cover Image */}
       <div className="relative w-full h-64 bg-gradient-primary overflow-hidden">
         {event.cover_url ? (
-          <img
+          <Image
             src={event.cover_url}
             alt={event.title}
+            fill
+            sizes="100vw"
             className="w-full h-full object-cover opacity-90"
           />
         ) : (
@@ -216,7 +224,7 @@ export default async function EventDetailPage({ params }: Props) {
             {/* Organizer */}
             {event.creator && (
               <div className="text-xs text-muted-foreground pt-3 border-t">
-                发起人：{(event.creator as any).full_name || (event.creator as any).username || '匿名'}
+                发起人：{organizerName || '匿名'}
               </div>
             )}
           </div>

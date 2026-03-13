@@ -3,6 +3,10 @@
 import { useCallback } from 'react'
 import { AnalyticsEvent, BaseEventParams, EVENT_CATEGORY_MAP } from './types'
 
+type WindowWithGtag = Window & {
+  gtag?: (action: 'event', eventName: string, params?: Record<string, unknown>) => void
+}
+
 /**
  * 客户端事件追踪 Hook
  * 用于在客户端组件中追踪事件到 Google Analytics
@@ -12,10 +16,11 @@ export function useAnalytics() {
     (eventName: AnalyticsEvent, params: BaseEventParams = {}) => {
       try {
         // 检查 gtag 是否可用
-        if (typeof window !== 'undefined' && (window as any).gtag) {
+        const windowWithGtag = window as WindowWithGtag
+        if (windowWithGtag.gtag) {
           const category = EVENT_CATEGORY_MAP[eventName]
 
-          ;(window as any).gtag('event', eventName, {
+          windowWithGtag.gtag('event', eventName, {
             event_category: category,
             ...params,
           })
@@ -43,8 +48,9 @@ export function useAnalytics() {
 
   const trackPageView = useCallback((pageUrl: string, pageTitle?: string) => {
     try {
-      if (typeof window !== 'undefined' && (window as any).gtag) {
-        ;(window as any).gtag('event', 'page_view', {
+      const windowWithGtag = window as WindowWithGtag
+      if (windowWithGtag.gtag) {
+        windowWithGtag.gtag('event', 'page_view', {
           page_path: pageUrl,
           page_title: pageTitle,
         })

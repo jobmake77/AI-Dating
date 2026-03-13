@@ -45,8 +45,6 @@ export async function getCommunities(options?: {
 export async function getCommunityBySlug(slug: string) {
   const supabase = await createClient()
 
-  console.log('查询社区 slug:', slug)
-
   const { data, error } = await supabase
     .from('communities')
     .select('*')
@@ -54,6 +52,10 @@ export async function getCommunityBySlug(slug: string) {
     .single()
 
   if (error) {
+    if (error.code === 'PGRST116') {
+      return { data: null, error: null }
+    }
+
     console.error('获取社区详情失败:', {
       slug,
       error,
@@ -64,7 +66,6 @@ export async function getCommunityBySlug(slug: string) {
     return { data: null, error }
   }
 
-  console.log('查询到的社区:', data)
   return { data, error: null }
 }
 

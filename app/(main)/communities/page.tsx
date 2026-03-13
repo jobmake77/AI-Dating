@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import { Metadata } from 'next'
 import { CommunitiesClient } from '@/components/community/communities-client'
+import type { CommunityListItem, CommunityMembershipRecord } from '@/lib/types/community'
 
 export const metadata: Metadata = {
   title: '社区 - AI-Dating',
@@ -34,6 +35,19 @@ export const metadata: Metadata = {
   },
 }
 
+function isCommunityListItem(
+  community: CommunityMembershipRecord['community']
+): community is CommunityListItem {
+  return Boolean(
+    community &&
+      community.id &&
+      community.name &&
+      community.slug &&
+      typeof community.members_count === 'number' &&
+      typeof community.posts_count === 'number'
+  )
+}
+
 export default async function CommunitiesPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -41,28 +55,30 @@ export default async function CommunitiesPage() {
   // Fetch all data in parallel
   const [allResult, joinedResult, trendingResult] = await Promise.all([
     getCommunities({ type: 'public', limit: 50 }),
-    user ? getUserCommunities(user.id) : { data: [] },
+    user ? getUserCommunities(user.id) : { data: [], count: 0, error: null },
     getTrendingCommunities(20)
   ])
 
   // Process communities and add is_joined flag
   const joinedIds = new Set(
-    joinedResult.data.map((m: any) => m.community?.id).filter(Boolean)
+    (joinedResult.data as CommunityMembershipRecord[])
+      .map((membership) => membership.community?.id)
+      .filter((id): id is string => Boolean(id))
   )
 
-  const allCommunities = allResult.data.map((c: any) => ({
-    ...c,
-    is_joined: joinedIds.has(c.id)
+  const allCommunities: CommunityListItem[] = allResult.data.map((community) => ({
+    ...community,
+    is_joined: joinedIds.has(community.id)
   }))
 
-  const joinedCommunities = joinedResult.data
-    .map((m: any) => m.community)
-    .filter(Boolean)
-    .map((c: any) => ({ ...c, is_joined: true }))
+  const joinedCommunities: CommunityListItem[] = (joinedResult.data as CommunityMembershipRecord[])
+    .map((membership) => membership.community)
+    .filter(isCommunityListItem)
+    .map((community) => ({ ...community, is_joined: true }))
 
-  const trendingCommunities = trendingResult.data.map((c: any) => ({
-    ...c,
-    is_joined: joinedIds.has(c.id)
+  const trendingCommunities: CommunityListItem[] = trendingResult.data.map((community) => ({
+    ...community,
+    is_joined: joinedIds.has(community.id)
   }))
 
   return (

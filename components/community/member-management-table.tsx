@@ -93,7 +93,7 @@ export function MemberManagementTable({
       } else {
         toast.error(result.error || '操作失败')
       }
-    } catch (error) {
+    } catch {
       toast.error('操作失败')
     } finally {
       setLoading(false)
@@ -112,7 +112,7 @@ export function MemberManagementTable({
       } else {
         toast.error(result.error || '角色更新失败')
       }
-    } catch (error) {
+    } catch {
       toast.error('角色更新失败')
     } finally {
       setLoading(false)

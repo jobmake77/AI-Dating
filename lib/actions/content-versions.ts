@@ -195,6 +195,7 @@ export async function compareVersions(versionId1: string, versionId2: string) {
  * Manually create a version (for important milestones)
  */
 export async function createManualVersion(contentId: string, note?: string) {
+  void note
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
