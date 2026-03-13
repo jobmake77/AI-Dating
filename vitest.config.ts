@@ -13,6 +13,7 @@ export default defineConfig({
       '**/dist/**',
       '**/.next/**',
       '**/e2e/**',
+      '**/impeccable/**',
       '**/.worktrees/**',
     ],
     coverage: {
