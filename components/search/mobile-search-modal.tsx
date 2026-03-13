@@ -10,7 +10,6 @@ import { Search, X, Clock, TrendingUp, Loader2 } from 'lucide-react'
 import { useDebouncedCallback } from 'use-debounce'
 import Link from 'next/link'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 
 interface MobileSearchModalProps {
@@ -250,9 +249,6 @@ export function MobileSearchModal({ open, onOpenChange }: MobileSearchModalProps
                                       <p className="font-semibold text-sm truncate">
                                         {user.full_name || user.username}
                                       </p>
-                                      {user.membership_tier === 'premium' && (
-                                        <Badge variant="default" className="text-xs">会员</Badge>
-                                      )}
                                     </div>
                                     <p className="text-xs text-muted-foreground">@{user.username}</p>
                                   </div>

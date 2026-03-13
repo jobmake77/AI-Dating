@@ -3,30 +3,21 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
-import { searchAll } from '@/lib/actions/search'
+import { getPopularSearchTags, searchAll } from '@/lib/actions/search'
 import { Search, X, Hash, Users } from 'lucide-react'
 import { useDebouncedCallback } from 'use-debounce'
 import { ContentCard } from '@/components/content/content-card-twitter'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
 
 const searchTabs = ['内容', '用户', '标签'] as const
 type SearchTab = typeof searchTabs[number]
-
-// 热门搜索词
-const hotSearches = ['AI', 'React', 'Next.js', '面试', '开源项目', 'TypeScript', 'Supabase']
-
-// 热门标签（示例数据）
-const popularTags = [
-  { name: 'AI', count: 1234 },
-  { name: 'React', count: 892 },
-  { name: 'Next.js', count: 756 },
-  { name: 'TypeScript', count: 645 },
-  { name: 'Supabase', count: 523 },
-  { name: '面试', count: 412 },
-]
+type SearchTag = {
+  name: string
+  slug: string
+  count: number
+}
 
 export default function SearchPage() {
   const searchParams = useSearchParams()
@@ -35,16 +26,18 @@ export default function SearchPage() {
 
   const [query, setQuery] = useState(initialQuery)
   const [activeTab, setActiveTab] = useState<SearchTab>('内容')
-  const [results, setResults] = useState<{ contents: any[]; users: any[] }>({
+  const [results, setResults] = useState<{ contents: any[]; users: any[]; tags: SearchTag[] }>({
     contents: [],
     users: [],
+    tags: [],
   })
+  const [popularTags, setPopularTags] = useState<SearchTag[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
   // 防抖搜索
   const debouncedSearch = useDebouncedCallback(async (searchQuery: string) => {
     if (!searchQuery.trim()) {
-      setResults({ contents: [], users: [] })
+      setResults({ contents: [], users: [], tags: [] })
       setIsLoading(false)
       return
     }
@@ -67,6 +60,27 @@ export default function SearchPage() {
     }
   }, [initialQuery, debouncedSearch])
 
+  useEffect(() => {
+    let mounted = true
+
+    const loadPopularTags = async () => {
+      try {
+        const tags = await getPopularSearchTags()
+        if (mounted) {
+          setPopularTags(tags)
+        }
+      } catch (error) {
+        console.error('Failed to load popular tags:', error)
+      }
+    }
+
+    loadPopularTags()
+
+    return () => {
+      mounted = false
+    }
+  }, [])
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setQuery(value)
@@ -78,7 +92,7 @@ export default function SearchPage() {
 
   const handleClearQuery = () => {
     setQuery('')
-    setResults({ contents: [], users: [] })
+    setResults({ contents: [], users: [], tags: [] })
     router.push('/search')
   }
 
@@ -91,6 +105,7 @@ export default function SearchPage() {
   // 根据当前标签过滤结果
   const filteredContents = activeTab === '内容' ? results.contents : []
   const filteredUsers = activeTab === '用户' ? results.users : []
+  const filteredTags = activeTab === '标签' ? results.tags : []
 
   return (
     <div className="min-h-screen bg-background">
@@ -182,9 +197,6 @@ export default function SearchPage() {
                                       <p className="font-semibold truncate text-sm">
                                         {user.full_name || user.username}
                                       </p>
-                                      {user.membership_tier === 'premium' && (
-                                        <Badge variant="default" className="text-xs h-4 px-1.5">会员</Badge>
-                                      )}
                                     </div>
                                     <p className="text-xs text-muted-foreground">@{user.username}</p>
                                     {user.bio && (
@@ -210,9 +222,27 @@ export default function SearchPage() {
 
                 {/* 标签标签 */}
                 {activeTab === '标签' && (
-                  <div className="rounded-lg border border-border bg-card p-10 text-center shadow-sm">
-                    <Hash className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
-                    <p className="text-xs text-muted-foreground">标签搜索功能开发中</p>
+                  <div>
+                    {filteredTags.length > 0 ? (
+                      <div className="grid grid-cols-2 gap-2">
+                        {filteredTags.map((tag) => (
+                          <button
+                            key={tag.slug}
+                            onClick={() => handleHotSearchClick(tag.name)}
+                            className="rounded-lg border border-border bg-card p-3 hover:border-primary/30 transition-all flex items-center gap-2 text-left"
+                          >
+                            <Hash className="h-3.5 w-3.5 text-primary shrink-0" />
+                            <span className="text-xs font-medium text-foreground">{tag.name}</span>
+                            <span className="text-[10px] font-mono text-muted-foreground ml-auto">{tag.count}</span>
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="rounded-lg border border-border bg-card p-10 text-center shadow-sm">
+                        <Hash className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
+                        <p className="text-xs text-muted-foreground">未找到相关标签</p>
+                      </div>
+                    )}
                   </div>
                 )}
               </>
@@ -220,32 +250,16 @@ export default function SearchPage() {
           </>
         )}
 
-        {/* 无搜索词时显示热门搜索和标签 */}
+        {/* 无搜索词时显示真实热门标签 */}
         {!query && (
           <div className="space-y-5">
-            {/* 热门搜索 */}
-            <div>
-              <h2 className="text-sm font-bold text-foreground mb-3">热门搜索</h2>
-              <div className="flex flex-wrap gap-2">
-                {hotSearches.map((term) => (
-                  <button
-                    key={term}
-                    onClick={() => handleHotSearchClick(term)}
-                    className="rounded-full bg-secondary px-3.5 py-1.5 text-xs text-foreground hover:bg-primary/10 hover:text-primary transition-all"
-                  >
-                    {term}
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* 热门标签 */}
             <div>
               <h2 className="text-sm font-bold text-foreground mb-3">热门标签</h2>
               <div className="grid grid-cols-2 gap-2">
                 {popularTags.map((tag) => (
                   <button
-                    key={tag.name}
+                    key={tag.slug}
                     onClick={() => handleHotSearchClick(tag.name)}
                     className="rounded-lg border border-border bg-card p-3 hover:border-primary/30 transition-all flex items-center gap-2 text-left"
                   >

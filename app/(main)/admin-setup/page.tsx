@@ -25,7 +25,7 @@ export default function AdminSetupPage() {
       if (data.success) {
         // Refresh the page after 2 seconds to update the auth state
         setTimeout(() => {
-          router.push('/admin/members')
+          router.push('/admin/users')
           router.refresh()
         }, 2000)
       }

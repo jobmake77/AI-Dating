@@ -24,12 +24,6 @@ export const onboardingSteps: OnboardingTourStep[] = [
     placement: 'bottom',
     title: '探索社区',
   },
-  {
-    target: '[data-tour="pricing-link"]',
-    content: '开通会员，获得 token，解锁更多创作功能和 API 访问权限',
-    placement: 'bottom',
-    title: '了解会员',
-  },
 ]
 
 export const onboardingStyles = {

@@ -8,12 +8,8 @@ import {
   getOverviewStats,
   getUserGrowthData,
   getUserRetentionData,
-  getMembershipGrowthData,
-  getMembershipStats,
   getTopContents,
 } from '@/lib/actions/analytics'
-import { MemberManagementTable } from '@/components/admin/member-management-table'
-import { getAllUsers } from '@/lib/actions/admin'
 
 export default async function AnalyticsPage() {
   await requireAdmin()
@@ -23,18 +19,12 @@ export default async function AnalyticsPage() {
     overviewStats,
     growthData,
     retentionData,
-    membershipGrowthData,
-    membershipStats,
     topContents,
-    allUsers,
   ] = await Promise.all([
     getOverviewStats(),
     getUserGrowthData(30),
     getUserRetentionData(),
-    getMembershipGrowthData(30),
-    getMembershipStats(),
     getTopContents(10),
-    getAllUsers(),
   ])
 
   return (
@@ -48,7 +38,6 @@ export default async function AnalyticsPage() {
         <TabsList>
           <TabsTrigger value="overview">概览</TabsTrigger>
           <TabsTrigger value="users">用户分析</TabsTrigger>
-          <TabsTrigger value="membership">会员分析</TabsTrigger>
         </TabsList>
 
         {/* 概览 Tab */}
@@ -84,12 +73,6 @@ export default async function AnalyticsPage() {
               value={overviewStats.totalContents}
               icon="fileText"
               description="平台内容总数"
-            />
-            <StatCard
-              title="会员用户"
-              value={overviewStats.totalMembers}
-              icon="crown"
-              description="付费会员总数"
             />
           </div>
 
@@ -225,75 +208,6 @@ export default async function AnalyticsPage() {
               }%`}
             />
           </div>
-        </TabsContent>
-
-        {/* 会员分析 Tab */}
-        <TabsContent value="membership" className="space-y-6">
-          {/* 会员统计卡片 */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard
-              title="总会员数"
-              value={membershipStats.totalMembers}
-              icon="crown"
-              description="当前付费会员总数"
-            />
-            <StatCard
-              title="本月新增"
-              value={membershipStats.newMembersThisMonth}
-              icon="trendingUp"
-              description="本月新增会员数"
-            />
-            <StatCard
-              title="转化率"
-              value={`${membershipStats.conversionRate}%`}
-              icon="activity"
-              description="用户转会员比例"
-            />
-            <StatCard
-              title="流失率"
-              value={`${membershipStats.churnRate}%`}
-              icon="dollarSign"
-              description="本月会员流失率"
-            />
-          </div>
-
-          {/* 会员增长趋势 */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">会员增长趋势</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <LineChartComponent
-                data={membershipGrowthData}
-                lines={[
-                  {
-                    dataKey: 'newMembers',
-                    stroke: '#f59e0b',
-                    name: '新增会员',
-                  },
-                  {
-                    dataKey: 'totalMembers',
-                    stroke: '#8b5cf6',
-                    name: '累计会员',
-                  },
-                ]}
-                height={280}
-              />
-            </CardContent>
-          </Card>
-
-          {/* 会员管理表格 */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">会员管理</CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">
-                管理用户会员状态和权限
-              </p>
-            </CardHeader>
-            <CardContent>
-              <MemberManagementTable users={allUsers} />
-            </CardContent>
-          </Card>
         </TabsContent>
       </Tabs>
     </div>

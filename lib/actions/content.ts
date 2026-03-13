@@ -83,7 +83,7 @@ export async function createContent(formData: FormData) {
   // Parse and validate form data
   const rawData = {
     content: formData.get('content') as string,
-    price_type: formData.get('price_type') as string || 'free',
+    price_type: 'free' as const,
     category: formData.get('category') as string | undefined,
   }
 
@@ -189,7 +189,7 @@ export async function updateContent(id: string, formData: FormData) {
   // Parse and validate form data
   const rawData = {
     content: formData.get('content') as string,
-    price_type: formData.get('price_type') as string || 'free',
+    price_type: 'free' as const,
   }
 
   const validatedData = contentSchema.parse(rawData)

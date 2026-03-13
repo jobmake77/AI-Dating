@@ -21,7 +21,7 @@ export function ContentListCompact({ contents, isAuthenticated = false }: Conten
   }
 
   return (
-    <>
+    <div className="overflow-hidden rounded-2xl border border-border bg-card/70 shadow-card">
       {contents.map((content, index) => (
         <CompactContentCard
           key={content.id}
@@ -29,6 +29,6 @@ export function ContentListCompact({ contents, isAuthenticated = false }: Conten
           index={index}
         />
       ))}
-    </>
+    </div>
   )
 }

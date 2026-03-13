@@ -7,6 +7,11 @@ import { createClient } from '@/lib/supabase/server'
 export interface SearchResult {
   contents: any[]
   users: any[]
+  tags: Array<{
+    name: string
+    slug: string
+    count: number
+  }>
   total: number
 }
 
@@ -132,6 +137,7 @@ export async function searchAll(query: string) {
     return {
       contents: [],
       users: [],
+      tags: [],
       total: 0,
     }
   }
@@ -139,7 +145,7 @@ export async function searchAll(query: string) {
   const searchQuery = query.trim().toLowerCase()
 
   // 并行搜索内容和用户
-  const [contentsResult, usersResult] = await Promise.all([
+  const [contentsResult, usersResult, tagsResult] = await Promise.all([
     supabase
       .from('contents')
       .select(`
@@ -162,11 +168,46 @@ export async function searchAll(query: string) {
       .or(`username.ilike.%${searchQuery}%,full_name.ilike.%${searchQuery}%,bio.ilike.%${searchQuery}%`)
       .order('created_at', { ascending: false })
       .limit(5),
+    supabase
+      .from('tags')
+      .select('name, slug, usage_count')
+      .or(`name.ilike.%${searchQuery}%,slug.ilike.%${searchQuery}%`)
+      .order('usage_count', { ascending: false })
+      .limit(10),
   ])
 
   return {
     contents: contentsResult.data || [],
     users: usersResult.data || [],
-    total: (contentsResult.data?.length || 0) + (usersResult.data?.length || 0),
+    tags: (tagsResult.data || []).map((tag) => ({
+      name: tag.name,
+      slug: tag.slug,
+      count: tag.usage_count || 0,
+    })),
+    total:
+      (contentsResult.data?.length || 0) +
+      (usersResult.data?.length || 0) +
+      (tagsResult.data?.length || 0),
   }
+}
+
+export async function getPopularSearchTags(limit: number = 8) {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('tags')
+    .select('name, slug, usage_count')
+    .order('usage_count', { ascending: false })
+    .limit(limit)
+
+  if (error) {
+    logger.error('Get popular search tags error:', error)
+    return []
+  }
+
+  return (data || []).map((tag) => ({
+    name: tag.name,
+    slug: tag.slug,
+    count: tag.usage_count || 0,
+  }))
 }

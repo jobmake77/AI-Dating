@@ -6,7 +6,7 @@ import { updateContent } from '@/lib/actions/content'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { TagInput } from '@/components/tags/tag-input'
-import { Lock, Globe, Smile } from 'lucide-react'
+import { Smile } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import type { EmojiClickData } from 'emoji-picker-react'
 import { TiptapEditor, type TiptapEditorRef } from '@/components/editor/tiptap-editor'
@@ -30,9 +30,6 @@ export function ContentEditForm({ content: initialContent }: ContentEditFormProp
   const [content, setContent] = useState(initialContent.content)
   const [tags, setTags] = useState<string[]>(initialContent.tags || [])
   const [coverImage, setCoverImage] = useState<string>(initialContent.cover_image || '')
-  const [priceType, setPriceType] = useState<'free' | 'member'>(
-    initialContent.price_type as 'free' | 'member'
-  )
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
@@ -67,7 +64,7 @@ export function ContentEditForm({ content: initialContent }: ContentEditFormProp
     try {
       const formData = new FormData()
       formData.append('content', content)
-      formData.append('price_type', priceType)
+      formData.append('price_type', 'free')
       formData.append('tags', JSON.stringify(tags))
       if (coverImage) {
         formData.append('cover_image', coverImage)
@@ -163,27 +160,6 @@ export function ContentEditForm({ content: initialContent }: ContentEditFormProp
             )}
           </div>
 
-          <div className="h-6 w-px bg-border mx-2" />
-
-          {/* Price Type Toggle */}
-          <Button
-            type="button"
-            variant={priceType === 'free' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setPriceType('free')}
-          >
-            <Globe className="h-4 w-4 mr-1" />
-            公开
-          </Button>
-          <Button
-            type="button"
-            variant={priceType === 'member' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setPriceType('member')}
-          >
-            <Lock className="h-4 w-4 mr-1" />
-            会员
-          </Button>
         </div>
 
         {/* Action Buttons */}

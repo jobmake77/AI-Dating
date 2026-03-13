@@ -1,5 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/utils/logger'
+import {
+  categories as canonicalCategories,
+  getCategoryAliases,
+  matchesCategoryValue,
+} from '@/lib/utils/categories'
 
 export interface ExploreParams {
   page?: number
@@ -9,51 +14,245 @@ export interface ExploreParams {
   search?: string
 }
 
-// 分类到标签的映射（category column 已被移除，改用 tags 数组列查询）
-const categoryTagMapping: Record<string, string[]> = {
-  'source-code': ['源码解析', '源码', 'source-code'],
-  'workshop': ['实战工坊', '最佳实践', 'workshop'],
-  'architecture': ['架构设计', 'architecture'],
-  'ai-frontier': ['AI', 'ai-frontier', 'AI 前沿'],
-  'interview': ['面试宝典', 'interview', '面试'],
+export interface ExploreCategory {
+  id: string
+  name: string
+  slug: string
+  description?: string
+  postCount: number
+}
+
+type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
+
+interface CategoryMatcher {
+  id: string
+  name: string
+  slug: string
+  description?: string
+  aliases: string[]
+}
+
+interface MatchedTagRow {
+  id: string
+  name: string | null
+  slug: string | null
+}
+
+function normalizeTagValue(value: string): string {
+  return value.trim().toLowerCase().replace(/\s+/g, '-')
+}
+
+function buildCategoryMatchers(categorySlugs?: string[]): CategoryMatcher[] {
+  const filteredCategories = categorySlugs?.length
+    ? canonicalCategories.filter((category) => categorySlugs.includes(category.slug))
+    : canonicalCategories
+
+  return filteredCategories.map((category) => ({
+    id: category.id,
+    name: category.name,
+    slug: category.slug,
+    description: category.description,
+    aliases: getCategoryAliases(category.slug),
+  }))
+}
+
+async function getMatchedTags(
+  supabase: SupabaseServerClient,
+  values: string[]
+): Promise<MatchedTagRow[]> {
+  const exactValues = Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)))
+
+  if (exactValues.length === 0) {
+    return []
+  }
+
+  const slugValues = Array.from(new Set(exactValues.map(normalizeTagValue)))
+
+  const [{ data: tagsByName, error: tagsByNameError }, { data: tagsBySlug, error: tagsBySlugError }] =
+    await Promise.all([
+      supabase.from('tags').select('id, name, slug').in('name', exactValues),
+      supabase.from('tags').select('id, name, slug').in('slug', slugValues),
+    ])
+
+  if (tagsByNameError) {
+    logger.error('Failed to fetch tags by name for explore filters:', tagsByNameError)
+  }
+
+  if (tagsBySlugError) {
+    logger.error('Failed to fetch tags by slug for explore filters:', tagsBySlugError)
+  }
+
+  const matchedTags = new Map<string, MatchedTagRow>()
+
+  ;[...(tagsByName || []), ...(tagsBySlug || [])].forEach((tag) => {
+    matchedTags.set(tag.id, tag)
+  })
+
+  return Array.from(matchedTags.values())
+}
+
+async function getApprovedContentIdsForTagValues(
+  supabase: SupabaseServerClient,
+  values: string[]
+): Promise<string[]> {
+  const exactValues = Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)))
+
+  if (exactValues.length === 0) {
+    return []
+  }
+
+  const legacyValues = Array.from(new Set([...exactValues, ...exactValues.map(normalizeTagValue)]))
+
+  const [matchedTags, legacyContentsResult] = await Promise.all([
+    getMatchedTags(supabase, exactValues),
+    supabase
+      .from('contents')
+      .select('id')
+      .eq('status', 'approved')
+      .is('deleted_at', null)
+      .overlaps('tags', legacyValues),
+  ])
+
+  if (legacyContentsResult.error) {
+    logger.error('Failed to fetch legacy tag matches for explore filters:', legacyContentsResult.error)
+  }
+
+  const contentIds = new Set<string>((legacyContentsResult.data || []).map((content) => content.id))
+
+  if (matchedTags.length > 0) {
+    const { data: contentTags, error: contentTagsError } = await supabase
+      .from('content_tags')
+      .select('content_id, contents!inner(id, status, deleted_at)')
+      .in('tag_id', matchedTags.map((tag) => tag.id))
+      .eq('contents.status', 'approved')
+      .is('contents.deleted_at', null)
+
+    if (contentTagsError) {
+      logger.error('Failed to fetch content tags for explore filters:', contentTagsError)
+    } else {
+      contentTags.forEach((contentTag: { content_id: string }) => {
+        contentIds.add(contentTag.content_id)
+      })
+    }
+  }
+
+  return Array.from(contentIds)
+}
+
+async function getApprovedContentIdsByCategories(
+  supabase: SupabaseServerClient,
+  categorySlugs?: string[]
+): Promise<Map<string, Set<string>>> {
+  const matchers = buildCategoryMatchers(categorySlugs)
+  const contentIdsByCategory = new Map<string, Set<string>>(
+    matchers.map((matcher) => [matcher.slug, new Set<string>()])
+  )
+
+  if (matchers.length === 0) {
+    return contentIdsByCategory
+  }
+
+  const categoryValues = Array.from(
+    new Set(matchers.flatMap((matcher) => matcher.aliases.map((alias) => alias.trim())).filter(Boolean))
+  )
+  const legacyValues = Array.from(
+    new Set([...categoryValues, ...categoryValues.map(normalizeTagValue)])
+  )
+
+  const [matchedTags, legacyContentsResult] = await Promise.all([
+    getMatchedTags(supabase, categoryValues),
+    supabase
+      .from('contents')
+      .select('id, tags')
+      .eq('status', 'approved')
+      .is('deleted_at', null)
+      .overlaps('tags', legacyValues),
+  ])
+
+  if (legacyContentsResult.error) {
+    logger.error('Failed to fetch legacy category matches for explore:', legacyContentsResult.error)
+  }
+
+  const tagIdToCategorySlugs = new Map<string, string[]>()
+
+  matchedTags.forEach((tag) => {
+    const matchedCategorySlugs = new Set<string>()
+
+    matchers.forEach((matcher) => {
+      if (
+        (tag.name && matchesCategoryValue(matcher.slug, tag.name)) ||
+        (tag.slug && matchesCategoryValue(matcher.slug, tag.slug))
+      ) {
+        matchedCategorySlugs.add(matcher.slug)
+      }
+    })
+
+    if (matchedCategorySlugs.size > 0) {
+      tagIdToCategorySlugs.set(tag.id, Array.from(matchedCategorySlugs))
+    }
+  })
+
+  if (tagIdToCategorySlugs.size > 0) {
+    const { data: contentTags, error: contentTagsError } = await supabase
+      .from('content_tags')
+      .select('content_id, tag_id, contents!inner(id, status, deleted_at)')
+      .in('tag_id', Array.from(tagIdToCategorySlugs.keys()))
+      .eq('contents.status', 'approved')
+      .is('contents.deleted_at', null)
+
+    if (contentTagsError) {
+      logger.error('Failed to fetch category relations for explore:', contentTagsError)
+    } else {
+      contentTags.forEach((contentTag: { content_id: string; tag_id: string }) => {
+        tagIdToCategorySlugs.get(contentTag.tag_id)?.forEach((categorySlug) => {
+          contentIdsByCategory.get(categorySlug)?.add(contentTag.content_id)
+        })
+      })
+    }
+  }
+
+  ;(legacyContentsResult.data || []).forEach((content) => {
+    const tags = Array.isArray(content.tags) ? content.tags : []
+
+    tags.forEach((tag) => {
+      matchers.forEach((matcher) => {
+        if (matchesCategoryValue(matcher.slug, tag)) {
+          contentIdsByCategory.get(matcher.slug)?.add(content.id)
+        }
+      })
+    })
+  })
+
+  return contentIdsByCategory
+}
+
+function intersectContentIds(idGroups: string[][]): string[] {
+  if (idGroups.length === 0) {
+    return []
+  }
+
+  return idGroups.reduce<string[]>((intersection, ids, index) => {
+    if (index === 0) {
+      return ids
+    }
+
+    const idSet = new Set(ids)
+    return intersection.filter((id) => idSet.has(id))
+  }, [])
 }
 
 // 获取所有分类及其内容数量
-export async function getCategories() {
+export async function getCategories(): Promise<ExploreCategory[]> {
   const supabase = await createClient()
+  const contentIdsByCategory = await getApprovedContentIdsByCategories(supabase)
 
-  // 定义分类映射
-  const categoryMap = [
-    { id: "1", name: "源码解析", slug: "source-code", icon: "💻", description: "深入源码，理解原理" },
-    { id: "2", name: "实战工坊", slug: "workshop", icon: "🛠️", description: "动手实践，学以致用" },
-    { id: "3", name: "架构设计", slug: "architecture", icon: "🏗️", description: "系统设计，架构思维" },
-    { id: "4", name: "AI 前沿", slug: "ai-frontier", icon: "🤖", description: "AI 技术，前沿探索" },
-    { id: "5", name: "面试宝典", slug: "interview", icon: "📚", description: "面试经验，求职指南" },
-  ]
-
-  // 获取每个分类的内容数量（通过 tags 数组列查询，因为 category 列已被移除）
-  const categoriesWithCount = await Promise.all(
-    categoryMap.map(async (cat) => {
-      const tagNames = categoryTagMapping[cat.slug] || [cat.slug]
-
-      // Count contents that have any of the mapped tags using overlaps (&&)
-      const { count, error } = await supabase
-        .from('contents')
-        .select('*', { count: 'exact', head: true })
-        .overlaps('tags', tagNames)
-        .eq('status', 'approved')
-        .is('deleted_at', null)
-
-      if (error) {
-        logger.error(`Failed to count contents for category ${cat.slug}:`, error)
-        return { ...cat, postCount: 0 }
-      }
-
-      return { ...cat, postCount: count || 0 }
-    })
-  )
-
-  return categoriesWithCount
+  return canonicalCategories.map((category) => ({
+    id: category.id,
+    name: category.name,
+    slug: category.slug,
+    description: category.description,
+    postCount: contentIdsByCategory.get(category.slug)?.size || 0,
+  }))
 }
 
 // 获取热门标签
@@ -71,24 +270,23 @@ export async function getPopularTags(limit: number = 20) {
     return []
   }
 
-  // 为标签添加颜色
   const tagColors: Record<string, string> = {
-    "AI": "hsl(262 83% 58%)",
-    "React": "hsl(199 89% 48%)",
-    "Next.js": "hsl(221 83% 53%)",
-    "TypeScript": "hsl(210 100% 56%)",
-    "前端开发": "hsl(340 82% 52%)",
-    "后端开发": "hsl(152 69% 40%)",
-    "数据库": "hsl(24 95% 53%)",
-    "架构设计": "hsl(280 68% 55%)",
-    "性能优化": "hsl(38 92% 50%)",
-    "最佳实践": "hsl(142 71% 45%)",
+    AI: 'hsl(262 83% 58%)',
+    React: 'hsl(199 89% 48%)',
+    'Next.js': 'hsl(221 83% 53%)',
+    TypeScript: 'hsl(210 100% 56%)',
+    前端开发: 'hsl(340 82% 52%)',
+    后端开发: 'hsl(152 69% 40%)',
+    数据库: 'hsl(24 95% 53%)',
+    架构设计: 'hsl(280 68% 55%)',
+    性能优化: 'hsl(38 92% 50%)',
+    最佳实践: 'hsl(142 71% 45%)',
   }
 
   return data.map((tag) => ({
     name: tag.name,
     count: tag.usage_count,
-    color: tagColors[tag.name] || "hsl(221 83% 53%)",
+    color: tagColors[tag.name] || 'hsl(221 83% 53%)',
   }))
 }
 
@@ -97,9 +295,30 @@ export async function getExploreContents(params: ExploreParams = {}) {
   const supabase = await createClient()
   const { page = 1, limit = 20, category, tag, search } = params
 
+  const filterIdGroups: string[][] = []
+
+  if (category) {
+    const categoryContentIds = Array.from(
+      (await getApprovedContentIdsByCategories(supabase, [category])).get(category) || []
+    )
+
+    filterIdGroups.push(categoryContentIds)
+  }
+
+  if (tag) {
+    filterIdGroups.push(await getApprovedContentIdsForTagValues(supabase, [tag]))
+  }
+
+  const filteredContentIds = filterIdGroups.length > 0 ? intersectContentIds(filterIdGroups) : []
+
+  if (filterIdGroups.length > 0 && filteredContentIds.length === 0) {
+    return { contents: [], totalPages: 0, total: 0, page, limit }
+  }
+
   let query = supabase
     .from('contents')
-    .select(`
+    .select(
+      `
       *,
       users:author_id (
         id,
@@ -107,23 +326,17 @@ export async function getExploreContents(params: ExploreParams = {}) {
         avatar,
         full_name
       )
-    `, { count: 'exact' })
+    `,
+      { count: 'exact' }
+    )
     .eq('status', 'approved')
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
 
-  // 分类筛选（通过 tags 数组列，因为 category 列已被移除）
-  if (category) {
-    const tagNames = categoryTagMapping[category] || [category]
-    query = query.overlaps('tags', tagNames)
+  if (filteredContentIds.length > 0) {
+    query = query.in('id', filteredContentIds)
   }
 
-  // 标签筛选
-  if (tag) {
-    query = query.contains('tags', [tag])
-  }
-
-  // 搜索筛选
   if (search) {
     query = query.or(`title.ilike.%${search}%,excerpt.ilike.%${search}%`)
   }

@@ -1,77 +1,106 @@
 "use client";
 
 import Link from "next/link";
-import { Users, TrendingUp } from "lucide-react";
+import { ArrowUpRight, TrendingUp, Users } from "lucide-react";
+import type { HomepageCommunityItem } from "@/lib/queries/home";
 
-const MY_COMMUNITIES = [
-  { name: "AI 研究院", slug: "ai-research", members: 34, color: "hsl(221 83% 53%)" },
-  { name: "Rust 中文社区", slug: "rust-cn", members: 21, color: "hsl(262 83% 58%)" },
-  { name: "前端工程师", slug: "frontend", members: 56, color: "hsl(142 76% 36%)" },
-  { name: "DevOps 实践", slug: "devops", members: 12, color: "hsl(24 95% 53%)" },
-  { name: "开源之光", slug: "opensource", members: 28, color: "hsl(199 89% 48%)" },
+interface CategoriesSidebarProps {
+  communities: HomepageCommunityItem[];
+  trendingCommunities: HomepageCommunityItem[];
+  isAuthenticated?: boolean;
+}
+
+const accentPalette = [
+  "hsl(221 83% 53%)",
+  "hsl(262 83% 58%)",
+  "hsl(142 76% 36%)",
+  "hsl(24 95% 53%)",
+  "hsl(199 89% 48%)",
 ];
 
-const TRENDING_COMMUNITIES = [
-  { name: "前端工程师", slug: "frontend", growth: 56 },
-  { name: "求职面试", slug: "job-interview", growth: 42 },
-  { name: "AI 研究院", slug: "ai-research", growth: 34 },
-];
+function getCommunityAccent(slug: string) {
+  const hash = slug.split("").reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  return accentPalette[hash % accentPalette.length];
+}
 
-export function CategoriesSidebar() {
+export function CategoriesSidebar({
+  communities,
+  trendingCommunities,
+  isAuthenticated = false,
+}: CategoriesSidebarProps) {
+  const hasCommunities = communities.length > 0;
+  const sidebarTitle = hasCommunities ? "我的社区" : isAuthenticated ? "推荐社区" : "热门社区";
+  const sidebarDescription = hasCommunities
+    ? "从固定阵地开始，再向外探索新的讨论版块。"
+    : "这里展示当前最活跃的公开社区，优先从真实活跃度排序。";
+
+  const primaryCommunities = hasCommunities ? communities : trendingCommunities;
+
   return (
-    <aside className="hidden lg:flex w-52 shrink-0 flex-col gap-3">
-      <div className="sticky top-[60px]">
-        {/* My Communities Card */}
-        <div className="rounded-lg border border-border bg-card p-3 shadow-card">
-          <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2 px-2">
-            我的社区
-          </h3>
-          <div className="space-y-0.5">
-            {MY_COMMUNITIES.map((community) => (
+    <aside className="hidden lg:block w-56 shrink-0">
+      <div className="sticky top-[76px] space-y-5 border-r border-border pr-4">
+        <section>
+          <div className="mb-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+              社区目录
+            </p>
+            <h2 className="mt-1.5 text-lg font-semibold tracking-[-0.03em] text-foreground">
+              {sidebarTitle}
+            </h2>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">
+              {sidebarDescription}
+            </p>
+          </div>
+
+          <div className="divide-y divide-border">
+            {primaryCommunities.map((community) => (
               <Link
-                key={community.slug}
+                key={community.id}
                 href={`/communities/${community.slug}`}
-                className="flex items-center justify-between rounded-md px-2 py-2 text-xs transition-all hover:bg-secondary group"
+                className="group flex items-center justify-between py-2.5 text-xs transition-colors hover:text-primary"
               >
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   <span
                     className="h-2.5 w-2.5 rounded-full shrink-0"
-                    style={{ backgroundColor: community.color }}
+                    style={{ backgroundColor: getCommunityAccent(community.slug) }}
                   />
-                  <span className="text-foreground group-hover:text-primary transition-colors truncate">
+                  <span className="truncate text-foreground transition-colors group-hover:text-primary">
                     {community.name}
                   </span>
                 </div>
-                <span className="font-mono text-[10px] text-muted-foreground shrink-0 ml-1">
-                  {community.members}
-                </span>
+                <div className="ml-2 flex items-center gap-1.5 shrink-0 text-[10px] text-muted-foreground">
+                  <span className="font-mono">{community.members_count}</span>
+                  <Users className="h-3 w-3" />
+                </div>
               </Link>
             ))}
           </div>
+
           <Link
             href="/communities"
-            className="block mt-2 text-[11px] text-primary hover:underline text-center px-2"
+            className="mt-3 inline-flex items-center gap-1 text-[11px] font-medium text-foreground transition-colors hover:text-primary"
           >
-            浏览全部社区 →
+            浏览全部社区
+            <ArrowUpRight className="h-3.5 w-3.5" />
           </Link>
-        </div>
+        </section>
 
-        {/* Trending Communities Card */}
-        <div className="rounded-lg border border-border bg-card p-3 shadow-card mt-3">
-          <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2 px-2 flex items-center gap-1">
-            <TrendingUp className="h-3 w-3 text-warning" />
+        <section className="border-t border-border pt-4">
+          <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+            <TrendingUp className="h-3.5 w-3.5 text-warning" />
             热门社区
-          </h3>
-          <div className="space-y-0.5">
-            {TRENDING_COMMUNITIES.map((community, i) => (
+          </div>
+
+          <div className="divide-y divide-border">
+            {trendingCommunities.map((community, i) => (
               <Link
-                key={community.slug}
+                key={community.id}
                 href={`/communities/${community.slug}`}
-                className="flex items-center justify-between rounded-md px-2 py-1.5 text-xs transition-all hover:bg-secondary group"
+                className="group flex items-start justify-between gap-3 py-2.5 transition-colors hover:text-primary"
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <span
-                    className={`font-mono w-4 text-center font-bold text-xs ${
+                    className={`w-5 text-center font-mono text-xs font-bold ${
                       i === 0
                         ? "text-warning"
                         : i === 1
@@ -81,15 +110,19 @@ export function CategoriesSidebar() {
                   >
                     {i + 1}
                   </span>
-                  <span className="text-foreground group-hover:text-primary transition-colors">
-                    {community.name}
-                  </span>
+                  <div>
+                    <span className="block text-sm font-medium text-foreground transition-colors group-hover:text-primary">
+                      {community.name}
+                    </span>
+                    <span className="text-[11px] text-muted-foreground">
+                      {community.posts_count} 篇内容 · {community.members_count} 位成员
+                    </span>
+                  </div>
                 </div>
-                <span className="font-mono text-[10px] text-success">+{community.growth}</span>
               </Link>
             ))}
           </div>
-        </div>
+        </section>
       </div>
     </aside>
   );

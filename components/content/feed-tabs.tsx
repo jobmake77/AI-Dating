@@ -22,12 +22,12 @@ export function FeedTabs() {
   };
 
   return (
-    <div className="flex items-center gap-1 rounded-lg border border-border bg-card p-1 shadow-card">
+    <div className="flex items-center gap-1 rounded-xl border border-border bg-card p-1 shadow-card">
       {tabs.map((tab) => (
         <button
           key={tab.id}
           onClick={() => handleTabClick(tab.id)}
-          className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
+          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
             activeTab === tab.id
               ? "gradient-primary text-white shadow-sm"
               : "text-muted-foreground hover:text-foreground hover:bg-secondary"

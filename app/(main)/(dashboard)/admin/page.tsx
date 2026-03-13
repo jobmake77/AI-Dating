@@ -32,6 +32,7 @@ export default async function AdminPage() {
     { count: approvedContents },
     { data: recentUsers },
     { data: recentContents },
+    { data: activeAuthorsData },
     { data: pendingContentData },
   ] = await Promise.all([
     supabase.from('users').select('*', { count: 'exact', head: true }),
@@ -40,6 +41,7 @@ export default async function AdminPage() {
     supabase.from('contents').select('*', { count: 'exact', head: true }).eq('status', 'approved'),
     supabase.from('users').select('created_at').gte('created_at', since.toISOString()),
     supabase.from('contents').select('created_at').gte('created_at', since.toISOString()),
+    supabase.from('contents').select('author_id').gte('created_at', since.toISOString()).eq('status', 'approved').is('deleted_at', null),
     supabase.from('contents').select('id, title, created_at, users(username)').eq('status', 'pending').order('created_at', { ascending: false }).limit(10),
   ])
 
@@ -73,10 +75,12 @@ export default async function AdminPage() {
     return d.getDate() === today.getDate() && d.getMonth() === today.getMonth()
   }).length ?? 0
 
+  const activeAuthors = new Set((activeAuthorsData ?? []).map((item) => item.author_id)).size
+
   const stats = [
     { label: '总用户', value: totalUsers ?? 0, change: `+${todayUsers}`, gradient: 'gradient-primary' },
-    { label: '今日帖子', value: todayContents, change: '', gradient: 'gradient-info' },
-    { label: '活跃用户', value: Math.floor((totalUsers ?? 0) * 0.15), change: '+8%', gradient: 'gradient-ocean' },
+    { label: '已发布内容', value: approvedContents ?? 0, change: todayContents > 0 ? `+${todayContents}` : '', gradient: 'gradient-info' },
+    { label: '活跃作者', value: activeAuthors, change: '', gradient: 'gradient-ocean' },
     { label: '待审核', value: pendingContents ?? 0, change: '', gradient: 'gradient-warm' },
   ]
 

@@ -9,7 +9,7 @@ export interface DraftData {
   content: string
   excerpt?: string
   cover_image?: string
-  price_type?: 'free' | 'member'
+  price_type?: 'free'
   tags?: string[]
 }
 
@@ -19,7 +19,7 @@ const draftDataSchema = z.object({
   content: z.string().min(1, '内容不能为空').max(100000, '内容过长'),
   excerpt: z.string().max(500, '摘要过长').optional(),
   cover_image: z.string().url('无效的封面图片URL').optional(),
-  price_type: z.enum(['free', 'member']).optional(),
+  price_type: z.literal('free').optional(),
   tags: z.array(z.string().max(50, '标签过长')).max(10, '标签数量不能超过10个').optional(),
 })
 
@@ -159,7 +159,7 @@ export async function publishDraft() {
 
   const formData = new FormData()
   formData.append('content', draft.content)
-  formData.append('price_type', draft.price_type || 'free')
+  formData.append('price_type', 'free')
   if (draft.cover_image) {
     formData.append('cover_image', draft.cover_image)
   }

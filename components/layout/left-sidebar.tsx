@@ -2,7 +2,7 @@
 
 import { NavLink } from './nav-link'
 import { CommunityNavItem } from './community-nav-item'
-import { Home, MessageCircle, Users, Bell, PenSquare, ChevronDown, ChevronRight, Calendar, ShieldCheck, Crown } from 'lucide-react'
+import { Home, MessageCircle, Users, Bell, PenSquare, ChevronDown, ChevronRight, Calendar, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
 import { Separator } from '@/components/ui/separator'
 import { useEffect, useState } from 'react'
@@ -131,9 +131,6 @@ export function LeftSidebar() {
           <NavLink href="/communities" icon={Users}>社区</NavLink>
           <NavLink href="/notifications" icon={Bell} badge={unreadNotifications}>通知</NavLink>
           <NavLink href="/events" icon={Calendar}>活动</NavLink>
-          <div data-tour="pricing-link">
-            <NavLink href="/pricing" icon={Crown}>会员</NavLink>
-          </div>
 
           {userData?.role === 'admin' && (
             <NavLink href="/admin" icon={ShieldCheck}>管理后台</NavLink>

@@ -3,14 +3,12 @@ import { getCommentsByContentId } from '@/lib/queries/comments'
 import { checkUserLiked } from '@/lib/actions/likes'
 import { checkUserReposted } from '@/lib/actions/reposts'
 import { checkUserBookmarked } from '@/lib/actions/bookmarks'
-import { checkUserMembership } from '@/lib/actions/membership'
 import { createClient } from '@/lib/supabase/server'
 import { incrementViewCount } from '@/lib/actions/content'
 import { ContentDetailCard } from '@/components/content/content-detail-card'
 import { CompactPostActions } from '@/components/content/compact-post-actions'
 import { CompactCommentForm } from '@/components/comment/compact-comment-form'
 import { CompactCommentList } from '@/components/comment/compact-comment-list'
-import { Paywall } from '@/components/membership/paywall'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Clock, XCircle, ArrowLeft } from 'lucide-react'
 import { notFound } from 'next/navigation'
@@ -99,14 +97,6 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    let isMember = false
-    if (user) {
-      isMember = await checkUserMembership(user.id)
-    }
-
-    // 检查是否需要显示付费墙
-    const needsPaywall = content.price_type === 'member' && !isMember && user?.id !== content.author_id
-
     // Fetch comments
     const comments = await getCommentsByContentId(id)
 
@@ -183,7 +173,7 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
           {/* Content Detail Card */}
           <ContentDetailCard
             content={content}
-            canViewFullContent={!needsPaywall}
+            canViewFullContent
             currentUserId={user?.id}
           />
 
@@ -200,32 +190,21 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
             />
           </div>
 
-          {/* 付费墙 */}
-          {needsPaywall && (
-            <div className="mt-4">
-              <Paywall contentType="article" />
-            </div>
-          )}
-
           {/* Comment Input */}
-          {!needsPaywall && (
-            <div className="mt-4">
-              <CompactCommentForm contentId={id} isAuthenticated={!!user} />
-            </div>
-          )}
+          <div className="mt-4">
+            <CompactCommentForm contentId={id} isAuthenticated={!!user} />
+          </div>
 
           {/* Comments */}
-          {!needsPaywall && (
-            <div id="comments-section" className="mt-4">
-              <CompactCommentList
-                comments={comments}
-                currentUserId={user?.id}
-                contentId={id}
-                isAuthenticated={!!user}
-                commentsCount={content.comments_count || 0}
-              />
-            </div>
-          )}
+          <div id="comments-section" className="mt-4">
+            <CompactCommentList
+              comments={comments}
+              currentUserId={user?.id}
+              contentId={id}
+              isAuthenticated={!!user}
+              commentsCount={content.comments_count || 0}
+            />
+          </div>
         </div>
       </div>
     )

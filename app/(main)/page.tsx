@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/server";
 import { WelcomeBanner } from "@/components/home/welcome-banner";
 import { CategoriesSidebar } from "@/components/home/categories-sidebar";
 import { CommunitySidebar } from "@/components/home/community-sidebar";
+import { getHomepageData } from "@/lib/queries/home";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -56,32 +57,44 @@ export default async function Home({ searchParams }: HomeProps) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const isAuthenticated = !!user
+  const homepageData = await getHomepageData(user?.id)
 
   // 获取引导进度
   const onboardingProgress = user ? await getOnboardingProgress() : null
+  const featuredContent = contents[0]
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[linear-gradient(180deg,hsl(var(--background)),hsl(220_33%_97%))]">
       {/* Welcome Banner */}
-      <WelcomeBanner />
+      <WelcomeBanner
+        stats={{
+          developers: homepageData.stats.totalUsers,
+          contents: homepageData.stats.totalContents,
+          communities: homepageData.stats.totalCommunities,
+        }}
+        activeTab={sortBy}
+        featuredPost={featuredContent ? {
+          id: featuredContent.content_id || featuredContent.id,
+          title: featuredContent.title,
+          excerpt: featuredContent.excerpt,
+          author: featuredContent.users?.full_name || featuredContent.users?.username || "匿名作者",
+          tag: featuredContent.tags?.[0],
+        } : null}
+      />
 
-      <div className="mx-auto max-w-6xl px-4 py-4">
-        <div className="flex gap-4">
+      <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+        <div className="flex gap-4 lg:gap-6">
           {/* Left Sidebar - Categories */}
-          <CategoriesSidebar />
+          <CategoriesSidebar
+            isAuthenticated={isAuthenticated}
+            communities={homepageData.userCommunities}
+            trendingCommunities={homepageData.trendingCommunities.slice(0, 3)}
+          />
 
           {/* Main Content */}
-          <main className="flex-1 min-w-0 space-y-3">
-            <FeedTabs />
-
-            {/* Topic list header (Trae-style) */}
-            <div className="hidden sm:flex items-center px-4 py-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-              <span className="flex-1">话题</span>
-              <div className="flex items-center gap-4">
-                <span className="w-12 text-center">回复</span>
-                <span className="w-12 text-center">浏览</span>
-                <span className="w-12 text-center">活动</span>
-              </div>
+          <main className="min-w-0 flex-1 space-y-4">
+            <div className="flex justify-start">
+              <FeedTabs />
             </div>
 
             {/* New user onboarding progress card */}
@@ -104,7 +117,17 @@ export default async function Home({ searchParams }: HomeProps) {
           </main>
 
           {/* Right Sidebar - Community Info */}
-          <CommunitySidebar />
+          <CommunitySidebar
+            communityInfo={{
+              name: "AI-Dating",
+              icon: "💻",
+              description: "连接 AI 开发者与创作者的技术社区，分享项目、技术和灵感",
+              members: homepageData.stats.totalUsers,
+              contents: homepageData.stats.totalContents,
+            }}
+            trendingTags={homepageData.popularTags}
+            activeCommunities={homepageData.trendingCommunities}
+          />
         </div>
       </div>
     </div>

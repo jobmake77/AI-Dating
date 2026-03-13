@@ -65,7 +65,6 @@ export interface NormalizedUser {
   avatar: string | null
   bio: string | null
   role: string
-  membership_tier: string
   followers_count?: number
   following_count?: number
 }
@@ -80,7 +79,6 @@ export function normalizeUser(user: any): NormalizedUser | null {
     avatar: user.avatar || user.avatar_url || null,
     bio: user.bio || null,
     role: user.role || 'user',
-    membership_tier: user.membership_tier || 'free',
     followers_count: user.followers_count || 0,
     following_count: user.following_count || 0,
   }

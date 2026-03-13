@@ -1,14 +1,14 @@
-import { getAllUsers } from '@/lib/actions/membership'
+import { getAllUsers } from '@/lib/actions/admin'
 import { UserManagementList } from '@/components/admin/user-management-list'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Users, Crown, UserCheck } from 'lucide-react'
+import { Users, PenSquare, UserCheck } from 'lucide-react'
 
 export default async function UsersManagementPage() {
   const users = await getAllUsers()
 
   // 统计数据
   const totalUsers = users.length
-  const memberCount = users.filter(u => u.is_member).length
+  const creatorCount = users.filter(u => u.role === 'creator').length
   const adminCount = users.filter(u => u.role === 'admin').length
 
   return (
@@ -16,7 +16,7 @@ export default async function UsersManagementPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">用户管理</h1>
         <p className="text-muted-foreground">
-          管理用户、会员和角色
+          管理用户与角色权限
         </p>
       </div>
 
@@ -35,14 +35,12 @@ export default async function UsersManagementPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">会员数</CardTitle>
-            <Crown className="h-4 w-4 text-yellow-600" />
+            <CardTitle className="text-sm font-medium">创作者</CardTitle>
+            <PenSquare className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{memberCount}</div>
-            <p className="text-xs text-muted-foreground">
-              {totalUsers > 0 ? `${((memberCount / totalUsers) * 100).toFixed(1)}%` : '0%'} 转化率
-            </p>
+            <div className="text-2xl font-bold">{creatorCount}</div>
+            <p className="text-xs text-muted-foreground">具备创作权限的用户</p>
           </CardContent>
         </Card>
 

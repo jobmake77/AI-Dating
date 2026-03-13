@@ -4,7 +4,7 @@
  */
 
 // 事件分类
-export type EventCategory = 'user' | 'content' | 'membership' | 'api' | 'community' | 'onboarding'
+export type EventCategory = 'user' | 'content' | 'api' | 'community' | 'onboarding'
 
 // 用户相关事件
 export type UserEvent =
@@ -29,15 +29,6 @@ export type ContentEvent =
   | 'post_reposted'
   | 'post_deleted'
   | 'post_updated'
-
-// 会员相关事件
-export type MembershipEvent =
-  | 'membership_viewed'
-  | 'membership_purchased'
-  | 'membership_cancelled'
-  | 'membership_expired'
-  | 'token_used'
-  | 'token_purchased'
 
 // API 相关事件
 export type APIEvent =
@@ -70,7 +61,6 @@ export type OnboardingEvent =
 export type AnalyticsEvent =
   | UserEvent
   | ContentEvent
-  | MembershipEvent
   | APIEvent
   | CommunityEvent
   | OnboardingEvent
@@ -85,7 +75,6 @@ export interface UserEventParams extends BaseEventParams {
   user_id?: string
   username?: string
   role?: string
-  membership_tier?: string
   followed_user_id?: string
 }
 
@@ -98,15 +87,6 @@ export interface ContentEventParams extends BaseEventParams {
   is_first_post?: boolean
   view_duration?: number
   comment_id?: string
-}
-
-// 会员事件参数
-export interface MembershipEventParams extends BaseEventParams {
-  plan_type?: string
-  price?: number
-  currency?: string
-  token_amount?: number
-  payment_method?: string
 }
 
 // API 事件参数
@@ -174,14 +154,6 @@ export const EVENT_CATEGORY_MAP: Record<AnalyticsEvent, EventCategory> = {
   post_reposted: 'content',
   post_deleted: 'content',
   post_updated: 'content',
-
-  // Membership events
-  membership_viewed: 'membership',
-  membership_purchased: 'membership',
-  membership_cancelled: 'membership',
-  membership_expired: 'membership',
-  token_used: 'membership',
-  token_purchased: 'membership',
 
   // API events
   api_key_created: 'api',

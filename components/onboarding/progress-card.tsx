@@ -52,13 +52,6 @@ export function ProgressCard({ progress }: ProgressCardProps) {
       completed: progress.explored_content,
       href: '/',
     },
-    {
-      id: 'membership',
-      title: '了解会员权益',
-      description: '解锁更多创作功能',
-      completed: progress.checked_membership,
-      href: '/pricing',
-    },
   ]
 
   const completedCount = steps.filter((s) => s.completed).length

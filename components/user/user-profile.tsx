@@ -1,11 +1,9 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { FollowButton } from '@/components/user/follow-button'
 import { SendMessageButton } from '@/components/user/send-message-button'
-import { MembershipSheet } from '@/components/user/membership-sheet'
-import { Calendar, FileText, Heart, Github, Globe } from 'lucide-react'
+import { Calendar, FileText, Heart, Github } from 'lucide-react'
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
@@ -17,8 +15,6 @@ interface UserProfileProps {
     avatar: string | null
     full_name: string | null
     bio: string | null
-    membership_tier: string
-    membership_expires_at?: string | null
     github_username: string | null
     followers_count?: number
     following_count?: number
@@ -55,17 +51,10 @@ export function UserProfile({ user, isOwner, currentUserId, isFollowing = false,
                 <h1 className="text-2xl sm:text-3xl font-bold">
                   {user.full_name || user.username}
                 </h1>
-                {user.membership_tier === 'premium' && (
-                  <Badge variant="default" className="shadow-sm">会员</Badge>
-                )}
               </div>
 
               {canEdit ? (
                 <div className="flex items-center gap-2 flex-wrap">
-                  <MembershipSheet
-                    membershipTier={user.membership_tier}
-                    membershipExpiresAt={user.membership_expires_at || null}
-                  />
                   <Button variant="outline" size="sm" asChild className="shadow-sm hover:shadow-md transition-shadow">
                     <Link href="/settings">编辑资料</Link>
                   </Button>

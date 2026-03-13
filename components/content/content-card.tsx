@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { TagList } from '@/components/tag/tag-list'
 import { Heart, Repeat2, MessageCircle, Clock } from 'lucide-react'
@@ -90,11 +89,6 @@ export function ContentCard({ content }: ContentCardProps) {
               >
                 {formatDistanceToNow(new Date(displayTime), { addSuffix: true, locale: zhCN })}
               </Link>
-              {content.price_type === 'member' && (
-                <Badge variant="default" className="text-xs">
-                  会员
-                </Badge>
-              )}
             </div>
 
             {/* 标题 */}

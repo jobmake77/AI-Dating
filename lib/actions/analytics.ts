@@ -12,8 +12,6 @@ export interface OverviewStats {
   activeUsersWeek: number
   activeUsersMonth: number
   totalContents: number
-  totalMembers: number
-  totalRevenue: number
 }
 
 /**
@@ -34,7 +32,6 @@ export async function getOverviewStats(): Promise<OverviewStats> {
     { data: activeWeek },
     { data: activeMonth },
     { count: totalContents },
-    { count: totalMembers },
   ] = await Promise.all([
     supabase.from('users').select('*', { count: 'exact', head: true }),
     supabase
@@ -53,10 +50,6 @@ export async function getOverviewStats(): Promise<OverviewStats> {
       .gte('created_at', monthAgo.toISOString())
       .not('user_id', 'is', null),
     supabase.from('contents').select('*', { count: 'exact', head: true }),
-    supabase
-      .from('users')
-      .select('*', { count: 'exact', head: true })
-      .eq('membership_tier', 'premium'),
   ])
 
   // 计算活跃用户数（去重）
@@ -64,29 +57,12 @@ export async function getOverviewStats(): Promise<OverviewStats> {
   const activeUsersWeek = new Set(activeWeek?.map((e) => e.user_id)).size
   const activeUsersMonth = new Set(activeMonth?.map((e) => e.user_id)).size
 
-  // 计算总收入（基于会员购买事件）
-  // 假设月度会员 99 元，年度会员 999 元
-  const { data: membershipPurchases } = await supabase
-    .from('analytics_events')
-    .select('event_params')
-    .eq('event_name', 'membership_purchased')
-
-  let totalRevenue = 0
-  membershipPurchases?.forEach((event) => {
-    const params = event.event_params as any
-    if (params?.price) {
-      totalRevenue += Number(params.price) || 0
-    }
-  })
-
   return {
     totalUsers: totalUsers || 0,
     activeUsersToday,
     activeUsersWeek,
     activeUsersMonth,
     totalContents: totalContents || 0,
-    totalMembers: totalMembers || 0,
-    totalRevenue,
   }
 }
 
@@ -270,150 +246,6 @@ export async function getUserRetentionData(): Promise<RetentionData[]> {
   }
 
   return retentionData.slice(0, 4) // 返回最近 4 周的数据
-}
-
-/**
- * 会员增长数据
- */
-export interface MembershipGrowthData {
-  date: string
-  newMembers: number
-  totalMembers: number
-}
-
-/**
- * 获取会员增长数据
- */
-export async function getMembershipGrowthData(
-  days: number = 30
-): Promise<MembershipGrowthData[]> {
-  await requireAdmin()
-  const supabase = await createClient()
-
-  const since = new Date()
-  since.setDate(since.getDate() - (days - 1))
-  since.setHours(0, 0, 0, 0)
-
-  // 获取会员购买事件
-  const { data: membershipEvents } = await supabase
-    .from('analytics_events')
-    .select('created_at, user_id')
-    .eq('event_name', 'membership_purchased')
-    .gte('created_at', since.toISOString())
-    .order('created_at', { ascending: true })
-
-  // 构建日期数组
-  const dataPoints: MembershipGrowthData[] = []
-  let cumulativeMembers = 0
-
-  for (let i = days - 1; i >= 0; i--) {
-    const d = new Date()
-    d.setDate(d.getDate() - i)
-    d.setHours(0, 0, 0, 0)
-
-    const dateStr = `${d.getMonth() + 1}/${d.getDate()}`
-    const newMembers =
-      membershipEvents?.filter((e) => {
-        const eventDate = new Date(e.created_at)
-        return (
-          eventDate.getMonth() === d.getMonth() &&
-          eventDate.getDate() === d.getDate()
-        )
-      }).length || 0
-
-    cumulativeMembers += newMembers
-
-    dataPoints.push({
-      date: dateStr,
-      newMembers,
-      totalMembers: cumulativeMembers,
-    })
-  }
-
-  return dataPoints
-}
-
-/**
- * 会员统计数据
- */
-export interface MembershipStats {
-  totalMembers: number
-  newMembersThisMonth: number
-  conversionRate: number
-  averageRevenue: number
-  churnRate: number
-}
-
-/**
- * 获取会员统计数据
- */
-export async function getMembershipStats(): Promise<MembershipStats> {
-  await requireAdmin()
-  const supabase = await createClient()
-
-  const now = new Date()
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
-
-  const [
-    { count: totalMembers },
-    { count: totalUsers },
-    { data: newMembersThisMonth },
-    { data: expiredMembers },
-  ] = await Promise.all([
-    supabase
-      .from('users')
-      .select('*', { count: 'exact', head: true })
-      .eq('membership_tier', 'premium'),
-    supabase.from('users').select('*', { count: 'exact', head: true }),
-    supabase
-      .from('analytics_events')
-      .select('user_id')
-      .eq('event_name', 'membership_purchased')
-      .gte('created_at', monthStart.toISOString()),
-    supabase
-      .from('analytics_events')
-      .select('user_id')
-      .eq('event_name', 'membership_expired')
-      .gte('created_at', monthStart.toISOString()),
-  ])
-
-  const conversionRate =
-    totalUsers && totalUsers > 0
-      ? ((totalMembers || 0) / totalUsers) * 100
-      : 0
-
-  const churnRate =
-    totalMembers && totalMembers > 0
-      ? ((expiredMembers?.length || 0) / totalMembers) * 100
-      : 0
-
-  // 计算本月平均收入
-  const { data: monthlyPurchases } = await supabase
-    .from('analytics_events')
-    .select('event_params')
-    .eq('event_name', 'membership_purchased')
-    .gte('created_at', monthStart.toISOString())
-
-  let monthlyRevenue = 0
-  monthlyPurchases?.forEach((event) => {
-    const params = event.event_params as any
-    if (params?.price) {
-      monthlyRevenue += Number(params.price) || 0
-    }
-  })
-
-  const averageRevenue =
-    newMembersThisMonth && newMembersThisMonth.length > 0
-      ? monthlyRevenue / newMembersThisMonth.length
-      : 0
-
-  return {
-    totalMembers: totalMembers || 0,
-    newMembersThisMonth: newMembersThisMonth?.length || 0,
-    conversionRate: Math.round(conversionRate * 100) / 100,
-    averageRevenue: Math.round(averageRevenue * 100) / 100,
-    churnRate: Math.round(churnRate * 100) / 100,
-  }
 }
 
 /**

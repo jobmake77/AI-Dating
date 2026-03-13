@@ -5,7 +5,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { FollowButton } from '@/components/user/follow-button'
 import { SendMessageButton } from '@/components/user/send-message-button'
-import { MembershipSheet } from '@/components/user/membership-sheet'
 import { Calendar, FileText, Heart, Users, Award } from 'lucide-react'
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
@@ -18,8 +17,6 @@ interface UserProfileCardProps {
     avatar: string | null
     full_name: string | null
     bio: string | null
-    membership_tier: string
-    membership_expires_at?: string | null
     followers_count?: number
     following_count?: number
     created_at?: string
@@ -105,10 +102,6 @@ export function UserProfileCard({
 
               {canEdit ? (
                 <div className="flex items-center gap-2">
-                  <MembershipSheet
-                    membershipTier={user.membership_tier}
-                    membershipExpiresAt={user.membership_expires_at || null}
-                  />
                   <Button variant="outline" size="sm" asChild className="h-8 text-xs">
                     <Link href="/settings">编辑</Link>
                   </Button>
@@ -164,4 +157,3 @@ export function UserProfileCard({
     </motion.div>
   )
 }
-

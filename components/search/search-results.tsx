@@ -3,7 +3,6 @@
 import { ContentCard } from '@/components/content/content-card-twitter'
 import { EmptyState } from '@/components/empty-state'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
 import { User, Search, SearchX } from 'lucide-react'
@@ -66,9 +65,6 @@ export function SearchResults({ contents, users, query }: SearchResultsProps) {
                           <p className="font-semibold truncate">
                             {user.full_name || user.username}
                           </p>
-                          {user.membership_tier === 'premium' && (
-                            <Badge variant="default" className="text-xs">会员</Badge>
-                          )}
                         </div>
                         <p className="text-sm text-muted-foreground">@{user.username}</p>
                         {user.bio && (

@@ -10,18 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { updateContent } from '@/lib/actions/content'
-import { getCategoryColor } from '@/lib/utils/categories'
-
-const categories = [
-  { id: '1', name: '官方公告', slug: 'announce' },
-  { id: '2', name: '新手入门', slug: 'beginner' },
-  { id: '3', name: '官方活动', slug: 'activity' },
-  { id: '4', name: '帮助与支持', slug: 'help' },
-  { id: '5', name: '产品建议', slug: 'suggest' },
-  { id: '6', name: '技巧分享', slug: 'tips' },
-  { id: '7', name: '案例与作品', slug: 'showcase' },
-  { id: '8', name: '互动交流', slug: 'chat' },
-]
+import { categories, getCategoryColor } from '@/lib/utils/categories'
 
 const allTags = [
   { name: 'AI/ML', color: 'hsl(262 83% 58%)' },
@@ -85,7 +74,7 @@ export function EditPostForm({ content: initialContent }: EditPostFormProps) {
       const htmlContent = `<h1>${title}</h1>${content.replace(/\n/g, '<br>')}`
       const formData = new FormData()
       formData.append('content', htmlContent)
-      formData.append('price_type', initialContent.price_type)
+      formData.append('price_type', 'free')
 
       if (selectedTags.length > 0) {
         formData.append('tags', JSON.stringify(selectedTags))

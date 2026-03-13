@@ -85,6 +85,41 @@ export function getCategoryBySlug(slug: string): Category | undefined {
   return categories.find((cat) => cat.slug === slug)
 }
 
+const categoryAliases: Record<string, string[]> = {
+  announce: ['官方公告', 'announce'],
+  beginner: ['新手入门', 'beginner'],
+  activity: ['官方活动', 'activity'],
+  help: ['帮助与支持', 'help'],
+  suggest: ['产品建议', 'suggest'],
+  tips: ['技巧分享', 'tips'],
+  showcase: ['案例与作品', 'showcase'],
+  chat: ['互动交流', 'chat'],
+}
+
+function normalizeCategoryValue(value: string): string {
+  return value.trim().toLowerCase().replace(/\s+/g, '-')
+}
+
+export function getCategoryAliases(categoryOrSlug: string): string[] {
+  const category = getCategoryBySlug(categoryOrSlug)
+  const source = category ? category.slug : categoryOrSlug
+
+  return Array.from(
+    new Set([
+      source,
+      ...(category ? [category.name] : []),
+      ...(categoryAliases[source] || []),
+    ])
+  )
+}
+
+export function matchesCategoryValue(categorySlug: string, value: string): boolean {
+  const aliases = getCategoryAliases(categorySlug)
+  const normalizedValue = normalizeCategoryValue(value)
+
+  return aliases.some((alias) => normalizeCategoryValue(alias) === normalizedValue)
+}
+
 export function canUserAccessCategory(userRole: CategoryRole, categorySlug: string): boolean {
   const category = getCategoryBySlug(categorySlug)
   if (!category) return false

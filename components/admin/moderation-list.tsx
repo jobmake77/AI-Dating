@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { approveContent, rejectContent } from '@/lib/actions/moderation'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
   DialogContent,
@@ -153,14 +152,6 @@ export function ModerationList({ contents }: ModerationListProps) {
                   {content.excerpt}
                 </p>
 
-                {/* 标签 */}
-                <div className="flex items-center gap-2">
-                  {content.price_type === 'member' && (
-                    <Badge variant="secondary" className="text-xs">
-                      会员专享
-                    </Badge>
-                  )}
-                </div>
               </div>
 
               {/* 操作按钮 */}

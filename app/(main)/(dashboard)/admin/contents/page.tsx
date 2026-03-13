@@ -1,6 +1,5 @@
 import { getContents } from '@/lib/queries/content'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { ContentModeration } from '@/components/admin/content-moderation'
 import { TagList } from '@/components/tag/tag-list'
 import { AlertCircle } from 'lucide-react'
@@ -42,11 +41,6 @@ export default async function AdminContentsPage() {
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      {content.price_type === 'member' && (
-                        <Badge variant="default">会员专享</Badge>
-                      )}
-                    </div>
                     <CardTitle className="text-xl mb-2">
                       <Link href={`/post/${content.id}`} className="hover:text-primary transition-colors" target="_blank">
                         {content.title}

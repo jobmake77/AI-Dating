@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 export const contentSchema = z.object({
   content: z.string().min(1, '内容不能为空').max(5000, '内容不能超过 5000 字符'),
-  price_type: z.enum(['free', 'member']),
+  price_type: z.literal('free'),
   category: z.string().optional(),
 })
 

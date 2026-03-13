@@ -36,7 +36,7 @@ async function setAdmin() {
     }
 
     console.log('✅ Successfully updated role to admin!')
-    console.log('🎉 You can now access /admin/members')
+    console.log('🎉 You can now access /admin/users')
 
   } catch (error) {
     console.error('❌ Unexpected error:', error)

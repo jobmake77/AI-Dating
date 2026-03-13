@@ -6,8 +6,7 @@ import { createContent } from '@/lib/actions/content'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { TagInput } from '@/components/tags/tag-input'
-import { Lock, Globe, Smile } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { Smile } from 'lucide-react'
 import type { EmojiClickData } from 'emoji-picker-react'
 import { TiptapEditor, type TiptapEditorRef } from '@/components/editor/tiptap-editor'
 import { CoverImageUpload } from './cover-image-upload'
@@ -16,11 +15,9 @@ import { CoverImageUpload } from './cover-image-upload'
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false })
 
 export function ContentForm() {
-  const router = useRouter()
   const [content, setContent] = useState('')
   const [tags, setTags] = useState<string[]>([])
   const [coverImage, setCoverImage] = useState<string>('')
-  const [priceType, setPriceType] = useState<'free' | 'member'>('free')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
@@ -55,7 +52,7 @@ export function ContentForm() {
     try {
       const formData = new FormData()
       formData.append('content', content)
-      formData.append('price_type', priceType)
+      formData.append('price_type', 'free')
       formData.append('tags', JSON.stringify(tags))
       if (coverImage) {
         formData.append('cover_image', coverImage)
@@ -145,30 +142,7 @@ export function ContentForm() {
       </div>
 
       {/* Action Bar */}
-      <div className="flex items-center justify-between pt-4 border-t">
-        <div className="flex items-center gap-1">
-          {/* Price Type Toggle */}
-          <Button
-            type="button"
-            variant={priceType === 'free' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setPriceType('free')}
-          >
-            <Globe className="h-4 w-4 mr-1" />
-            公开
-          </Button>
-          <Button
-            type="button"
-            variant={priceType === 'member' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setPriceType('member')}
-          >
-            <Lock className="h-4 w-4 mr-1" />
-            会员
-          </Button>
-        </div>
-
-        {/* Submit Button */}
+      <div className="flex items-center justify-end pt-4 border-t">
         <Button
           type="submit"
           disabled={isSubmitting || !content.trim()}

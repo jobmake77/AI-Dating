@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { Badge } from '@/components/ui/badge'
 import { TagList } from '@/components/tag/tag-list'
 import { Clock, Eye, User } from 'lucide-react'
 import { ContentCardActions } from './content-card-actions'
@@ -95,9 +94,6 @@ export function ContentCard({ content, isAuthenticated = false }: ContentCardPro
 
           {/* Metadata */}
           <div className="flex items-center gap-3 text-[13px] text-muted-foreground/60 mb-2">
-            {content.price_type === 'member' && (
-              <Badge variant="secondary" className="text-xs h-4 px-1.5">会员专享</Badge>
-            )}
             <div className="flex items-center gap-1">
               <Clock className="w-3 h-3" />
               <span>{content.reading_time} 分钟</span>

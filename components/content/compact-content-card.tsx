@@ -54,17 +54,17 @@ export function CompactContentCard({ content, index = 0, compact = false }: Comp
       initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.03, duration: 0.2 }}
-      className="group flex items-start gap-0 rounded-lg border border-border bg-card transition-all hover:border-primary/20 hover:shadow-card"
+      className="group flex items-start gap-0 border-b border-border/90 bg-transparent transition-colors last:border-b-0 hover:bg-secondary/20"
     >
       {/* Category color bar */}
       <div
-        className="w-1 self-stretch rounded-l-lg shrink-0"
+        className="w-1 self-stretch shrink-0"
         style={{ backgroundColor: `hsl(${catColorHsl})` }}
       />
 
-      <div className="flex-1 min-w-0 flex items-start gap-3 p-3">
+      <div className="flex-1 min-w-0 flex items-start gap-3 px-4 py-3">
         {/* Like column (replacing vote) */}
-        <div className="flex flex-col items-center gap-0 shrink-0">
+        <div className="flex flex-col items-center gap-0 shrink-0 pt-0.5">
           <button className="rounded p-0.5 text-muted-foreground transition-all hover:text-red-500 hover:bg-red-500/10">
             <Heart className="h-4 w-4" />
           </button>
@@ -76,7 +76,7 @@ export function CompactContentCard({ content, index = 0, compact = false }: Comp
         {/* Content */}
         <div className="flex-1 min-w-0">
           {/* Title row */}
-          <div className="flex items-center gap-1.5 flex-wrap mb-1">
+          <div className="mb-1 flex flex-wrap items-center gap-1.5">
             {content.is_pinned && <Pin className="h-3 w-3 text-primary shrink-0" />}
             <Link href={`/post/${content.id}`}>
               <h3 className="text-[13px] font-semibold leading-snug text-foreground group-hover:text-primary transition-colors">
@@ -130,14 +130,14 @@ export function CompactContentCard({ content, index = 0, compact = false }: Comp
 
           {/* Preview text */}
           {!compact && (
-            <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground line-clamp-1">
+            <p className="mt-1 text-xs leading-6 text-muted-foreground line-clamp-1">
               {content.excerpt}
             </p>
           )}
         </div>
 
         {/* Stats columns (Trae-style) */}
-        <div className="hidden sm:flex items-center gap-4 shrink-0 text-[11px] text-muted-foreground">
+        <div className="hidden shrink-0 items-center gap-4 text-[11px] text-muted-foreground sm:flex">
           <div className="flex flex-col items-center w-12">
             <span className="font-mono font-bold text-foreground">{content.comments_count}</span>
             <span className="text-[10px] flex items-center gap-0.5">

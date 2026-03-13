@@ -16,7 +16,7 @@ interface ExploreClientProps {
     id: string;
     name: string;
     slug: string;
-    icon: string;
+    description?: string;
     postCount: number;
   }>;
   tags: Array<{
@@ -135,7 +135,7 @@ export function ExploreClient({
                       color: `hsl(${getCategoryColor(activeCat.slug)})`,
                     }}
                   >
-                    {activeCat.icon} {activeCat.name}
+                    {activeCat.name}
                   </span>
                 )}
                 {activeTag && (

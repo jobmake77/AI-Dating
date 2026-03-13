@@ -4,10 +4,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { MobileSearchModal } from '@/components/search/mobile-search-modal'
 import { createClient } from '@/lib/supabase/client'
-import { Search, User, Code2, Bell, MessageSquare, Plus, ChevronDown, Menu, X } from 'lucide-react'
+import { Search, User, Code2, MessageSquare, Plus, Menu, X } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
-import { useState, FormEvent, useEffect, useRef } from 'react'
+import { useState, FormEvent, useEffect } from 'react'
 import { useToast } from '@/hooks/use-toast'
 import { NotificationDropdown } from '@/components/notifications/notification-dropdown'
 
@@ -32,16 +32,6 @@ const navItems = [
   { href: "/events", label: "活动" },
 ];
 
-// Mock categories - replace with real data
-const categories = [
-  { id: "1", slug: "announce", name: "公告", icon: "📢", description: "官方公告和重要通知" },
-  { id: "2", slug: "beginner", name: "新手", icon: "🌱", description: "新手问题和入门指南" },
-  { id: "3", slug: "activity", name: "活动", icon: "🎉", description: "社区活动和线下聚会" },
-  { id: "4", slug: "help", name: "求助", icon: "🆘", description: "技术问题求助" },
-  { id: "5", slug: "suggest", name: "建议", icon: "💡", description: "功能建议和反馈" },
-  { id: "6", slug: "tips", name: "技巧", icon: "✨", description: "实用技巧分享" },
-];
-
 export function SiteHeader({ serverUser }: SiteHeaderProps) {
   const router = useRouter()
   const pathname = usePathname()
@@ -52,23 +42,9 @@ export function SiteHeader({ serverUser }: SiteHeaderProps) {
   const [unreadCount, setUnreadCount] = useState(0)
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [catOpen, setCatOpen] = useState(false)
-  const catRef = useRef<HTMLDivElement>(null)
 
   const user = serverUser
   const username = serverUser?.username
-  const role = serverUser?.role
-
-  // Close category dropdown when clicking outside
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (catRef.current && !catRef.current.contains(e.target as Node)) {
-        setCatOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [])
 
   // Get unread notification count + real-time subscription
   useEffect(() => {
@@ -194,43 +170,6 @@ export function SiteHeader({ serverUser }: SiteHeaderProps) {
               </Link>
             )
           })}
-
-          {/* Categories dropdown */}
-          <div className="relative" ref={catRef}>
-            <button
-              onClick={() => setCatOpen(!catOpen)}
-              className={`flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
-                catOpen ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-              }`}
-            >
-              类别
-              <ChevronDown className={`h-3 w-3 transition-transform ${catOpen ? "rotate-180" : ""}`} />
-            </button>
-            {catOpen && (
-              <div className="absolute top-full left-0 mt-1 w-72 rounded-xl border border-border bg-card shadow-elevated animate-scale-in overflow-hidden z-50">
-                <div className="p-2 max-h-80 overflow-y-auto">
-                  {categories.map((cat) => (
-                    <Link
-                      key={cat.id}
-                      href={`/category/${cat.slug}`}
-                      onClick={() => setCatOpen(false)}
-                      className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-xs hover:bg-secondary/80 transition-all group"
-                    >
-                      <span className="text-lg leading-none">{cat.icon}</span>
-                      <div className="flex-1 min-w-0">
-                        <span className="font-medium text-foreground group-hover:text-primary transition-colors block">
-                          {cat.name}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground line-clamp-1">
-                          {cat.description}
-                        </span>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
         </nav>
 
         {/* Search - Desktop */}
