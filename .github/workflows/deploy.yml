@@ -14,6 +14,10 @@ on:
           - production
           - staging
 
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
 jobs:
   deploy:
     name: Deploy to ${{ github.event.inputs.environment || 'production' }}
@@ -39,28 +43,43 @@ jobs:
       - name: Run tests
         run: npm run test:run
 
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel Environment Information
+        run: |
+          if [ "${{ github.event_name }}" = "push" ] || [ "${{ github.event.inputs.environment }}" = "production" ]; then
+            vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+          else
+            vercel pull --yes --environment=staging --token=${{ secrets.VERCEL_TOKEN }}
+          fi
+
       - name: Build application
-        run: npm run build
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: |
+          if [ "${{ github.event_name }}" = "push" ] || [ "${{ github.event.inputs.environment }}" = "production" ]; then
+            vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+          else
+            vercel build --target=staging --token=${{ secrets.VERCEL_TOKEN }}
+          fi
 
       - name: Deploy to Vercel
         id: deploy
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: ${{ github.event.inputs.environment == 'production' && '--prod' || '' }}
-          working-directory: ./
+        run: |
+          if [ "${{ github.event_name }}" = "push" ] || [ "${{ github.event.inputs.environment }}" = "production" ]; then
+            DEPLOY_URL="$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})"
+          else
+            DEPLOY_URL="$(vercel deploy --prebuilt --target=staging --token=${{ secrets.VERCEL_TOKEN }})"
+          fi
+
+          echo "url=$DEPLOY_URL" >> "$GITHUB_OUTPUT"
+          echo "preview-url=$DEPLOY_URL" >> "$GITHUB_OUTPUT"
 
       - name: Wait for deployment
         run: sleep 30
 
       - name: Health check
         run: |
-          DEPLOY_URL="${{ steps.deploy.outputs.preview-url }}"
+          DEPLOY_URL="${{ steps.deploy.outputs.url }}"
           echo "Checking health at: $DEPLOY_URL/api/health"
 
           MAX_RETRIES=5
@@ -86,7 +105,7 @@ jobs:
         if: success()
         run: |
           echo "🚀 Deployment successful!"
-          echo "URL: ${{ steps.deploy.outputs.preview-url }}"
+          echo "URL: ${{ steps.deploy.outputs.url }}"
 
       - name: Notify deployment failure
         if: failure()
