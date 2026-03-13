@@ -1,5 +1,9 @@
 import { defineConfig, devices } from '@playwright/test'
 
+const webPort = process.env.PLAYWRIGHT_WEB_PORT || '3000'
+const baseURL = process.env.BASE_URL || `http://127.0.0.1:${webPort}`
+const webServerReadyURL = `${baseURL}/login`
+
 /**
  * Playwright E2E 测试配置
  * @see https://playwright.dev/docs/test-configuration
@@ -31,7 +35,7 @@ export default defineConfig({
 
   // 共享配置
   use: {
-    baseURL: process.env.BASE_URL || 'http://127.0.0.1:3000',
+    baseURL,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
@@ -63,8 +67,13 @@ export default defineConfig({
 
   // 开发服务器配置（可选）
   webServer: {
-    command: 'npm run dev -- --hostname 127.0.0.1 --port 3000',
-    url: 'http://127.0.0.1:3000',
+    command:
+      `NEXT_PUBLIC_SITE_URL=\${NEXT_PUBLIC_SITE_URL:-http://127.0.0.1:${webPort}} ` +
+      'NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:-https://example.com} ' +
+      'NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY:-ci-smoke-anon-key} ' +
+      'SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY:-ci-smoke-service-role-key} ' +
+      `npm run dev -- --hostname 127.0.0.1 --port ${webPort}`,
+    url: webServerReadyURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
   },
