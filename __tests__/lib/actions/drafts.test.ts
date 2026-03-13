@@ -66,8 +66,7 @@ describe('Draft Actions', () => {
 
       const result = await saveDraft(draftData)
 
-      // Should still save empty content for draft
-      expect(result.success).toBe(true)
+      expect(result.error).toBe('内容不能为空')
     })
   })
 

@@ -16,10 +16,9 @@ export async function GET() {
     // Check database connection
     const supabase = await createClient();
     const { error: dbError } = await supabase
-      .from("profiles")
-      .select("id")
-      .limit(1)
-      .single();
+      .from("users")
+      .select("id", { head: true, count: "exact" })
+      .limit(1);
 
     const dbStatus = dbError ? "unhealthy" : "healthy";
     const responseTime = Date.now() - startTime;

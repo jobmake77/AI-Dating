@@ -1,10 +1,14 @@
-import { Step } from 'react-joyride'
+export interface OnboardingTourStep {
+  target: string
+  content: string
+  placement?: 'top' | 'bottom' | 'left' | 'right'
+  title: string
+}
 
-export const onboardingSteps: Step[] = [
+export const onboardingSteps: OnboardingTourStep[] = [
   {
     target: '[data-tour="create-button"]',
     content: '点击这里发布你的第一篇技术分享，展示你的开发经验和见解',
-    disableBeacon: true,
     placement: 'bottom',
     title: '发布内容',
   },
@@ -30,7 +34,6 @@ export const onboardingSteps: Step[] = [
 
 export const onboardingStyles = {
   options: {
-    arrowColor: 'hsl(var(--background))',
     backgroundColor: 'hsl(var(--background))',
     overlayColor: 'rgba(0, 0, 0, 0.5)',
     primaryColor: 'hsl(var(--primary))',
