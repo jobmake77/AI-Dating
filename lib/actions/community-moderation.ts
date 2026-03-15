@@ -32,12 +32,23 @@ export async function kickMember(communityId: string, memberId: string, reason?:
     }
 
     // 验证用户权限（必须是管理员或版主）
-    const { data: currentUserMember } = await supabase
-      .from('community_members')
-      .select('role')
-      .eq('community_id', communityId)
-      .eq('user_id', user.id)
-      .single()
+    const [{ data: community }, { data: currentUserMember }] = await Promise.all([
+      supabase
+        .from('communities')
+        .select('id, slug, creator_id')
+        .eq('id', communityId)
+        .single(),
+      supabase
+        .from('community_members')
+        .select('role')
+        .eq('community_id', communityId)
+        .eq('user_id', user.id)
+        .single(),
+    ])
+
+    if (!community) {
+      return { success: false, error: '社区不存在' }
+    }
 
     if (!currentUserMember || !['admin', 'moderator'].includes(currentUserMember.role)) {
       return { success: false, error: '没有权限踢出成员' }
@@ -60,6 +71,10 @@ export async function kickMember(communityId: string, memberId: string, reason?:
       return { success: false, error: '版主不能踢出管理员' }
     }
 
+    if (targetMember.user_id === community.creator_id) {
+      return { success: false, error: '不能踢出社区创建者' }
+    }
+
     // 不能踢出自己
     if (targetMember.user_id === user.id) {
       return { success: false, error: '不能踢出自己' }
@@ -78,15 +93,7 @@ export async function kickMember(communityId: string, memberId: string, reason?:
     }
 
     // 获取社区 slug
-    const { data: community } = await supabase
-      .from('communities')
-      .select('slug')
-      .eq('id', communityId)
-      .single()
-
-    if (community) {
-      revalidatePath(`/communities/${community.slug}/members`)
-    }
+    revalidatePath(`/communities/${community.slug}/members`)
 
     return { success: true }
   } catch (error) {
@@ -114,12 +121,23 @@ export async function banMember(
     }
 
     // 验证用户权限（必须是管理员或版主）
-    const { data: currentUserMember } = await supabase
-      .from('community_members')
-      .select('role')
-      .eq('community_id', communityId)
-      .eq('user_id', user.id)
-      .single()
+    const [{ data: community }, { data: currentUserMember }] = await Promise.all([
+      supabase
+        .from('communities')
+        .select('id, slug, creator_id')
+        .eq('id', communityId)
+        .single(),
+      supabase
+        .from('community_members')
+        .select('role')
+        .eq('community_id', communityId)
+        .eq('user_id', user.id)
+        .single(),
+    ])
+
+    if (!community) {
+      return { success: false, error: '社区不存在' }
+    }
 
     if (!currentUserMember || !['admin', 'moderator'].includes(currentUserMember.role)) {
       return { success: false, error: '没有权限禁言成员' }
@@ -140,6 +158,10 @@ export async function banMember(
     // 版主不能禁言管理员
     if (currentUserMember.role === 'moderator' && targetMember.role === 'admin') {
       return { success: false, error: '版主不能禁言管理员' }
+    }
+
+    if (userId === community.creator_id) {
+      return { success: false, error: '不能禁言社区创建者' }
     }
 
     // 不能禁言自己
@@ -164,15 +186,7 @@ export async function banMember(
     }
 
     // 获取社区 slug
-    const { data: community } = await supabase
-      .from('communities')
-      .select('slug')
-      .eq('id', communityId)
-      .single()
-
-    if (community) {
-      revalidatePath(`/communities/${community.slug}/members`)
-    }
+    revalidatePath(`/communities/${community.slug}/members`)
 
     return { success: true }
   } catch (error) {

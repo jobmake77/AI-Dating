@@ -12,6 +12,7 @@ import { CommunityCoverUpload } from '@/components/community/community-cover-upl
 import { Settings, Users, Shield, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
+import Link from 'next/link'
 
 interface CommunitySettingsClientProps {
   community: {
@@ -197,8 +198,13 @@ export function CommunitySettingsClient({ community, slug }: CommunitySettingsCl
             <h2 className="text-sm font-bold text-foreground mb-5">成员管理</h2>
             <div className="rounded-lg bg-secondary/60 p-8 text-center">
               <Users className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-              <p className="text-xs text-muted-foreground">成员管理功能即将推出</p>
-              <p className="text-[10px] text-muted-foreground mt-1">你可以在这里管理社区成员、设置角色和权限</p>
+              <p className="text-xs text-muted-foreground">成员管理已开放在独立页面</p>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                创建者默认为版主，可在成员页把后续加入的成员设为管理员或版主
+              </p>
+              <Button asChild size="sm" className="mt-4 h-9 text-xs">
+                <Link href={`/communities/${slug}/members`}>前往成员管理</Link>
+              </Button>
             </div>
           </motion.div>
         )}

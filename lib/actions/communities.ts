@@ -59,6 +59,22 @@ const updateCommunitySchema = z.object({
   cover_url: z.string().url().optional(),
 })
 
+type CommunityManagerRole = 'admin' | 'moderator' | 'member'
+
+function canManageCommunitySettings(args: {
+  isCreator: boolean
+  role?: CommunityManagerRole
+}) {
+  return args.isCreator || args.role === 'admin'
+}
+
+function canManageCommunityRoles(args: {
+  isCreator: boolean
+  role?: CommunityManagerRole
+}) {
+  return args.isCreator || args.role === 'admin' || args.role === 'moderator'
+}
+
 // =====================================================
 // Community CRUD Operations
 // =====================================================
@@ -138,6 +154,18 @@ export async function createCommunity(formData: FormData) {
     logger.debug('创建的社区数据:', community)
     logger.debug('社区 slug:', community.slug)
 
+    // 触发器会自动创建创建者成员关系，这里再显式调整为版主，确保行为与产品规则一致
+    const { error: roleSyncError } = await supabase
+      .from('community_members')
+      .update({ role: 'moderator' })
+      .eq('community_id', community.id)
+      .eq('user_id', user.id)
+
+    if (roleSyncError) {
+      logger.error('同步创建者社区角色失败:', roleSyncError)
+      return { success: false, error: '创建社区成功，但初始化管理角色失败' }
+    }
+
     revalidatePath('/communities')
     return { success: true, data: community }
   } catch (error) {
@@ -161,14 +189,26 @@ export async function updateCommunity(communityId: string, formData: FormData) {
     }
 
     // 验证用户权限（必须是管理员）
-    const { data: member } = await supabase
-      .from('community_members')
-      .select('role')
-      .eq('community_id', communityId)
-      .eq('user_id', user.id)
-      .single()
+    const [{ data: community }, { data: member }] = await Promise.all([
+      supabase
+        .from('communities')
+        .select('id, creator_id')
+        .eq('id', communityId)
+        .single(),
+      supabase
+        .from('community_members')
+        .select('role')
+        .eq('community_id', communityId)
+        .eq('user_id', user.id)
+        .single(),
+    ])
 
-    if (!member || member.role !== 'admin') {
+    if (!community) {
+      return { success: false, error: '社区不存在' }
+    }
+
+    const isCreator = community.creator_id === user.id
+    if (!member || !canManageCommunitySettings({ isCreator, role: member.role as CommunityManagerRole })) {
       return { success: false, error: '没有权限修改社区信息' }
     }
 
@@ -189,7 +229,7 @@ export async function updateCommunity(communityId: string, formData: FormData) {
     const validatedData = updateCommunitySchema.parse(data)
 
     // 更新社区
-    const { data: community, error } = await supabase
+    const { data: updatedCommunity, error } = await supabase
       .from('communities')
       .update(validatedData)
       .eq('id', communityId)
@@ -201,9 +241,9 @@ export async function updateCommunity(communityId: string, formData: FormData) {
       return { success: false, error: '更新社区失败' }
     }
 
-    revalidatePath(`/communities/${community.slug}`)
+    revalidatePath(`/communities/${updatedCommunity.slug}`)
     revalidatePath('/communities')
-    return { success: true, data: community }
+    return { success: true, data: updatedCommunity }
   } catch (error) {
     logger.error('更新社区错误:', error)
     if (error instanceof z.ZodError) {
@@ -224,14 +264,26 @@ export async function deleteCommunity(communityId: string) {
     }
 
     // 验证用户权限（必须是管理员）
-    const { data: member } = await supabase
-      .from('community_members')
-      .select('role')
-      .eq('community_id', communityId)
-      .eq('user_id', user.id)
-      .single()
+    const [{ data: community }, { data: member }] = await Promise.all([
+      supabase
+        .from('communities')
+        .select('id, creator_id')
+        .eq('id', communityId)
+        .single(),
+      supabase
+        .from('community_members')
+        .select('role')
+        .eq('community_id', communityId)
+        .eq('user_id', user.id)
+        .single(),
+    ])
 
-    if (!member || member.role !== 'admin') {
+    if (!community) {
+      return { success: false, error: '社区不存在' }
+    }
+
+    const isCreator = community.creator_id === user.id
+    if (!member || !canManageCommunitySettings({ isCreator, role: member.role as CommunityManagerRole })) {
       return { success: false, error: '没有权限删除社区' }
     }
 
@@ -338,16 +390,30 @@ export async function leaveCommunity(communityId: string) {
       return { success: false, error: '请先登录' }
     }
 
-    // 检查是否是管理员
-    const { data: member } = await supabase
-      .from('community_members')
-      .select('role')
-      .eq('community_id', communityId)
-      .eq('user_id', user.id)
-      .single()
+    const [{ data: community }, { data: member }] = await Promise.all([
+      supabase
+        .from('communities')
+        .select('id, creator_id, slug')
+        .eq('id', communityId)
+        .single(),
+      supabase
+        .from('community_members')
+        .select('role')
+        .eq('community_id', communityId)
+        .eq('user_id', user.id)
+        .single(),
+    ])
+
+    if (!community) {
+      return { success: false, error: '社区不存在' }
+    }
 
     if (!member) {
       return { success: false, error: '不是社区成员' }
+    }
+
+    if (community.creator_id === user.id) {
+      return { success: false, error: '社区创建者不能退出社区' }
     }
 
     // 如果是管理员，检查是否还有其他管理员
@@ -375,16 +441,7 @@ export async function leaveCommunity(communityId: string) {
       return { success: false, error: '退出社区失败' }
     }
 
-    // 获取社区 slug 用于重定向
-    const { data: community } = await supabase
-      .from('communities')
-      .select('slug')
-      .eq('id', communityId)
-      .single()
-
-    if (community) {
-      revalidatePath(`/communities/${community.slug}`)
-    }
+    revalidatePath(`/communities/${community.slug}`)
     revalidatePath('/communities')
     return { success: true }
   } catch (error) {
@@ -407,16 +464,51 @@ export async function updateMemberRole(
       return { success: false, error: '请先登录' }
     }
 
-    // 验证用户权限（必须是管理员）
-    const { data: currentUserMember } = await supabase
+    const [{ data: community }, { data: currentUserMember }] = await Promise.all([
+      supabase
+        .from('communities')
+        .select('id, slug, creator_id')
+        .eq('id', communityId)
+        .single(),
+      supabase
+        .from('community_members')
+        .select('role')
+        .eq('community_id', communityId)
+        .eq('user_id', user.id)
+        .single(),
+    ])
+
+    if (!community) {
+      return { success: false, error: '社区不存在' }
+    }
+
+    const isCreator = community.creator_id === user.id
+    const currentRole = currentUserMember?.role as CommunityManagerRole | undefined
+
+    if (!currentUserMember || !canManageCommunityRoles({ isCreator, role: currentRole })) {
+      return { success: false, error: '没有权限修改成员角色' }
+    }
+
+    const { data: targetMember } = await supabase
       .from('community_members')
-      .select('role')
+      .select('id, role, user_id')
+      .eq('id', memberId)
       .eq('community_id', communityId)
-      .eq('user_id', user.id)
       .single()
 
-    if (!currentUserMember || currentUserMember.role !== 'admin') {
-      return { success: false, error: '没有权限修改成员角色' }
+    if (!targetMember) {
+      return { success: false, error: '成员不存在' }
+    }
+
+    const targetRole = targetMember.role as CommunityManagerRole
+    const isTargetCreator = targetMember.user_id === community.creator_id
+
+    if (isTargetCreator && !isCreator) {
+      return { success: false, error: '不能修改创建者角色' }
+    }
+
+    if (!isCreator && currentRole === 'moderator' && targetRole === 'admin') {
+      return { success: false, error: '版主不能修改管理员角色' }
     }
 
     // 更新成员角色
@@ -432,15 +524,9 @@ export async function updateMemberRole(
     }
 
     // 获取社区 slug
-    const { data: community } = await supabase
-      .from('communities')
-      .select('slug')
-      .eq('id', communityId)
-      .single()
-
-    if (community) {
-      revalidatePath(`/communities/${community.slug}/members`)
-    }
+    revalidatePath(`/communities/${community.slug}`)
+    revalidatePath(`/communities/${community.slug}/members`)
+    revalidatePath(`/communities/${community.slug}/settings`)
     return { success: true }
   } catch (error) {
     logger.error('更新成员角色错误:', error)
@@ -458,15 +544,28 @@ export async function removeMember(communityId: string, memberId: string) {
       return { success: false, error: '请先登录' }
     }
 
-    // 验证用户权限（必须是管理员或版主）
-    const { data: currentUserMember } = await supabase
-      .from('community_members')
-      .select('role')
-      .eq('community_id', communityId)
-      .eq('user_id', user.id)
-      .single()
+    const [{ data: community }, { data: currentUserMember }] = await Promise.all([
+      supabase
+        .from('communities')
+        .select('id, slug, creator_id')
+        .eq('id', communityId)
+        .single(),
+      supabase
+        .from('community_members')
+        .select('role')
+        .eq('community_id', communityId)
+        .eq('user_id', user.id)
+        .single(),
+    ])
 
-    if (!currentUserMember || !['admin', 'moderator'].includes(currentUserMember.role)) {
+    if (!community) {
+      return { success: false, error: '社区不存在' }
+    }
+
+    const isCreator = community.creator_id === user.id
+    const currentRole = currentUserMember?.role as CommunityManagerRole | undefined
+
+    if (!currentUserMember || !canManageCommunityRoles({ isCreator, role: currentRole })) {
       return { success: false, error: '没有权限移除成员' }
     }
 
@@ -482,9 +581,13 @@ export async function removeMember(communityId: string, memberId: string) {
       return { success: false, error: '成员不存在' }
     }
 
-    // 版主不能移除管理员
-    if (currentUserMember.role === 'moderator' && targetMember.role === 'admin') {
+    // 非创建者的版主不能移除管理员
+    if (!isCreator && currentRole === 'moderator' && targetMember.role === 'admin') {
       return { success: false, error: '版主不能移除管理员' }
+    }
+
+    if (targetMember.user_id === community.creator_id) {
+      return { success: false, error: '不能移除社区创建者' }
     }
 
     // 不能移除自己
@@ -505,15 +608,8 @@ export async function removeMember(communityId: string, memberId: string) {
     }
 
     // 获取社区 slug
-    const { data: community } = await supabase
-      .from('communities')
-      .select('slug')
-      .eq('id', communityId)
-      .single()
-
-    if (community) {
-      revalidatePath(`/communities/${community.slug}/members`)
-    }
+    revalidatePath(`/communities/${community.slug}`)
+    revalidatePath(`/communities/${community.slug}/members`)
     return { success: true }
   } catch (error) {
     logger.error('移除成员错误:', error)

@@ -19,7 +19,17 @@ async function handleRemoveMember(communityId: string, memberId: string): Promis
   await removeMember(communityId, memberId)
 }
 
-async function MembersList({ communityId, currentUserRole }: { communityId: string; currentUserRole: string | null }) {
+async function MembersList({
+  communityId,
+  currentUserId,
+  currentUserRole,
+  creatorId,
+}: {
+  communityId: string
+  currentUserId: string | null
+  currentUserRole: string | null
+  creatorId: string
+}) {
   const { data: members } = await getCommunityMembers(communityId, { limit: 100 })
   type CommunityMember = Awaited<ReturnType<typeof getCommunityMembers>>['data'][number]
 
@@ -31,75 +41,103 @@ async function MembersList({ communityId, currentUserRole }: { communityId: stri
     )
   }
 
-  const canManage = currentUserRole === 'admin'
-  const canModerate = currentUserRole === 'admin' || currentUserRole === 'moderator'
+  const isCreator = currentUserId === creatorId
+  const canManageRoles = isCreator || currentUserRole === 'admin' || currentUserRole === 'moderator'
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {members.map((member: CommunityMember) => (
-        <Card key={member.id} className="p-4 hover:shadow-sm transition-shadow">
-          <div className="flex flex-col items-center text-center">
-            <Image
-              src={member.user.avatar_url || '/default-avatar.png'}
-              alt={member.user.display_name || member.user.username}
-              width={64}
-              height={64}
-              unoptimized
-              className="w-16 h-16 rounded-full mb-3 object-cover"
-            />
-            <div className="flex items-center gap-2 mb-1">
-              <Link
-                href={`/u/${member.user.username}`}
-                className="font-medium text-sm hover:underline"
-              >
-                {member.user.display_name || member.user.username}
-              </Link>
-              {member.role === 'admin' && (
-                <Crown className="w-3.5 h-3.5 text-yellow-500" />
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {members.map((member: CommunityMember) => {
+        const isCreatorMember = member.user.id === creatorId
+        const canEditRole =
+          canManageRoles &&
+          !isCreatorMember &&
+          !(currentUserRole === 'moderator' && member.role === 'admin')
+        const canRemoveMember =
+          canManageRoles &&
+          !isCreatorMember &&
+          !(currentUserRole === 'moderator' && member.role === 'admin')
+
+        return (
+          <Card key={member.id} className="p-4 transition-shadow hover:shadow-sm">
+            <div className="flex flex-col items-center text-center">
+              <Image
+                src={member.user.avatar || '/default-avatar.png'}
+                alt={member.user.full_name || member.user.username}
+                width={64}
+                height={64}
+                unoptimized
+                className="mb-3 h-16 w-16 rounded-full object-cover"
+              />
+
+              <div className="mb-1 flex items-center gap-2">
+                <Link href={`/u/${member.user.username}`} className="text-sm font-medium hover:underline">
+                  {member.user.full_name || member.user.username}
+                </Link>
+                {isCreatorMember ? (
+                  <Shield className="h-3.5 w-3.5 text-primary" />
+                ) : member.role === 'admin' ? (
+                  <Crown className="h-3.5 w-3.5 text-yellow-500" />
+                ) : member.role === 'moderator' ? (
+                  <Shield className="h-3.5 w-3.5 text-blue-500" />
+                ) : null}
+              </div>
+
+              <p className="mb-2 text-xs text-muted-foreground">
+                {isCreatorMember && '创建者 / 版主'}
+                {!isCreatorMember && member.role === 'admin' && '管理员'}
+                {!isCreatorMember && member.role === 'moderator' && '版主'}
+                {member.role === 'member' && '成员'}
+              </p>
+
+              {member.user.bio && (
+                <p className="mb-3 line-clamp-2 text-xs text-muted-foreground">
+                  {member.user.bio}
+                </p>
               )}
-              {member.role === 'moderator' && (
-                <Shield className="w-3.5 h-3.5 text-blue-500" />
+
+              <p className="text-xs text-muted-foreground">
+                加入于 {new Date(member.joined_at).toLocaleDateString('zh-CN')}
+              </p>
+
+              {canEditRole && (
+                <div className="mt-3 flex w-full flex-col gap-2">
+                  {member.role !== 'admin' && (
+                    <form action={handleUpdateRole.bind(null, communityId, member.id, 'admin')}>
+                      <Button variant="outline" size="sm" className="w-full text-xs" type="submit">
+                        设为管理员
+                      </Button>
+                    </form>
+                  )}
+
+                  {member.role !== 'moderator' && (
+                    <form action={handleUpdateRole.bind(null, communityId, member.id, 'moderator')}>
+                      <Button variant="outline" size="sm" className="w-full text-xs" type="submit">
+                        设为版主
+                      </Button>
+                    </form>
+                  )}
+
+                  {member.role !== 'member' && (
+                    <form action={handleUpdateRole.bind(null, communityId, member.id, 'member')}>
+                      <Button variant="outline" size="sm" className="w-full text-xs" type="submit">
+                        设为成员
+                      </Button>
+                    </form>
+                  )}
+
+                  {canRemoveMember && (
+                    <form action={handleRemoveMember.bind(null, communityId, member.id)}>
+                      <Button variant="destructive" size="sm" className="w-full text-xs" type="submit">
+                        移除
+                      </Button>
+                    </form>
+                  )}
+                </div>
               )}
             </div>
-            <p className="text-xs text-muted-foreground mb-2">
-              {member.role === 'admin' && '管理员'}
-              {member.role === 'moderator' && '版主'}
-              {member.role === 'member' && '成员'}
-            </p>
-            {member.user.bio && (
-              <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
-                {member.user.bio}
-              </p>
-            )}
-            <p className="text-xs text-muted-foreground">
-              加入于 {new Date(member.joined_at).toLocaleDateString('zh-CN')}
-            </p>
-
-            {canManage && member.role !== 'admin' && (
-              <div className="flex flex-col gap-2 mt-3 w-full">
-                <form action={handleUpdateRole.bind(null, communityId, member.id, 'moderator')}>
-                  <Button variant="outline" size="sm" className="w-full text-xs" type="submit">
-                    设为版主
-                  </Button>
-                </form>
-                <form action={handleRemoveMember.bind(null, communityId, member.id)}>
-                  <Button variant="destructive" size="sm" className="w-full text-xs" type="submit">
-                    移除
-                  </Button>
-                </form>
-              </div>
-            )}
-
-            {canModerate && !canManage && member.role === 'member' && (
-              <form action={handleRemoveMember.bind(null, communityId, member.id)} className="mt-3 w-full">
-                <Button variant="destructive" size="sm" className="w-full text-xs" type="submit">
-                  移除
-                </Button>
-              </form>
-            )}
-          </div>
-        </Card>
-      ))}
+          </Card>
+        )
+      })}
     </div>
   )
 }
@@ -117,17 +155,26 @@ export default async function MembersPage({
   }
 
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   let currentUserRole = null
   if (user) {
     const { data: membership } = await getUserMembershipStatus(community.id, user.id)
     currentUserRole = membership?.role || null
 
-    // 私密社区需要是成员才能查看
     if (community.type === 'private' && !membership) {
       redirect(`/communities/${slug}`)
     }
+  }
+
+  const isCreator = user?.id === community.creator_id
+  const canManageMembers =
+    isCreator || currentUserRole === 'admin' || currentUserRole === 'moderator'
+
+  if (!canManageMembers) {
+    redirect(`/communities/${slug}`)
   }
 
   return (
@@ -135,16 +182,15 @@ export default async function MembersPage({
       <div className="mx-auto max-w-6xl px-4 py-4">
         <Link
           href={`/communities/${slug}`}
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary mb-4 transition-colors"
+          className="mb-4 inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-primary"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           返回社区
         </Link>
 
-        {/* Community Header */}
-        <div className="rounded-lg border border-border bg-card overflow-hidden shadow-sm mb-6">
+        <div className="mb-6 overflow-hidden rounded-lg border border-border bg-card shadow-sm">
           <div className="h-16 bg-gradient-to-r from-primary/20 via-accent/10 to-blue-500/20" />
-          <div className="px-5 pb-5 -mt-6">
+          <div className="-mt-6 px-5 pb-5">
             <div className="flex items-end gap-3">
               {community.icon_url ? (
                 <Image
@@ -153,25 +199,29 @@ export default async function MembersPage({
                   width={56}
                   height={56}
                   unoptimized
-                  className="w-14 h-14 rounded-xl bg-card shadow-sm border border-border object-cover"
+                  className="h-14 w-14 rounded-xl border border-border bg-card object-cover shadow-sm"
                 />
               ) : (
-                <div className="w-14 h-14 rounded-xl bg-card shadow-sm border border-border flex items-center justify-center">
-                  <Users className="w-7 h-7 text-primary" />
+                <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-border bg-card shadow-sm">
+                  <Users className="h-7 w-7 text-primary" />
                 </div>
               )}
+
               <div className="pb-1">
                 <h1 className="text-lg font-bold text-foreground">{community.name} - 成员</h1>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  共 {community.members_count} 名成员
-                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">共 {community.members_count} 名成员</p>
               </div>
             </div>
           </div>
         </div>
 
         <Suspense fallback={<div className="text-sm text-muted-foreground">加载中...</div>}>
-          <MembersList communityId={community.id} currentUserRole={currentUserRole} />
+          <MembersList
+            communityId={community.id}
+            currentUserId={user?.id || null}
+            currentUserRole={currentUserRole}
+            creatorId={community.creator_id}
+          />
         </Suspense>
       </div>
     </div>

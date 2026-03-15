@@ -25,7 +25,9 @@ export default async function SettingsPage({
 
   // 检查用户是否是管理员
   const { data: membership } = await getUserMembershipStatus(community.id, user.id)
-  if (!membership || membership.role !== 'admin') {
+  const isCreator = community.creator_id === user.id
+
+  if (!membership || (!isCreator && membership.role !== 'admin')) {
     redirect(`/communities/${slug}`)
   }
 

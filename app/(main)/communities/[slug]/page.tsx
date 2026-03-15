@@ -66,6 +66,10 @@ async function CommunityHeader({ slug }: { slug: string }) {
 
   const isMember = !!membership
   const isAdmin = membership?.role === 'admin'
+  const isModerator = membership?.role === 'moderator'
+  const isCreator = user?.id === community.creator_id
+  const canOpenSettings = isCreator || isAdmin
+  const canManageMembers = isCreator || isAdmin || isModerator
 
   return (
     <div className="rounded-lg border border-border bg-card overflow-hidden shadow-sm mb-4">
@@ -107,7 +111,15 @@ async function CommunityHeader({ slug }: { slug: string }) {
           <div className="flex gap-2 pb-1">
             {user && (
               <>
-                {isAdmin && (
+                {canManageMembers && (
+                  <Link href={`/communities/${slug}/members`}>
+                    <Button variant="outline" size="sm" className="h-9 text-xs border-border">
+                      <Shield className="h-3.5 w-3.5 mr-1.5" />
+                      成员管理
+                    </Button>
+                  </Link>
+                )}
+                {canOpenSettings && (
                   <Link href={`/communities/${slug}/settings`}>
                     <Button variant="outline" size="icon" className="h-9 w-9 border-border">
                       <Settings className="h-3.5 w-3.5" />
