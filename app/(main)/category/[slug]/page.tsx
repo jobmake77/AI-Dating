@@ -3,7 +3,6 @@ import { FeedTabs } from '@/components/feed/feed-tabs'
 import { ContentListCompact } from '@/components/content/content-list-compact'
 import { getExploreContents } from '@/lib/queries/explore'
 import { getContentCategoryBySlug } from '@/lib/queries/content-categories'
-import { getCategoryColor } from '@/lib/utils/categories'
 
 interface CategoryPageProps {
   params: Promise<{ slug: string }>
@@ -27,7 +26,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
     limit: 12,
   })
 
-  const categoryColor = getCategoryColor(category.slug)
+  const categoryColor = category.color
 
   return (
     <div className="min-h-screen bg-background">

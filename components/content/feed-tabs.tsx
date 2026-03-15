@@ -9,10 +9,15 @@ const tabs = [
   { id: "following", label: "关注", icon: Heart, color: "text-red-500" },
 ];
 
-export function FeedTabs() {
+interface FeedTabsProps {
+  showFollowing?: boolean;
+}
+
+export function FeedTabs({ showFollowing = true }: FeedTabsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const activeTab = searchParams.get("tab") || "hot";
+  const visibleTabs = showFollowing ? tabs : tabs.filter((tab) => tab.id !== "following");
 
   const handleTabClick = (tabId: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -23,7 +28,7 @@ export function FeedTabs() {
 
   return (
     <div className="flex items-center gap-1 rounded-xl border border-border bg-card p-1 shadow-card">
-      {tabs.map((tab) => (
+      {visibleTabs.map((tab) => (
         <button
           key={tab.id}
           onClick={() => handleTabClick(tab.id)}

@@ -30,7 +30,7 @@ export default function RegisterPage() {
   const [success, setSuccess] = useState<string | null>(null)
 
   const features = [
-    { icon: Users, label: '加入 52,800+ 开发者社区' },
+    { icon: Users, label: '加入真实活跃的开发者社区' },
     { icon: Zap, label: 'AI 驱动的智能匹配' },
     { icon: Shield, label: '安全可靠的交流环境' },
   ]

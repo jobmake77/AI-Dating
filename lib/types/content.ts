@@ -16,6 +16,8 @@ export interface ContentListItem {
   excerpt: string
   tags: string[] | null
   category?: string | null
+  category_name?: string | null
+  category_color?: string | null
   price_type: string
   reading_time: number
   view_count: number
@@ -56,6 +58,8 @@ export interface TrendingContentItem {
   excerpt: string
   tags: string[] | null
   category?: string | null
+  category_name?: string | null
+  category_color?: string | null
   view_count: number
   likes_count: number
   reposts_count: number

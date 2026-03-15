@@ -15,6 +15,8 @@ interface CompactContentCardProps {
     excerpt: string;
     tags: string[] | null;
     category?: string | null; // Category slug
+    category_name?: string | null;
+    category_color?: string | null;
     price_type: string;
     view_count: number;
     likes_count: number;
@@ -51,7 +53,7 @@ const tagColors: Record<string, string> = {
 };
 
 export function CompactContentCard({ content, index = 0, compact = false }: CompactContentCardProps) {
-  const catColorHsl = content.category ? getCategoryColor(content.category) : "221 83% 53%";
+  const catColorHsl = content.category_color || (content.category ? getCategoryColor(content.category) : "221 83% 53%");
   const primaryTag = content.tags?.[0] || "讨论";
   const tagColor = tagColors[primaryTag] || "bg-tag text-tag-foreground";
   const contentHref = content.href || `/post/${content.id}`;
@@ -102,7 +104,7 @@ export function CompactContentCard({ content, index = 0, compact = false }: Comp
                   color: `hsl(${catColorHsl})`,
                 }}
               >
-                {content.category}
+                {content.category_name || content.category}
               </span>
             )}
             <span className={`rounded px-1.5 py-0.5 font-mono text-[10px] font-medium ${tagColor}`}>

@@ -32,6 +32,8 @@ interface ContentDetailCardProps {
     excerpt: string;
     tags: string[] | null;
     category?: string;
+    category_name?: string | null;
+    category_color?: string | null;
     price_type: string;
     view_count: number;
     created_at: string;
@@ -49,7 +51,7 @@ interface ContentDetailCardProps {
 export function ContentDetailCard({ content, canViewFullContent, currentUserId }: ContentDetailCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
-  const catColorHsl = content.category ? getCategoryColor(content.category) : "221 83% 53%";
+  const catColorHsl = content.category_color || (content.category ? getCategoryColor(content.category) : "221 83% 53%");
   const primaryTag = content.tags?.[0] || "讨论";
   const isAuthor = currentUserId === content.author_id;
   const sanitizedContent = useMemo(() => {
@@ -121,7 +123,7 @@ export function ContentDetailCard({ content, canViewFullContent, currentUserId }
                       color: `hsl(${catColorHsl})`,
                     }}
                   >
-                    {content.category}
+                    {content.category_name || content.category}
                   </Link>
                 )}
                 <span className="rounded-full bg-primary/10 px-2 py-0.5 font-mono text-[10px] text-primary font-medium">

@@ -19,6 +19,7 @@ export interface ExploreCategory {
   name: string
   slug: string
   description?: string
+  color: string
   postCount: number
 }
 
@@ -274,6 +275,7 @@ export async function getCategories(): Promise<ExploreCategory[]> {
     name: category.name,
     slug: category.slug,
     description: category.description,
+    color: category.color,
     postCount: contentIdsByCategory.get(category.slug)?.size || 0,
   }))
 }
@@ -317,6 +319,12 @@ export async function getPopularTags(limit: number = 20) {
 export async function getExploreContents(params: ExploreParams = {}) {
   const supabase = await createClient()
   const { page = 1, limit = 20, category, tag, search } = params
+  const categoryMetaMap = new Map(
+    (await getContentCategories({ includeInactive: true })).map((item) => [
+      item.slug,
+      { name: item.name, color: item.color },
+    ])
+  )
 
   const filterIdGroups: string[][] = []
 
@@ -375,7 +383,11 @@ export async function getExploreContents(params: ExploreParams = {}) {
   }
 
   return {
-    contents: data || [],
+    contents: (data || []).map((content) => ({
+      ...content,
+      category_name: content.category ? categoryMetaMap.get(content.category)?.name || content.category : null,
+      category_color: content.category ? categoryMetaMap.get(content.category)?.color || null : null,
+    })),
     total: count || 0,
     page,
     limit,

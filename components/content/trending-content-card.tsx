@@ -31,7 +31,7 @@ const rankStyles = [
 ];
 
 export function TrendingContentCard({ content, rank }: TrendingContentCardProps) {
-  const catColorHsl = content.category ? getCategoryColor(content.category) : "221 83% 53%";
+  const catColorHsl = content.category_color || (content.category ? getCategoryColor(content.category) : "221 83% 53%");
   const primaryTag = content.tags?.[0] || "讨论";
   const tagColor = tagColors[primaryTag] || "bg-tag text-tag-foreground";
   const rankStyle = rank < 3 ? rankStyles[rank] : null;
@@ -96,7 +96,7 @@ export function TrendingContentCard({ content, rank }: TrendingContentCardProps)
                     color: `hsl(${catColorHsl})`,
                   }}
                 >
-                  {content.category}
+                  {content.category_name || content.category}
                 </span>
               )}
               <span className={`rounded px-1.5 py-0.5 font-mono text-[10px] font-medium ${tagColor}`}>

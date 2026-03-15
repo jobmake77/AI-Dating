@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { createContent } from '@/lib/actions/content'
-import { getCategoryColor } from '@/lib/utils/categories'
 import { uploadImage } from '@/lib/actions/upload'
 import { getVideoUploadUrl } from '@/lib/actions/upload-video'
 import { useEditor, EditorContent } from '@tiptap/react'
@@ -35,6 +34,7 @@ export function CreatePostForm({ categories }: CreatePostFormProps) {
   const [isUploadingVideo, setIsUploadingVideo] = useState(false)
   const imageInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
+  const coverImageInputRef = useRef<HTMLInputElement>(null)
 
   const editor = useEditor({
     extensions: [
@@ -161,6 +161,32 @@ export function CreatePostForm({ categories }: CreatePostFormProps) {
     videoInputRef.current?.click()
   }
 
+  const handleCoverImageUpload = async (file: File) => {
+    if (!file) return
+
+    setIsUploadingImage(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const result = await uploadImage(formData, 'content-images')
+
+      if (result.error) {
+        toast.error(result.error)
+        return
+      }
+
+      if (result.url) {
+        setCoverImage(result.url)
+        toast.success('封面上传成功')
+      }
+    } catch {
+      toast.error('封面上传失败，请重试')
+    } finally {
+      setIsUploadingImage(false)
+    }
+  }
+
   const titleCount = title.length
   const wordCount = editor?.getText().length || 0
 
@@ -216,12 +242,26 @@ export function CreatePostForm({ categories }: CreatePostFormProps) {
                     </button>
                   </div>
                 ) : (
-                  <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer">
+                  <button
+                    type="button"
+                    onClick={() => coverImageInputRef.current?.click()}
+                    className="w-full border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer"
+                  >
                     <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                     <p className="text-sm text-muted-foreground">点击上传封面图片</p>
                     <p className="text-xs text-muted-foreground mt-1">支持 JPG, PNG, GIF (最大 5MB)</p>
-                  </div>
+                  </button>
                 )}
+                <input
+                  ref={coverImageInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) handleCoverImageUpload(file)
+                  }}
+                />
               </div>
 
               <div className="mb-6">
@@ -319,7 +359,7 @@ export function CreatePostForm({ categories }: CreatePostFormProps) {
                 <label className="text-sm font-medium text-foreground mb-3 block">选择分类</label>
                 <div className="flex flex-wrap gap-2">
                   {categories.map((cat) => {
-                    const hsl = getCategoryColor(cat.slug)
+                    const hsl = cat.color
                     const isSelected = selectedCategory === cat.slug
                     return (
                       <button

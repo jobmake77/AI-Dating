@@ -373,13 +373,21 @@ async function CommunityRulesSidebar({ communityId }: { communityId: string }) {
   )
 }
 
-async function CommunityContent({ communityId }: { communityId: string }) {
+async function CommunityContent({
+  communityId,
+  slug,
+  activeTab,
+}: {
+  communityId: string
+  slug: string
+  activeTab: 'latest' | 'popular'
+}) {
   return (
     <div className="flex gap-4">
       <main className="flex-1 min-w-0 space-y-3">
-        <CommunityFeedTabs activeTab="latest" />
+        <CommunityFeedTabs activeTab={activeTab} basePath={`/communities/${slug}`} />
         <Suspense fallback={<div className="text-sm text-muted-foreground">加载中...</div>}>
-          <PostsList communityId={communityId} sortBy="latest" />
+          <PostsList communityId={communityId} sortBy={activeTab} />
         </Suspense>
       </main>
 
@@ -390,11 +398,15 @@ async function CommunityContent({ communityId }: { communityId: string }) {
 
 export default async function CommunityPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>
+  searchParams: Promise<{ tab?: string }>
 }) {
   const { slug } = await params
+  const { tab } = await searchParams
   const { data: community } = await getCommunityBySlug(slug)
+  const activeTab: 'latest' | 'popular' = tab === 'popular' ? 'popular' : 'latest'
 
   if (!community) {
     notFound()
@@ -449,7 +461,7 @@ export default async function CommunityPage({
 
         <CommunityHeader slug={slug} />
 
-          <CommunityContent communityId={community.id} />
+        <CommunityContent communityId={community.id} slug={slug} activeTab={activeTab} />
       </div>
     </div>
   )

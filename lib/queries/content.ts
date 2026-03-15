@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getContentCategories } from '@/lib/queries/content-categories'
 import { logger } from '@/lib/utils/logger'
 import { normalizeSingleRelation } from '@/lib/utils/normalize'
 import { isValidUuid } from '@/lib/utils/is-valid-uuid'
@@ -22,6 +23,8 @@ export interface FeedItem {
   cover_image: string | null
   tags: string[] | null
   category?: string | null
+  category_name?: string | null
+  category_color?: string | null
   price_type: string
   status: string
   reject_reason: string | null
@@ -60,6 +63,10 @@ export interface FeedItem {
 }
 
 type FeedUser = FeedItem['users']
+type CategoryMeta = {
+  name: string
+  color: string
+}
 type FeedContentRow = Omit<FeedItem, 'content_id' | 'is_repost' | 'reposted_by' | 'reposted_at'> & {
   users: FeedUser | FeedUser[] | null
 }
@@ -117,10 +124,24 @@ function calculateReadingTime(text: string) {
   return Math.max(1, Math.ceil(stripHtml(text).length / 300))
 }
 
+async function getCategoryMetaMap() {
+  const categories = await getContentCategories({ includeInactive: true })
+  return new Map<string, CategoryMeta>(
+    categories.map((category) => [
+      category.slug,
+      {
+        name: category.name,
+        color: category.color,
+      },
+    ])
+  )
+}
+
 // 获取包含转发的内容时间线
 export async function getContentsFeed(params: ContentListParams = {}) {
   const supabase = await createClient()
   const { page = 1, limit = 12, tag, status = 'approved', sortBy = 'hot' } = params
+  const categoryMetaMap = await getCategoryMetaMap()
 
   // Get current user for following filter
   const { data: { user } } = await supabase.auth.getUser()
@@ -231,6 +252,8 @@ export async function getContentsFeed(params: ContentListParams = {}) {
         ...content,
         users: normalizedUser,
         content_id: content.id,
+        category_name: content.category ? categoryMetaMap.get(content.category)?.name || content.category : null,
+        category_color: content.category ? categoryMetaMap.get(content.category)?.color || null : null,
         is_repost: false,
       })
     })
@@ -251,6 +274,8 @@ export async function getContentsFeed(params: ContentListParams = {}) {
           users: repostedContentUser,
           id: `repost-${repost.id}`, // Use repost ID to make it unique
           content_id: repostedContent.id,
+          category_name: repostedContent.category ? categoryMetaMap.get(repostedContent.category)?.name || repostedContent.category : null,
+          category_color: repostedContent.category ? categoryMetaMap.get(repostedContent.category)?.color || null : null,
           is_repost: true,
           reposted_by: repostedBy,
           reposted_at: repost.created_at,
@@ -278,6 +303,8 @@ export async function getContentsFeed(params: ContentListParams = {}) {
         cover_image: null,
         tags: ['社区帖子'],
         category: null,
+        category_name: null,
+        category_color: null,
         price_type: 'free',
         status: 'approved',
         reject_reason: null,
@@ -423,7 +450,18 @@ export async function getContentById(id: string) {
     return null
   }
 
-  return data
+  if (!data) {
+    return null
+  }
+
+  const categoryMetaMap = await getCategoryMetaMap()
+  const categoryMeta = data.category ? categoryMetaMap.get(data.category) : null
+
+  return {
+    ...data,
+    category_name: categoryMeta?.name || data.category || null,
+    category_color: categoryMeta?.color || null,
+  }
 }
 
 export async function getContentBySlug(slug: string) {
@@ -450,7 +488,18 @@ export async function getContentBySlug(slug: string) {
     return null
   }
 
-  return data
+  if (!data) {
+    return null
+  }
+
+  const categoryMetaMap = await getCategoryMetaMap()
+  const categoryMeta = data.category ? categoryMetaMap.get(data.category) : null
+
+  return {
+    ...data,
+    category_name: categoryMeta?.name || data.category || null,
+    category_color: categoryMeta?.color || null,
+  }
 }
 
 // 获取用户点赞的内容

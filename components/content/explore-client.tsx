@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ExploreSidebar } from "@/components/content/explore-sidebar";
 import { CompactContentCard } from "@/components/content/compact-content-card";
-import { getCategoryColor } from "@/lib/utils/categories";
 import type { ContentListItem } from "@/lib/types/content";
 
 interface ExploreCategory {
@@ -16,6 +15,7 @@ interface ExploreCategory {
   name: string;
   slug: string;
   description?: string;
+  color: string;
   postCount: number;
 }
 
@@ -136,8 +136,8 @@ export function ExploreClient({
                   <span
                     className="rounded-full px-3 py-1 text-xs font-medium flex items-center gap-1.5"
                     style={{
-                      backgroundColor: `hsl(${getCategoryColor(activeCat.slug)} / 0.1)`,
-                      color: `hsl(${getCategoryColor(activeCat.slug)})`,
+                      backgroundColor: `hsl(${activeCat.color} / 0.1)`,
+                      color: `hsl(${activeCat.color})`,
                     }}
                   >
                     {activeCat.name}

@@ -4,6 +4,7 @@ import { normalizeSingleRelation } from '@/lib/utils/normalize'
 import { z } from 'zod'
 
 import { createClient } from '@/lib/supabase/server'
+import { getContentCategories } from '@/lib/queries/content-categories'
 import type { ContentAuthorSummary, RelatedContentItem, TrendingContentItem } from '@/lib/types/content'
 
 // Validation schemas
@@ -114,6 +115,12 @@ export async function getTrendingContents(params: {
 
   try {
     const supabase = await createClient()
+    const categoryMetaMap = new Map(
+      (await getContentCategories({ includeInactive: true })).map((category) => [
+        category.slug,
+        { name: category.name, color: category.color },
+      ])
+    )
 
     // 计算时间范围
     const now = new Date()
@@ -142,6 +149,7 @@ export async function getTrendingContents(params: {
         excerpt,
         cover_image,
         tags,
+        category,
         view_count,
         likes_count,
         comments_count,
@@ -180,6 +188,8 @@ export async function getTrendingContents(params: {
       // 处理 Supabase 嵌套查询返回的数组
       const normalizedContent = {
         ...content,
+        category_name: content.category ? categoryMetaMap.get(content.category)?.name || content.category : null,
+        category_color: content.category ? categoryMetaMap.get(content.category)?.color || null : null,
         users: author ?? {
           username: 'unknown',
           avatar: null,

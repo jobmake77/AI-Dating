@@ -47,16 +47,20 @@ interface HomeProps {
 export default async function Home({ searchParams }: HomeProps) {
   const params = await searchParams
   const page = Number(params.page) || 1
-  const tab = params.tab || 'hot'
-
-  const sortBy = (['hot', 'latest', 'following'] as const).includes(tab as 'hot' | 'latest' | 'following')
-    ? (tab as 'hot' | 'latest' | 'following')
-    : 'hot'
-  const { contents, totalPages } = await getContentsFeed({ page, sortBy })
+  const requestedTab = params.tab || 'hot'
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const isAuthenticated = !!user
+
+  const sortBy: 'hot' | 'latest' | 'following' =
+    requestedTab === 'latest'
+      ? 'latest'
+      : requestedTab === 'following' && isAuthenticated
+        ? 'following'
+        : 'hot'
+  const { contents, totalPages } = await getContentsFeed({ page, sortBy })
+
   const homepageData = await getHomepageData(user?.id)
 
   // 获取引导进度
@@ -95,7 +99,7 @@ export default async function Home({ searchParams }: HomeProps) {
           {/* Main Content */}
           <main className="min-w-0 flex-1 space-y-4">
             <div className="flex justify-start">
-              <FeedTabs />
+              <FeedTabs showFollowing={isAuthenticated} />
             </div>
 
             {/* New user onboarding progress card */}
