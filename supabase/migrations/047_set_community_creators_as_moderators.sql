@@ -1,10 +1,16 @@
 -- 社区创建者默认成为版主，而不是管理员
 -- 现有社区中，创建者成员角色也同步调整为 moderator
 
-ALTER FUNCTION IF EXISTS add_creator_as_admin() RENAME TO add_creator_as_moderator;
-
 DO $$
 BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM pg_proc
+    WHERE proname = 'add_creator_as_admin'
+  ) THEN
+    ALTER FUNCTION add_creator_as_admin() RENAME TO add_creator_as_moderator;
+  END IF;
+
   IF EXISTS (
     SELECT 1
     FROM pg_trigger
