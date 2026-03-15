@@ -1,113 +1,225 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { mockSupabaseClient } from '../../helpers/test-utils'
-import { mockUser } from '../../helpers/mock-data'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-// Mock Supabase
+import { signInWithEmail, signInWithGitHub, signUpWithEmail, sendPasswordReset } from '@/lib/actions/auth'
+import { mockUser } from '../../helpers/mock-data'
+import { mockSupabaseClient } from '../../helpers/test-utils'
+
+const redirectMock = vi.hoisted(() => vi.fn())
+const revalidatePathMock = vi.hoisted(() => vi.fn())
+const trackEventMock = vi.hoisted(() => vi.fn())
+
 vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn(() => mockSupabaseClient),
 }))
 
-// Mock Next.js cache
 vi.mock('next/cache', () => ({
-  revalidatePath: vi.fn(),
+  revalidatePath: revalidatePathMock,
 }))
 
-// Mock Next.js navigation
 vi.mock('next/navigation', () => ({
-  redirect: vi.fn(),
+  redirect: redirectMock,
 }))
 
-// Mock analytics
 vi.mock('@/lib/analytics/events', () => ({
-  trackEvent: vi.fn(),
+  trackEvent: trackEventMock,
 }))
+
+function createChain(overrides: Record<string, unknown> = {}) {
+  return {
+    select: vi.fn().mockReturnThis(),
+    insert: vi.fn().mockResolvedValue({ error: null }),
+    update: vi.fn().mockResolvedValue({ error: null }),
+    delete: vi.fn().mockResolvedValue({ error: null }),
+    eq: vi.fn().mockReturnThis(),
+    single: vi.fn().mockResolvedValue({ data: null, error: null }),
+    maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+    order: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
+    range: vi.fn().mockReturnThis(),
+    ...overrides,
+  }
+}
 
 describe('Auth Actions', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    process.env.NEXT_PUBLIC_SITE_URL = 'http://localhost:3000'
+    redirectMock.mockImplementation((url: string) => {
+      throw new Error(`NEXT_REDIRECT:${url}`)
+    })
   })
 
   describe('signInWithEmail', () => {
-    it('should sign in user with valid credentials', async () => {
-      const mockAuthData = {
-        user: mockUser,
-        session: { access_token: 'token' },
-      }
-
-      mockSupabaseClient.auth.signInWithPassword.mockResolvedValue({
-        data: mockAuthData,
-        error: null,
-      })
-
-      mockSupabaseClient.from.mockReturnValue({
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        single: vi.fn().mockResolvedValue({ data: mockUser, error: null }),
-      })
-
-      const formData = new FormData()
-      formData.append('email', 'test@example.com')
-      formData.append('password', 'password123')
-
-      // Note: We can't directly test server actions, but we can test the logic
-      expect(mockSupabaseClient.auth.signInWithPassword).toBeDefined()
-    })
-
-    it('should return error with invalid credentials', async () => {
-      mockSupabaseClient.auth.signInWithPassword.mockResolvedValue({
-        data: { user: null, session: null },
-        error: { message: 'Invalid credentials' },
-      })
-
-      expect(mockSupabaseClient.auth.signInWithPassword).toBeDefined()
-    })
-
-    it('should return error when email is missing', async () => {
+    it('returns a validation error when email is missing', async () => {
       const formData = new FormData()
       formData.append('password', 'password123')
 
-      // Missing email should be caught by validation
-      expect(formData.get('email')).toBeNull()
+      await expect(signInWithEmail(formData)).resolves.toEqual(
+        expect.objectContaining({
+          error: expect.any(String),
+        })
+      )
     })
 
-    it('should return error when password is missing', async () => {
-      const formData = new FormData()
-      formData.append('email', 'test@example.com')
-
-      // Missing password should be caught by validation
-      expect(formData.get('password')).toBeNull()
-    })
-  })
-
-  describe('signOut', () => {
-    it('should sign out user successfully', async () => {
-      mockSupabaseClient.auth.signOut.mockResolvedValue({
+    it('creates a profile for first-time email sign in and redirects home', async () => {
+      mockSupabaseClient.auth.signInWithPassword.mockResolvedValue({
+        data: {
+          user: {
+            ...mockUser,
+            email: 'first@example.com',
+            user_metadata: {},
+          },
+          session: { access_token: 'token' },
+        },
         error: null,
       })
 
-      await mockSupabaseClient.auth.signOut()
+      const lookupById = createChain({
+        single: vi.fn().mockResolvedValue({ data: null, error: null }),
+      })
+      const lookupByUsername = createChain({
+        maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+      })
+      const insertUser = createChain({
+        insert: vi.fn().mockResolvedValue({ error: null }),
+      })
 
-      expect(mockSupabaseClient.auth.signOut).toHaveBeenCalled()
+      mockSupabaseClient.from
+        .mockReturnValueOnce(lookupById)
+        .mockReturnValueOnce(lookupByUsername)
+        .mockReturnValueOnce(insertUser)
+
+      const formData = new FormData()
+      formData.append('email', 'first@example.com')
+      formData.append('password', 'password123')
+
+      await expect(signInWithEmail(formData)).rejects.toThrow('NEXT_REDIRECT:/')
+
+      expect(mockSupabaseClient.auth.signInWithPassword).toHaveBeenCalledWith({
+        email: 'first@example.com',
+        password: 'password123',
+      })
+      expect(insertUser.insert).toHaveBeenCalledWith(expect.objectContaining({
+        id: mockUser.id,
+        email: 'first@example.com',
+        role: 'user',
+      }))
+      expect(trackEventMock).toHaveBeenCalledWith('user_logged_in', expect.objectContaining({
+        user_id: mockUser.id,
+      }))
+      expect(revalidatePathMock).toHaveBeenCalledWith('/', 'layout')
     })
   })
 
-  describe('signUp', () => {
-    it('should create new user account', async () => {
-      const mockAuthData = {
-        user: mockUser,
-        session: { access_token: 'token' },
-      }
-
+  describe('signUpWithEmail', () => {
+    it('stores the requested username and returns success when confirmation is required', async () => {
       mockSupabaseClient.auth.signUp.mockResolvedValue({
-        data: mockAuthData,
+        data: {
+          user: mockUser,
+          session: null,
+        },
         error: null,
       })
 
       const formData = new FormData()
       formData.append('email', 'newuser@example.com')
       formData.append('password', 'password123')
+      formData.append('username', 'new user')
 
-      expect(mockSupabaseClient.auth.signUp).toBeDefined()
+      const result = await signUpWithEmail(formData)
+
+      expect(mockSupabaseClient.auth.signUp).toHaveBeenCalledWith(expect.objectContaining({
+        email: 'newuser@example.com',
+        password: 'password123',
+        options: expect.objectContaining({
+          data: expect.objectContaining({
+            username: 'new_user',
+            email_confirm: false,
+          }),
+        }),
+      }))
+      expect(result).toEqual({
+        success: true,
+        message: '注册成功！请检查邮箱验证链接。如果没有收到邮件，请检查垃圾邮件文件夹。'
+      })
+    })
+
+    it('creates the profile immediately when email confirmation is disabled', async () => {
+      mockSupabaseClient.auth.signUp.mockResolvedValue({
+        data: {
+          user: { ...mockUser, email: 'instant@example.com' },
+          session: { access_token: 'token' },
+        },
+        error: null,
+      })
+
+      const lookupByUsername = createChain({
+        maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+      })
+      const insertUser = createChain({
+        insert: vi.fn().mockResolvedValue({ error: null }),
+      })
+
+      mockSupabaseClient.from
+        .mockReturnValueOnce(lookupByUsername)
+        .mockReturnValueOnce(insertUser)
+
+      const formData = new FormData()
+      formData.append('email', 'instant@example.com')
+      formData.append('password', 'password123')
+      formData.append('username', 'instant_user')
+
+      const result = await signUpWithEmail(formData)
+
+      expect(insertUser.insert).toHaveBeenCalledWith(expect.objectContaining({
+        id: mockUser.id,
+        username: 'instant_user',
+        email: 'instant@example.com',
+        role: 'user',
+      }))
+      expect(trackEventMock).toHaveBeenCalledWith('user_signed_up', expect.objectContaining({
+        user_id: mockUser.id,
+        username: 'instant_user',
+      }))
+      expect(result).toEqual({
+        success: true,
+        message: '注册成功！正在跳转...',
+        redirect: true,
+      })
+    })
+  })
+
+  describe('sendPasswordReset', () => {
+    it('returns a friendly smtp error', async () => {
+      mockSupabaseClient.auth.resetPasswordForEmail.mockResolvedValue({
+        error: { message: 'Error sending confirmation email' },
+      })
+
+      const formData = new FormData()
+      formData.append('email', 'reset@example.com')
+
+      await expect(sendPasswordReset(formData)).resolves.toEqual({
+        error: 'SMTP 未配置，邮件无法发送。请在 Supabase Dashboard → Project Settings → Auth → SMTP 配置邮件服务，或联系管理员。',
+        hint: 'smtp_error',
+      })
+    })
+  })
+
+  describe('signInWithGitHub', () => {
+    it('starts the GitHub oauth flow with the configured callback', async () => {
+      mockSupabaseClient.auth.signInWithOAuth.mockResolvedValue({
+        data: { url: 'https://github.com/login/oauth/authorize?client_id=test' },
+        error: null,
+      })
+
+      await expect(signInWithGitHub()).rejects.toThrow('NEXT_REDIRECT:https://github.com/login/oauth/authorize?client_id=test')
+
+      expect(mockSupabaseClient.auth.signInWithOAuth).toHaveBeenCalledWith({
+        provider: 'github',
+        options: {
+          redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+        },
+      })
     })
   })
 })

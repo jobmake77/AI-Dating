@@ -6,8 +6,10 @@ import { vi } from 'vitest'
 export const mockSupabaseClient = {
   auth: {
     signInWithPassword: vi.fn(),
+    signInWithOAuth: vi.fn(),
     signOut: vi.fn(),
     signUp: vi.fn(),
+    resetPasswordForEmail: vi.fn(),
     getUser: vi.fn(),
     getSession: vi.fn(),
   },
@@ -18,6 +20,7 @@ export const mockSupabaseClient = {
     delete: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
     single: vi.fn(),
+    maybeSingle: vi.fn(),
     order: vi.fn().mockReturnThis(),
     limit: vi.fn().mockReturnThis(),
     range: vi.fn().mockReturnThis(),

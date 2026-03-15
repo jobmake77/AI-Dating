@@ -15,7 +15,51 @@ const signInSchema = z.object({
 const signUpSchema = z.object({
   email: z.string().email('请输入有效的邮箱地址'),
   password: z.string().min(6, '密码至少需要 6 个字符').max(100, '密码过长'),
+  username: z.string().trim().max(30, '用户名过长').optional(),
 })
+
+function normalizeUsername(value?: string | null) {
+  return value
+    ?.trim()
+    .replace(/\s+/g, '_')
+    .replace(/[^\p{L}\p{N}_-]/gu, '')
+    .slice(0, 30)
+}
+
+async function ensureUniqueUsername(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  preferredUsername?: string | null,
+  fallbackEmail?: string | null,
+) {
+  const emailPrefix = fallbackEmail?.split('@')[0]
+  const baseUsername = normalizeUsername(preferredUsername) || normalizeUsername(emailPrefix) || 'user'
+  const trimmedBase = baseUsername.slice(0, 24)
+
+  const candidates = [
+    baseUsername,
+    `${trimmedBase}_${Math.random().toString(36).slice(2, 8)}`,
+    `${trimmedBase}_${Math.random().toString(36).slice(2, 8)}`,
+    `${trimmedBase}_${Math.random().toString(36).slice(2, 8)}`,
+  ]
+
+  for (const candidate of candidates) {
+    const { data, error } = await supabase
+      .from('users')
+      .select('id')
+      .eq('username', candidate)
+      .maybeSingle()
+
+    if (error) {
+      throw error
+    }
+
+    if (!data) {
+      return candidate
+    }
+  }
+
+  return `user_${Math.random().toString(36).slice(2, 10)}`
+}
 
 export async function signInWithEmail(formData: FormData) {
   const supabase = await createClient()
@@ -56,7 +100,7 @@ export async function signInWithEmail(formData: FormData) {
 
     // If user doesn't exist, create user record
     if (!existingUser) {
-      const username = email.split('@')[0] + '_' + Math.random().toString(36).substring(7)
+      const username = await ensureUniqueUsername(supabase, data.user.user_metadata.username, email)
 
       await supabase.from('users').insert({
         id: data.user.id,
@@ -76,9 +120,14 @@ export async function signUpWithEmail(formData: FormData) {
 
   const email = formData.get('email') as string
   const password = formData.get('password') as string
+  const username = formData.get('username') as string | null
 
   // Validate input
-  const validation = signUpSchema.safeParse({ email, password })
+  const validation = signUpSchema.safeParse({
+    email,
+    password,
+    username: normalizeUsername(username),
+  })
   if (!validation.success) {
     return { error: validation.error.issues[0].message }
   }
@@ -88,8 +137,8 @@ export async function signUpWithEmail(formData: FormData) {
     password,
     options: {
       emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
-      // 在开发环境下，可以设置为不需要邮箱验证
       data: {
+        username: validation.data.username || undefined,
         email_confirm: false,
       },
     },
@@ -122,11 +171,11 @@ export async function signUpWithEmail(formData: FormData) {
 
   // 如果不需要邮箱验证，创建用户记录并直接登录
   if (data.user && data.session) {
-    const username = email.split('@')[0] + '_' + Math.random().toString(36).substring(7)
+    const resolvedUsername = await ensureUniqueUsername(supabase, validation.data.username, email)
 
     await supabase.from('users').insert({
       id: data.user.id,
-      username,
+      username: resolvedUsername,
       email: data.user.email,
       role: 'user',
     })
@@ -134,7 +183,7 @@ export async function signUpWithEmail(formData: FormData) {
     // 追踪注册事件
     await trackEvent('user_signed_up', {
       user_id: data.user.id,
-      username,
+      username: resolvedUsername,
       email: data.user.email || undefined,
     })
 

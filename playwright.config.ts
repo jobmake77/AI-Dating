@@ -68,10 +68,10 @@ export default defineConfig({
   // 开发服务器配置（可选）
   webServer: {
     command:
-      `NEXT_PUBLIC_SITE_URL=\${NEXT_PUBLIC_SITE_URL:-http://127.0.0.1:${webPort}} ` +
-      'NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:-https://example.com} ' +
-      'NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY:-ci-smoke-anon-key} ' +
-      'SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY:-ci-smoke-service-role-key} ' +
+      `NEXT_PUBLIC_SITE_URL=http://127.0.0.1:${webPort} ` +
+      'NEXT_PUBLIC_SUPABASE_URL=https://example.com ' +
+      'NEXT_PUBLIC_SUPABASE_ANON_KEY=ci-smoke-anon-key ' +
+      'SUPABASE_SERVICE_ROLE_KEY=ci-smoke-service-role-key ' +
       `npm run dev -- --hostname 127.0.0.1 --port ${webPort}`,
     url: webServerReadyURL,
     reuseExistingServer: !process.env.CI,
