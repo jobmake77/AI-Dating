@@ -11,6 +11,9 @@ export interface Category {
   slug: string
   requiredRole: CategoryRole
   description?: string
+  color?: string
+  sortOrder?: number
+  isActive?: boolean
 }
 
 export const categories: Category[] = [
@@ -21,6 +24,9 @@ export const categories: Category[] = [
     slug: 'announce',
     requiredRole: 'admin',
     description: '平台官方发布的重要公告和通知',
+    color: '210 100% 56%',
+    sortOrder: 10,
+    isActive: true,
   },
   {
     id: '2',
@@ -28,6 +34,9 @@ export const categories: Category[] = [
     slug: 'beginner',
     requiredRole: 'admin',
     description: '帮助新用户快速上手的指南和教程',
+    color: '152 69% 40%',
+    sortOrder: 20,
+    isActive: true,
   },
   {
     id: '3',
@@ -35,6 +44,9 @@ export const categories: Category[] = [
     slug: 'activity',
     requiredRole: 'admin',
     description: '平台举办的各类活动信息',
+    color: '38 92% 50%',
+    sortOrder: 30,
+    isActive: true,
   },
   {
     id: '4',
@@ -42,6 +54,9 @@ export const categories: Category[] = [
     slug: 'help',
     requiredRole: 'admin',
     description: '常见问题解答和技术支持',
+    color: '142 71% 45%',
+    sortOrder: 40,
+    isActive: true,
   },
   // 所有用户
   {
@@ -50,6 +65,9 @@ export const categories: Category[] = [
     slug: 'suggest',
     requiredRole: 'user',
     description: '对平台功能和产品的改进建议',
+    color: '262 83% 58%',
+    sortOrder: 50,
+    isActive: true,
   },
   {
     id: '6',
@@ -57,6 +75,9 @@ export const categories: Category[] = [
     slug: 'tips',
     requiredRole: 'user',
     description: '分享使用技巧和经验心得',
+    color: '199 89% 48%',
+    sortOrder: 60,
+    isActive: true,
   },
   {
     id: '7',
@@ -64,6 +85,9 @@ export const categories: Category[] = [
     slug: 'showcase',
     requiredRole: 'user',
     description: '展示优秀作品和成功案例',
+    color: '340 82% 52%',
+    sortOrder: 70,
+    isActive: true,
   },
   {
     id: '8',
@@ -71,14 +95,17 @@ export const categories: Category[] = [
     slug: 'chat',
     requiredRole: 'user',
     description: '用户之间的自由交流讨论',
+    color: '24 95% 53%',
+    sortOrder: 80,
+    isActive: true,
   },
 ]
 
 export function getCategoriesByRole(role: CategoryRole): Category[] {
   if (role === 'admin') {
-    return categories
+    return categories.filter((cat) => cat.isActive !== false)
   }
-  return categories.filter((cat) => cat.requiredRole === 'user')
+  return categories.filter((cat) => cat.requiredRole === 'user' && cat.isActive !== false)
 }
 
 export function getCategoryBySlug(slug: string): Category | undefined {
@@ -155,7 +182,8 @@ export const categoryColors: Record<string, string> = {
  * @returns HSL color string (e.g., "210 100% 56%")
  */
 export function getCategoryColor(categorySlug: string): string {
-  return categoryColors[categorySlug] || "221 83% 53%"; // Default to primary color
+  const configuredColor = categories.find((category) => category.slug === categorySlug)?.color
+  return configuredColor || categoryColors[categorySlug] || "221 83% 53%"; // Default to primary color
 }
 
 /**

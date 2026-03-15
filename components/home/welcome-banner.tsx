@@ -13,6 +13,7 @@ interface WelcomeBannerProps {
   activeTab?: "hot" | "latest" | "following";
   featuredPost?: {
     id: string;
+    href?: string;
     title: string;
     excerpt: string;
     author: string;
@@ -75,7 +76,7 @@ export function WelcomeBanner({ stats, activeTab = "hot", featuredPost }: Welcom
               </p>
               {featuredPost ? (
                 <div className="mt-2 space-y-1.5">
-                  <Link href={`/post/${featuredPost.id}`} className="block">
+                  <Link href={featuredPost.href || `/post/${featuredPost.id}`} className="block">
                     <h2 className="line-clamp-1 text-sm font-semibold leading-snug text-foreground transition-colors hover:text-primary">
                       {featuredPost.title}
                     </h2>

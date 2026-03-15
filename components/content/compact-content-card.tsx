@@ -26,6 +26,12 @@ interface CompactContentCardProps {
       avatar: string | null;
       full_name: string | null;
     };
+    href?: string;
+    source_type?: "content" | "repost" | "community_post";
+    community?: {
+      slug: string;
+      name: string;
+    } | null;
     is_pinned?: boolean;
     is_hot?: boolean;
   };
@@ -48,6 +54,7 @@ export function CompactContentCard({ content, index = 0, compact = false }: Comp
   const catColorHsl = content.category ? getCategoryColor(content.category) : "221 83% 53%";
   const primaryTag = content.tags?.[0] || "讨论";
   const tagColor = tagColors[primaryTag] || "bg-tag text-tag-foreground";
+  const contentHref = content.href || `/post/${content.id}`;
 
   return (
     <motion.article
@@ -78,7 +85,7 @@ export function CompactContentCard({ content, index = 0, compact = false }: Comp
           {/* Title row */}
           <div className="mb-1 flex flex-wrap items-center gap-1.5">
             {content.is_pinned && <Pin className="h-3 w-3 text-primary shrink-0" />}
-            <Link href={`/post/${content.id}`}>
+            <Link href={contentHref}>
               <h3 className="text-[13px] font-semibold leading-snug text-foreground group-hover:text-primary transition-colors">
                 {content.title}
               </h3>
@@ -101,6 +108,14 @@ export function CompactContentCard({ content, index = 0, compact = false }: Comp
             <span className={`rounded px-1.5 py-0.5 font-mono text-[10px] font-medium ${tagColor}`}>
               {primaryTag}
             </span>
+            {content.community && (
+              <Link
+                href={`/communities/${content.community.slug}`}
+                className="rounded px-1.5 py-0.5 text-[10px] font-medium text-info bg-info/10 hover:bg-info/15"
+              >
+                社区 · {content.community.name}
+              </Link>
+            )}
             <Avatar className="h-4 w-4">
               <AvatarImage src={content.users.avatar || undefined} alt={content.users.full_name || content.users.username} />
               <AvatarFallback className="text-[8px]">

@@ -17,7 +17,7 @@ export default async function ContentsPage({ searchParams }: ContentsPageProps) 
       <div className="mb-8">
         <h1 className="text-3xl font-bold">全部内容</h1>
         <p className="text-muted-foreground mt-2">
-          探索技术文章、实战教程和深度分析
+          探索技术文章、实战教程、深度分析，以及公开社区中的热门帖子
         </p>
       </div>
 

@@ -75,10 +75,11 @@ export default async function Home({ searchParams }: HomeProps) {
         activeTab={sortBy}
         featuredPost={featuredContent ? {
           id: featuredContent.content_id || featuredContent.id,
+          href: featuredContent.href,
           title: featuredContent.title,
           excerpt: featuredContent.excerpt,
           author: featuredContent.users?.full_name || featuredContent.users?.username || "匿名作者",
-          tag: featuredContent.tags?.[0],
+          tag: featuredContent.community?.name || featuredContent.tags?.[0],
         } : null}
       />
 

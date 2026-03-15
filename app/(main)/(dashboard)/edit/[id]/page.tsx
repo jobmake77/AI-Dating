@@ -2,6 +2,7 @@ import { getContentById } from '@/lib/queries/content'
 import { createClient } from '@/lib/supabase/server'
 import { EditPostForm } from '@/components/content/edit-post-form'
 import { notFound, redirect } from 'next/navigation'
+import { getContentCategories } from '@/lib/queries/content-categories'
 
 interface EditPageProps {
   params: Promise<{ id: string }>
@@ -28,5 +29,14 @@ export default async function EditPage({ params }: EditPageProps) {
     redirect(`/post/${id}`)
   }
 
-  return <EditPostForm content={content} />
+  const { data: userData } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  const userRole = userData?.role === 'admin' ? 'admin' : 'user'
+  const categories = await getContentCategories({ role: userRole })
+
+  return <EditPostForm content={content} categories={categories} />
 }

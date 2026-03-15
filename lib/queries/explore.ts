@@ -1,10 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/utils/logger'
 import {
-  categories as canonicalCategories,
   getCategoryAliases,
   matchesCategoryValue,
 } from '@/lib/utils/categories'
+import { getContentCategories } from '@/lib/queries/content-categories'
 
 export interface ExploreParams {
   page?: number
@@ -42,10 +42,11 @@ function normalizeTagValue(value: string): string {
   return value.trim().toLowerCase().replace(/\s+/g, '-')
 }
 
-function buildCategoryMatchers(categorySlugs?: string[]): CategoryMatcher[] {
+async function buildCategoryMatchers(categorySlugs?: string[]): Promise<CategoryMatcher[]> {
+  const configuredCategories = await getContentCategories()
   const filteredCategories = categorySlugs?.length
-    ? canonicalCategories.filter((category) => categorySlugs.includes(category.slug))
-    : canonicalCategories
+    ? configuredCategories.filter((category) => categorySlugs.includes(category.slug))
+    : configuredCategories
 
   return filteredCategories.map((category) => ({
     id: category.id,
@@ -143,7 +144,7 @@ async function getApprovedContentIdsByCategories(
   supabase: SupabaseServerClient,
   categorySlugs?: string[]
 ): Promise<Map<string, Set<string>>> {
-  const matchers = buildCategoryMatchers(categorySlugs)
+  const matchers = await buildCategoryMatchers(categorySlugs)
   const contentIdsByCategory = new Map<string, Set<string>>(
     matchers.map((matcher) => [matcher.slug, new Set<string>()])
   )
@@ -159,15 +160,25 @@ async function getApprovedContentIdsByCategories(
     new Set([...categoryValues, ...categoryValues.map(normalizeTagValue)])
   )
 
-  const [matchedTags, legacyContentsResult] = await Promise.all([
+  const [matchedTags, directCategoryContentsResult, legacyContentsResult] = await Promise.all([
     getMatchedTags(supabase, categoryValues),
     supabase
       .from('contents')
-      .select('id, tags')
+      .select('id, category, tags')
+      .eq('status', 'approved')
+      .is('deleted_at', null)
+      .in('category', matchers.map((matcher) => matcher.slug)),
+    supabase
+      .from('contents')
+      .select('id, category, tags')
       .eq('status', 'approved')
       .is('deleted_at', null)
       .overlaps('tags', legacyValues),
   ])
+
+  if (directCategoryContentsResult.error) {
+    logger.error('Failed to fetch direct category matches for explore:', directCategoryContentsResult.error)
+  }
 
   if (legacyContentsResult.error) {
     logger.error('Failed to fetch legacy category matches for explore:', legacyContentsResult.error)
@@ -211,7 +222,15 @@ async function getApprovedContentIdsByCategories(
     }
   }
 
-  ;(legacyContentsResult.data || []).forEach((content) => {
+  ;[...(directCategoryContentsResult.data || []), ...(legacyContentsResult.data || [])].forEach((content: { id: string; category?: string | null; tags?: string[] | null }) => {
+    if (content.category) {
+      matchers.forEach((matcher) => {
+        if (matchesCategoryValue(matcher.slug, content.category!)) {
+          contentIdsByCategory.get(matcher.slug)?.add(content.id)
+        }
+      })
+    }
+
     const tags = Array.isArray(content.tags) ? content.tags : []
 
     tags.forEach((tag) => {
@@ -244,9 +263,13 @@ function intersectContentIds(idGroups: string[][]): string[] {
 // 获取所有分类及其内容数量
 export async function getCategories(): Promise<ExploreCategory[]> {
   const supabase = await createClient()
-  const contentIdsByCategory = await getApprovedContentIdsByCategories(supabase)
+  const configuredCategories = await getContentCategories()
+  const contentIdsByCategory = await getApprovedContentIdsByCategories(
+    supabase,
+    configuredCategories.map((category) => category.slug)
+  )
 
-  return canonicalCategories.map((category) => ({
+  return configuredCategories.map((category) => ({
     id: category.id,
     name: category.name,
     slug: category.slug,

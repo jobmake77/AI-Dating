@@ -4,6 +4,12 @@ export interface ContentAuthorSummary {
   full_name: string | null
 }
 
+export interface ContentCommunitySummary {
+  id: string
+  slug: string
+  name: string
+}
+
 export interface ContentListItem {
   id: string
   title: string
@@ -18,6 +24,9 @@ export interface ContentListItem {
   comments_count: number
   created_at: string
   users: ContentAuthorSummary
+  href?: string
+  source_type?: 'content' | 'repost' | 'community_post'
+  community?: ContentCommunitySummary | null
   is_pinned?: boolean
   is_hot?: boolean
 }

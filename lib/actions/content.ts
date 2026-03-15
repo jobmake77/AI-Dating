@@ -8,7 +8,8 @@ import { contentSchema } from '@/lib/validations/content'
 import { moderateHTMLContent, formatModerationError } from '@/lib/tencent/moderation'
 import { updateOnboardingProgress } from './onboarding'
 import { trackEvent } from '@/lib/analytics/events'
-import { canUserAccessCategory, type CategoryRole } from '@/lib/utils/categories'
+import type { CategoryRole } from '@/lib/utils/categories'
+import { canRoleAccessContentCategory } from '@/lib/queries/content-categories'
 
 // Calculate reading time based on word count (300 words per minute)
 function calculateReadingTime(content: string): number {
@@ -75,6 +76,7 @@ export async function createContent(formData: FormData) {
 
   // Parse and validate form data
   const rawData = {
+    title: (formData.get('title') as string | null)?.trim() || undefined,
     content: formData.get('content') as string,
     price_type: 'free' as const,
     category: formData.get('category') as string | undefined,
@@ -83,7 +85,7 @@ export async function createContent(formData: FormData) {
   const validatedData = contentSchema.parse(rawData)
 
   // Validate category permissions
-  if (validatedData.category && !canUserAccessCategory(userRole, validatedData.category)) {
+  if (validatedData.category && !(await canRoleAccessContentCategory(userRole, validatedData.category))) {
     throw new Error('您没有权限发布到该分类')
   }
 
@@ -102,7 +104,7 @@ export async function createContent(formData: FormData) {
   const coverImage = formData.get('cover_image') as string | null
 
   // Auto-generate title and excerpt from HTML content
-  const title = extractTitle(validatedData.content)
+  const title = validatedData.title || extractTitle(validatedData.content)
   const excerpt = extractExcerpt(validatedData.content)
   const slug = generateSlug(title)
   const readingTime = calculateReadingTime(validatedData.content)
@@ -120,6 +122,7 @@ export async function createContent(formData: FormData) {
       author_id: user.id,
       status: 'approved', // 通过敏感词检测后直接发布
       cover_image: coverImage,
+      category: validatedData.category || null,
     })
     .select()
     .single()
@@ -181,11 +184,25 @@ export async function updateContent(id: string, formData: FormData) {
 
   // Parse and validate form data
   const rawData = {
+    title: (formData.get('title') as string | null)?.trim() || undefined,
     content: formData.get('content') as string,
     price_type: 'free' as const,
+    category: formData.get('category') as string | undefined,
   }
 
   const validatedData = contentSchema.parse(rawData)
+
+  const { data: userData } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  const userRole: CategoryRole = userData?.role === 'admin' ? 'admin' : 'user'
+
+  if (validatedData.category && !(await canRoleAccessContentCategory(userRole, validatedData.category))) {
+    throw new Error('您没有权限发布到该分类')
+  }
 
   // Parse tags from form data
   const tagsJson = formData.get('tags') as string
@@ -195,7 +212,7 @@ export async function updateContent(id: string, formData: FormData) {
   const coverImage = formData.get('cover_image') as string | null
 
   // Auto-generate title and excerpt from HTML content
-  const title = extractTitle(validatedData.content)
+  const title = validatedData.title || extractTitle(validatedData.content)
   const excerpt = extractExcerpt(validatedData.content)
   const readingTime = calculateReadingTime(validatedData.content)
 
@@ -210,6 +227,7 @@ export async function updateContent(id: string, formData: FormData) {
       reading_time: readingTime,
       updated_at: new Date().toISOString(),
       cover_image: coverImage,
+      category: validatedData.category || null,
     })
     .eq('id', id)
     .eq('author_id', user.id) // Ensure user owns the content

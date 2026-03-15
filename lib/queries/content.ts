@@ -21,6 +21,7 @@ export interface FeedItem {
   excerpt: string
   cover_image: string | null
   tags: string[] | null
+  category?: string | null
   price_type: string
   status: string
   reject_reason: string | null
@@ -39,7 +40,16 @@ export interface FeedItem {
     avatar: string | null
     full_name: string | null
   }
+  href?: string
+  source_type?: 'content' | 'repost' | 'community_post'
+  community?: {
+    id: string
+    slug: string
+    name: string
+  } | null
   is_repost: boolean
+  is_pinned?: boolean
+  is_hot?: boolean
   reposted_by?: {
     id: string
     username: string
@@ -64,6 +74,47 @@ type LikeWithContent = {
 }
 type RepostWithContent = {
   contents: FeedContentRow | FeedContentRow[] | null
+}
+type CommunityRelation = {
+  id: string
+  slug: string
+  name: string
+  type?: string
+}
+type CommunityPostRow = {
+  id: string
+  title: string | null
+  content: string
+  likes_count: number
+  comments_count: number
+  is_pinned: boolean
+  created_at: string
+  updated_at: string
+  author_id: string
+  author: FeedUser | FeedUser[] | null
+  community: CommunityRelation | CommunityRelation[] | null
+}
+
+function stripHtml(html: string) {
+  return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+}
+
+function extractCommunityPostTitle(post: CommunityPostRow) {
+  if (post.title?.trim()) {
+    return post.title.trim()
+  }
+
+  const text = stripHtml(post.content)
+  return text.slice(0, 50) + (text.length > 50 ? '...' : '')
+}
+
+function extractCommunityPostExcerpt(post: CommunityPostRow) {
+  const text = stripHtml(post.content)
+  return text.slice(0, 200) + (text.length > 200 ? '...' : '')
+}
+
+function calculateReadingTime(text: string) {
+  return Math.max(1, Math.ceil(stripHtml(text).length / 300))
 }
 
 // 获取包含转发的内容时间线
@@ -104,34 +155,67 @@ export async function getContentsFeed(params: ContentListParams = {}) {
     }
   }
 
-  // 2. 获取转发内容
-  const { data: reposts, error: repostsError } = await supabase
-    .from('reposts')
-    .select(`
-      id,
-      content_id,
-      user_id,
-      created_at,
-      contents (
-        *,
-        users:author_id (
+  const [repostsResult, communityPostsResult] = await Promise.all([
+    supabase
+      .from('reposts')
+      .select(`
+        id,
+        content_id,
+        user_id,
+        created_at,
+        contents (
+          *,
+          users:author_id (
+            id,
+            username,
+            avatar,
+            full_name
+          )
+        ),
+        users (
           id,
           username,
           avatar,
           full_name
         )
-      ),
-      users (
+      `)
+      .eq('contents.status', status),
+    supabase
+      .from('community_posts')
+      .select(`
         id,
-        username,
-        avatar,
-        full_name
-      )
-    `)
-    .eq('contents.status', status)
+        title,
+        content,
+        likes_count,
+        comments_count,
+        is_pinned,
+        created_at,
+        updated_at,
+        author_id,
+        author:users!community_posts_author_id_fkey(
+          id,
+          username,
+          avatar,
+          full_name
+        ),
+        community:communities!community_posts_community_id_fkey(
+          id,
+          slug,
+          name,
+          type
+        )
+      `),
+  ])
+
+  const { data: reposts, error: repostsError } = repostsResult
+  const { data: communityPosts, error: communityPostsError } = communityPostsResult
 
   if (repostsError) {
     console.error('Failed to fetch reposts:', repostsError)
+  }
+
+  if (communityPostsError) {
+    logger.error('Failed to fetch community posts for feed:', communityPostsError)
   }
 
   // 3. 合并数据
@@ -172,6 +256,51 @@ export async function getContentsFeed(params: ContentListParams = {}) {
           reposted_at: repost.created_at,
         })
       }
+    })
+  }
+
+  if (communityPosts) {
+    communityPosts.forEach((post: CommunityPostRow) => {
+      const author = normalizeSingleRelation(post.author)
+      const community = normalizeSingleRelation(post.community)
+
+      if (!author || !community || community.type !== 'public') {
+        return
+      }
+
+      feedItems.push({
+        id: post.id,
+        content_id: post.id,
+        title: extractCommunityPostTitle(post),
+        slug: `${community.slug}-${post.id}`,
+        content: post.content,
+        excerpt: extractCommunityPostExcerpt(post),
+        cover_image: null,
+        tags: ['社区帖子'],
+        category: null,
+        price_type: 'free',
+        status: 'approved',
+        reject_reason: null,
+        views: 0,
+        view_count: 0,
+        likes_count: post.likes_count,
+        comments_count: post.comments_count,
+        reposts_count: 0,
+        reading_time: calculateReadingTime(post.content),
+        created_at: post.created_at,
+        updated_at: post.updated_at,
+        author_id: post.author_id,
+        users: author,
+        href: `/communities/${community.slug}/posts/${post.id}`,
+        source_type: 'community_post',
+        community: {
+          id: community.id,
+          slug: community.slug,
+          name: community.name,
+        },
+        is_repost: false,
+        is_pinned: post.is_pinned,
+      })
     })
   }
 

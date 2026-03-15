@@ -188,6 +188,9 @@ export default function LoginPage() {
                   <Github className="mr-2 h-4 w-4 group-hover:rotate-12 transition-transform" />
                   {loading ? '跳转中...' : '使用 GitHub 登录'}
                 </Button>
+                <p className="text-center text-[11px] text-muted-foreground">
+                  当前 OAuth 仅支持 GitHub，其他第三方登录暂未开放。
+                </p>
               </TabsContent>
             </Tabs>
 

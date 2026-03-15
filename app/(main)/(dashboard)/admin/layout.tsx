@@ -1,12 +1,13 @@
 import { requireAdmin } from '@/lib/middleware/admin'
 import Link from 'next/link'
-import { FileText, Users, Shield, LayoutDashboard, BarChart3 } from 'lucide-react'
+import { FileText, Users, Shield, LayoutDashboard, BarChart3, Tags } from 'lucide-react'
 
 const navItems = [
   { href: '/admin', label: '概览', icon: LayoutDashboard, exact: true },
   { href: '/admin/analytics', label: '数据看板', icon: BarChart3 },
   { href: '/admin/moderation', label: '内容审核', icon: FileText },
   { href: '/admin/contents', label: '内容管理', icon: Shield },
+  { href: '/admin/categories', label: '分类管理', icon: Tags },
   { href: '/admin/users', label: '用户管理', icon: Users },
 ]
 

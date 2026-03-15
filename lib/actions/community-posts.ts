@@ -93,6 +93,8 @@ export async function createCommunityPost(communityId: string, formData: FormDat
     if (post.community) {
       const _slug = getSlug(post.community); if (_slug) revalidatePath(`/communities/${_slug}`)
     }
+    revalidatePath('/')
+    revalidatePath('/contents')
     return { success: true, data: post }
   } catch (error) {
     logger.error('创建帖子错误:', error)

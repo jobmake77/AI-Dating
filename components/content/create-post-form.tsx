@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { createContent } from '@/lib/actions/content'
-import { getCategoryColor, getCategoriesByRole, type CategoryRole } from '@/lib/utils/categories'
+import { getCategoryColor } from '@/lib/utils/categories'
 import { uploadImage } from '@/lib/actions/upload'
 import { getVideoUploadUrl } from '@/lib/actions/upload-video'
 import { useEditor, EditorContent } from '@tiptap/react'
@@ -18,15 +18,16 @@ import StarterKit from '@tiptap/starter-kit'
 import TiptapImage from '@tiptap/extension-image'
 import Placeholder from '@tiptap/extension-placeholder'
 import { toast } from 'sonner'
+import type { ContentCategory } from '@/lib/types/content-category'
 
 interface CreatePostFormProps {
-  userRole: CategoryRole
+  categories: ContentCategory[]
 }
 
-export function CreatePostForm({ userRole }: CreatePostFormProps) {
+export function CreatePostForm({ categories }: CreatePostFormProps) {
   const router = useRouter()
   const [title, setTitle] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState(categories[0]?.slug || '')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [coverImage, setCoverImage] = useState<string | null>(null)
@@ -34,9 +35,6 @@ export function CreatePostForm({ userRole }: CreatePostFormProps) {
   const [isUploadingVideo, setIsUploadingVideo] = useState(false)
   const imageInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
-
-  // Get categories based on user role
-  const availableCategories = getCategoriesByRole(userRole)
 
   const editor = useEditor({
     extensions: [
@@ -71,8 +69,15 @@ export function CreatePostForm({ userRole }: CreatePostFormProps) {
     try {
       const htmlContent = editor.getHTML()
       const formData = new FormData()
+      formData.append('title', title.trim())
       formData.append('content', htmlContent)
       formData.append('price_type', 'free')
+      if (selectedCategory) {
+        formData.append('category', selectedCategory)
+      }
+      if (coverImage) {
+        formData.append('cover_image', coverImage)
+      }
 
       await createContent(formData)
     } catch (err) {
@@ -313,7 +318,7 @@ export function CreatePostForm({ userRole }: CreatePostFormProps) {
               <div className="rounded-lg border border-border bg-card p-4 shadow-card">
                 <label className="text-sm font-medium text-foreground mb-3 block">选择分类</label>
                 <div className="flex flex-wrap gap-2">
-                  {availableCategories.map((cat) => {
+                  {categories.map((cat) => {
                     const hsl = getCategoryColor(cat.slug)
                     const isSelected = selectedCategory === cat.slug
                     return (
@@ -347,7 +352,7 @@ export function CreatePostForm({ userRole }: CreatePostFormProps) {
                   size="lg"
                   className="w-full gap-2 gradient-primary text-white hover:opacity-90 shadow-primary"
                   onClick={handleSubmit}
-                  disabled={!title.trim() || !editor?.getText().trim() || isSubmitting}
+                  disabled={!title.trim() || !editor?.getText().trim() || !selectedCategory || isSubmitting}
                 >
                   <Send className="h-4 w-4" />
                   {isSubmitting ? '发布中...' : '发布帖子'}

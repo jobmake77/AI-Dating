@@ -23,6 +23,12 @@ interface ContentCardProps {
       avatar: string | null
       full_name: string | null
     }
+    href?: string
+    source_type?: 'content' | 'repost' | 'community_post'
+    community?: {
+      slug: string
+      name: string
+    } | null
     is_repost?: boolean
     reposted_by?: {
       username: string
@@ -37,6 +43,8 @@ export function ContentCard({ content }: ContentCardProps) {
   const displayTime = content.is_repost && content.reposted_at
     ? content.reposted_at
     : content.created_at
+  const contentHref = content.href || `/post/${content.id}`
+  const isCommunityPost = content.source_type === 'community_post' && content.community
 
   return (
     <article className="border-b border-border/50 hover:bg-muted/30 transition-colors cursor-pointer">
@@ -84,22 +92,33 @@ export function ContentCard({ content }: ContentCardProps) {
               </Link>
               <span className="text-muted-foreground text-sm">·</span>
               <Link
-                href={`/post/${content.id}`}
+                href={contentHref}
                 className="text-muted-foreground text-sm hover:underline"
               >
                 {formatDistanceToNow(new Date(displayTime), { addSuffix: true, locale: zhCN })}
               </Link>
+              {content.community && (
+                <>
+                  <span className="text-muted-foreground text-sm">·</span>
+                  <Link
+                    href={`/communities/${content.community.slug}`}
+                    className="rounded-full bg-info/10 px-2 py-0.5 text-xs font-medium text-info hover:bg-info/15"
+                  >
+                    社区 · {content.community.name}
+                  </Link>
+                </>
+              )}
             </div>
 
             {/* 标题 */}
-            <Link href={`/post/${content.id}`} className="block mb-2">
+            <Link href={contentHref} className="block mb-2">
               <h3 className="font-bold text-base leading-snug hover:underline line-clamp-2">
                 {content.title}
               </h3>
             </Link>
 
             {/* 摘要 */}
-            <Link href={`/post/${content.id}`} className="block mb-3">
+            <Link href={contentHref} className="block mb-3">
               <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
                 {content.excerpt}
               </p>
@@ -113,33 +132,49 @@ export function ContentCard({ content }: ContentCardProps) {
             )}
 
             {/* 互动统计 */}
-            <div className="flex items-center justify-between max-w-md">
-              <button className="flex items-center gap-2 text-muted-foreground hover:text-blue-500 transition-colors group">
-                <div className="p-2 rounded-full group-hover:bg-blue-500/10 transition-colors">
+            {isCommunityPost ? (
+              <div className="flex items-center justify-between max-w-md text-muted-foreground">
+                <div className="flex items-center gap-2">
                   <MessageCircle className="h-4 w-4" />
+                  <span className="text-sm font-medium">{content.comments_count} 条回复</span>
                 </div>
-                <span className="text-sm font-medium">{content.comments_count}</span>
-              </button>
-
-              <button className="flex items-center gap-2 text-muted-foreground hover:text-green-500 transition-colors group">
-                <div className="p-2 rounded-full group-hover:bg-green-500/10 transition-colors">
-                  <Repeat2 className="h-4 w-4" />
-                </div>
-                <span className="text-sm font-medium">{content.reposts_count}</span>
-              </button>
-
-              <button className="flex items-center gap-2 text-muted-foreground hover:text-red-500 transition-colors group">
-                <div className="p-2 rounded-full group-hover:bg-red-500/10 transition-colors">
+                <div className="flex items-center gap-2">
                   <Heart className="h-4 w-4" />
+                  <span className="text-sm font-medium">{content.likes_count} 个赞</span>
                 </div>
-                <span className="text-sm font-medium">{content.likes_count}</span>
-              </button>
-
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Clock className="h-4 w-4" />
-                <span className="text-sm">{content.reading_time}分钟</span>
+                <Link href={contentHref} className="text-sm font-medium text-primary hover:underline">
+                  查看社区帖子
+                </Link>
               </div>
-            </div>
+            ) : (
+              <div className="flex items-center justify-between max-w-md">
+                <button className="flex items-center gap-2 text-muted-foreground hover:text-blue-500 transition-colors group">
+                  <div className="p-2 rounded-full group-hover:bg-blue-500/10 transition-colors">
+                    <MessageCircle className="h-4 w-4" />
+                  </div>
+                  <span className="text-sm font-medium">{content.comments_count}</span>
+                </button>
+
+                <button className="flex items-center gap-2 text-muted-foreground hover:text-green-500 transition-colors group">
+                  <div className="p-2 rounded-full group-hover:bg-green-500/10 transition-colors">
+                    <Repeat2 className="h-4 w-4" />
+                  </div>
+                  <span className="text-sm font-medium">{content.reposts_count}</span>
+                </button>
+
+                <button className="flex items-center gap-2 text-muted-foreground hover:text-red-500 transition-colors group">
+                  <div className="p-2 rounded-full group-hover:bg-red-500/10 transition-colors">
+                    <Heart className="h-4 w-4" />
+                  </div>
+                  <span className="text-sm font-medium">{content.likes_count}</span>
+                </button>
+
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Clock className="h-4 w-4" />
+                  <span className="text-sm">{content.reading_time}分钟</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -11,7 +11,8 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { updateContent } from '@/lib/actions/content'
-import { categories, getCategoryColor } from '@/lib/utils/categories'
+import { getCategoryColor } from '@/lib/utils/categories'
+import type { ContentCategory } from '@/lib/types/content-category'
 
 const allTags = [
   { name: 'AI/ML', color: 'hsl(262 83% 58%)' },
@@ -34,9 +35,11 @@ interface EditPostFormProps {
     title: string
     content: string
     tags: string[] | null
+    category?: string | null
     price_type: string
     cover_image?: string | null
   }
+  categories: ContentCategory[]
 }
 
 function extractPlainContent(html: string): string {
@@ -51,12 +54,12 @@ function extractTitle(html: string): string {
   return match ? match[1].replace(/<[^>]*>/g, '') : ''
 }
 
-export function EditPostForm({ content: initialContent }: EditPostFormProps) {
+export function EditPostForm({ content: initialContent, categories }: EditPostFormProps) {
   const router = useRouter()
   const [title, setTitle] = useState(extractTitle(initialContent.content) || initialContent.title)
   const [content, setContent] = useState(extractPlainContent(initialContent.content))
   const [selectedTags, setSelectedTags] = useState<string[]>(initialContent.tags || [])
-  const [selectedCategory, setSelectedCategory] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState(initialContent.category || categories[0]?.slug || '')
   const [showTagPicker, setShowTagPicker] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -74,8 +77,15 @@ export function EditPostForm({ content: initialContent }: EditPostFormProps) {
     try {
       const htmlContent = `<h1>${title}</h1>${content.replace(/\n/g, '<br>')}`
       const formData = new FormData()
+      formData.append('title', title.trim())
       formData.append('content', htmlContent)
       formData.append('price_type', 'free')
+      if (selectedCategory) {
+        formData.append('category', selectedCategory)
+      }
+      if (coverImage) {
+        formData.append('cover_image', coverImage)
+      }
 
       if (selectedTags.length > 0) {
         formData.append('tags', JSON.stringify(selectedTags))
@@ -300,7 +310,7 @@ export function EditPostForm({ content: initialContent }: EditPostFormProps) {
                   size="lg"
                   className="w-full gap-2 gradient-primary text-white hover:opacity-90 shadow-primary"
                   onClick={handleSubmit}
-                  disabled={!title.trim() || !content.trim() || isSubmitting}
+                  disabled={!title.trim() || !content.trim() || !selectedCategory || isSubmitting}
                 >
                   <Send className="h-4 w-4" />
                   {isSubmitting ? '更新中...' : '更新帖子'}

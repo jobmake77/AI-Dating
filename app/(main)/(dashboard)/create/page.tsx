@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { CreatePostForm } from '@/components/content/create-post-form'
+import { getContentCategories } from '@/lib/queries/content-categories'
 
 export default async function CreatePage() {
   const supabase = await createClient()
@@ -18,6 +19,7 @@ export default async function CreatePage() {
     .single()
 
   const userRole = userData?.role === 'admin' ? 'admin' : 'user'
+  const categories = await getContentCategories({ role: userRole })
 
-  return <CreatePostForm userRole={userRole} />
+  return <CreatePostForm categories={categories} />
 }
