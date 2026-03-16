@@ -102,6 +102,9 @@ type CommunityPostRow = {
   community: CommunityRelation | CommunityRelation[] | null
 }
 
+const FEED_CANDIDATE_MULTIPLIER = 4
+const FEED_MAX_CANDIDATES = 120
+
 function stripHtml(html: string) {
   return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
 }
@@ -137,17 +140,16 @@ async function getCategoryMetaMap() {
   )
 }
 
-// 获取包含转发的内容时间线
-export async function getContentsFeed(params: ContentListParams = {}) {
-  const supabase = await createClient()
-  const { page = 1, limit = 12, tag, status = 'approved', sortBy = 'hot' } = params
-  const categoryMetaMap = await getCategoryMetaMap()
+function getFeedCandidateWindow(page: number, limit: number) {
+  return Math.min(Math.max(page * limit * FEED_CANDIDATE_MULTIPLIER, limit * 2), FEED_MAX_CANDIDATES)
+}
 
-  // Get current user for following filter
-  const { data: { user } } = await supabase.auth.getUser()
+function buildFeedScore(item: Pick<FeedItem, 'likes_count' | 'comments_count' | 'view_count'>) {
+  return (item.likes_count || 0) * 3 + (item.comments_count || 0) * 2 + (item.view_count || 0) * 0.1
+}
 
-  // 1. 获取原创内容
-  let originalQuery = supabase
+function buildContentsBaseQuery(supabase: Awaited<ReturnType<typeof createClient>>, status: ContentListParams['status']) {
+  return supabase
     .from('contents')
     .select(`
       *,
@@ -157,82 +159,167 @@ export async function getContentsFeed(params: ContentListParams = {}) {
         avatar,
         full_name
       )
-    `)
-    .eq('status', status)
-    .is('deleted_at', null)  // Exclude soft-deleted records
+    `, { count: 'exact' })
+    .eq('status', status || 'approved')
+    .is('deleted_at', null)
+}
+
+function buildRepostsBaseQuery(supabase: Awaited<ReturnType<typeof createClient>>, status: ContentListParams['status']) {
+  return supabase
+    .from('reposts')
+    .select(`
+      id,
+      content_id,
+      user_id,
+      created_at,
+      contents (
+        *,
+        users:author_id (
+          id,
+          username,
+          avatar,
+          full_name
+        )
+      ),
+      users (
+        id,
+        username,
+        avatar,
+        full_name
+      )
+    `, { count: 'exact' })
+    .eq('contents.status', status || 'approved')
+}
+
+function buildCommunityPostsBaseQuery(supabase: Awaited<ReturnType<typeof createClient>>) {
+  return supabase
+    .from('community_posts')
+    .select(`
+      id,
+      title,
+      content,
+      likes_count,
+      comments_count,
+      is_pinned,
+      created_at,
+      updated_at,
+      author_id,
+      author:users!community_posts_author_id_fkey(
+        id,
+        username,
+        avatar,
+        full_name
+      ),
+      community:communities!community_posts_community_id_fkey(
+        id,
+        slug,
+        name,
+        type
+      )
+    `, { count: 'exact' })
+    .eq('community.type', 'public')
+}
+
+async function getFollowingIds(supabase: Awaited<ReturnType<typeof createClient>>, userId?: string) {
+  if (!userId) {
+    return []
+  }
+
+  const { data } = await supabase
+    .from('follows')
+    .select('following_id')
+    .eq('follower_id', userId)
+
+  return data?.map((item) => item.following_id) || []
+}
+
+// 获取包含转发的内容时间线
+export async function getContentsFeed(params: ContentListParams = {}) {
+  const supabase = await createClient()
+  const { page = 1, limit = 12, tag, status = 'approved', sortBy = 'hot' } = params
+  const categoryMetaMap = await getCategoryMetaMap()
+  const candidateWindow = getFeedCandidateWindow(page, limit)
+
+  // Get current user for following filter
+  const { data: { user } } = await supabase.auth.getUser()
+  const followingIds = sortBy === 'following' ? await getFollowingIds(supabase, user?.id) : []
+
+  if (sortBy === 'following' && followingIds.length === 0) {
+    return {
+      contents: [],
+      total: 0,
+      page,
+      limit,
+      totalPages: 0,
+    }
+  }
+
+  // 1. 获取原创内容候选集
+  let originalQuery = buildContentsBaseQuery(supabase, status)
 
   if (tag) {
     originalQuery = originalQuery.contains('tags', [tag])
   }
 
-  const { data: originalContents, error: originalError } = await originalQuery
+  if (sortBy === 'following') {
+    originalQuery = originalQuery.in('author_id', followingIds)
+  }
+
+  if (sortBy === 'latest' || sortBy === 'following') {
+    originalQuery = originalQuery.order('created_at', { ascending: false })
+  } else {
+    originalQuery = originalQuery
+      .order('likes_count', { ascending: false })
+      .order('comments_count', { ascending: false })
+      .order('views', { ascending: false })
+      .order('created_at', { ascending: false })
+  }
+
+  originalQuery = originalQuery.range(0, candidateWindow - 1)
+
+  let repostsQuery = buildRepostsBaseQuery(supabase, status)
+  if (sortBy === 'following') {
+    repostsQuery = repostsQuery.in('user_id', followingIds)
+  }
+  repostsQuery = repostsQuery.order('created_at', { ascending: false }).range(0, candidateWindow - 1)
+
+  let communityPostsQuery = buildCommunityPostsBaseQuery(supabase)
+  if (sortBy === 'following') {
+    communityPostsQuery = communityPostsQuery.in('author_id', followingIds)
+  }
+  if (sortBy === 'latest' || sortBy === 'following') {
+    communityPostsQuery = communityPostsQuery.order('created_at', { ascending: false })
+  } else {
+    communityPostsQuery = communityPostsQuery
+      .order('likes_count', { ascending: false })
+      .order('comments_count', { ascending: false })
+      .order('created_at', { ascending: false })
+  }
+  communityPostsQuery = communityPostsQuery.range(0, candidateWindow - 1)
+
+  const [
+    { data: originalContents, error: originalError, count: originalCount },
+    { data: reposts, error: repostsError, count: repostsCount },
+    { data: communityPosts, error: communityPostsError, count: communityPostsCount },
+  ] = await Promise.all([
+    originalQuery,
+    repostsQuery,
+    communityPostsQuery,
+  ])
 
   if (originalError) {
     logger.error('Failed to fetch original contents:', originalError)
-    // 返回空数据而不是抛出错误
     return {
       contents: [],
+      total: 0,
+      page,
+      limit,
       totalPages: 0,
     }
   }
 
-  const [repostsResult, communityPostsResult] = await Promise.all([
-    supabase
-      .from('reposts')
-      .select(`
-        id,
-        content_id,
-        user_id,
-        created_at,
-        contents (
-          *,
-          users:author_id (
-            id,
-            username,
-            avatar,
-            full_name
-          )
-        ),
-        users (
-          id,
-          username,
-          avatar,
-          full_name
-        )
-      `)
-      .eq('contents.status', status),
-    supabase
-      .from('community_posts')
-      .select(`
-        id,
-        title,
-        content,
-        likes_count,
-        comments_count,
-        is_pinned,
-        created_at,
-        updated_at,
-        author_id,
-        author:users!community_posts_author_id_fkey(
-          id,
-          username,
-          avatar,
-          full_name
-        ),
-        community:communities!community_posts_community_id_fkey(
-          id,
-          slug,
-          name,
-          type
-        )
-      `),
-  ])
-
-  const { data: reposts, error: repostsError } = repostsResult
-  const { data: communityPosts, error: communityPostsError } = communityPostsResult
-
   if (repostsError) {
-    console.error('Failed to fetch reposts:', repostsError)
+    logger.error('Failed to fetch reposts:', repostsError)
   }
 
   if (communityPostsError) {
@@ -334,13 +421,6 @@ export async function getContentsFeed(params: ContentListParams = {}) {
   // 4. Filter by following if needed
   let filteredItems = feedItems
   if (sortBy === 'following' && user) {
-    // Get user's following list
-    const { data: following } = await supabase
-      .from('follows')
-      .select('following_id')
-      .eq('follower_id', user.id)
-
-    const followingIds = following?.map(f => f.following_id) || []
     filteredItems = feedItems.filter(item =>
       followingIds.includes(item.author_id) ||
       (item.is_repost && item.reposted_by && followingIds.includes(item.reposted_by.id))
@@ -356,8 +436,8 @@ export async function getContentsFeed(params: ContentListParams = {}) {
       return timeB - timeA
     } else {
       // Sort by hot (likes + comments + views)
-      const scoreA = (a.likes_count || 0) * 3 + (a.comments_count || 0) * 2 + (a.view_count || 0) * 0.1
-      const scoreB = (b.likes_count || 0) * 3 + (b.comments_count || 0) * 2 + (b.view_count || 0) * 0.1
+      const scoreA = buildFeedScore(a)
+      const scoreB = buildFeedScore(b)
       return scoreB - scoreA
     }
   })
@@ -369,10 +449,10 @@ export async function getContentsFeed(params: ContentListParams = {}) {
 
   return {
     contents: paginatedItems,
-    total: filteredItems.length,
+    total: (originalCount || 0) + (repostsCount || 0) + (communityPostsCount || 0),
     page,
     limit,
-    totalPages: Math.ceil(filteredItems.length / limit),
+    totalPages: Math.ceil(((originalCount || 0) + (repostsCount || 0) + (communityPostsCount || 0)) / limit),
   }
 }
 
