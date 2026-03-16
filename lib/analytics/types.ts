@@ -13,7 +13,6 @@ export type UserEvent =
   | 'user_logged_out'
   | 'user_completed_profile'
   | 'user_updated_profile'
-  | 'user_upgraded_to_creator'
   | 'user_followed'
   | 'user_unfollowed'
 
@@ -139,7 +138,6 @@ export const EVENT_CATEGORY_MAP: Record<AnalyticsEvent, EventCategory> = {
   user_logged_out: 'user',
   user_completed_profile: 'user',
   user_updated_profile: 'user',
-  user_upgraded_to_creator: 'user',
   user_followed: 'user',
   user_unfollowed: 'user',
 

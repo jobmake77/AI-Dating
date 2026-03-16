@@ -30,13 +30,18 @@ export function UserManagementList({ users }: UserManagementListProps) {
   const router = useRouter()
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null)
 
-  const handleUpdateRole = async (userId: string, role: 'user' | 'creator' | 'admin') => {
+  const roleLabels: Record<'user' | 'admin', string> = {
+    user: '用户',
+    admin: '管理员',
+  }
+
+  const handleUpdateRole = async (userId: string, role: 'user' | 'admin') => {
     try {
       setUpdatingUserId(userId)
       await updateUserRole(userId, role)
       toast({
         title: '更新成功',
-        description: `角色已更新为 ${role}`,
+        description: `角色已更新为 ${roleLabels[role]}`,
       })
       router.refresh()
     } catch (error) {
@@ -54,8 +59,6 @@ export function UserManagementList({ users }: UserManagementListProps) {
     switch (role) {
       case 'admin':
         return <Badge variant="destructive" className="text-xs"><Shield className="w-3 h-3 mr-1" />管理员</Badge>
-      case 'creator':
-        return <Badge variant="secondary" className="text-xs">创作者</Badge>
       default:
         return <Badge variant="outline" className="text-xs">用户</Badge>
     }
@@ -109,7 +112,7 @@ export function UserManagementList({ users }: UserManagementListProps) {
             <div className="flex-shrink-0">
               <Select
                 value={user.role}
-                onValueChange={(value) => handleUpdateRole(user.id, value as 'user' | 'creator' | 'admin')}
+                onValueChange={(value) => handleUpdateRole(user.id, value as 'user' | 'admin')}
                 disabled={updatingUserId === user.id}
               >
                 <SelectTrigger className="w-[120px] h-8 text-xs">
@@ -117,7 +120,6 @@ export function UserManagementList({ users }: UserManagementListProps) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="user">用户</SelectItem>
-                  <SelectItem value="creator">创作者</SelectItem>
                   <SelectItem value="admin">管理员</SelectItem>
                 </SelectContent>
               </Select>

@@ -2,7 +2,6 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { trackEvent } from '@/lib/analytics/events'
 
 // 检查是否为管理员
 export async function checkIsAdmin(): Promise<boolean> {
@@ -43,7 +42,7 @@ export async function getAllUsers() {
 // 更新用户角色
 export async function updateUserRole(
   userId: string,
-  role: 'user' | 'creator' | 'admin'
+  role: 'user' | 'admin'
 ) {
   const supabase = await createClient()
 
@@ -62,13 +61,6 @@ export async function updateUserRole(
 
   if (error) {
     throw new Error(`Failed to update role: ${error.message}`)
-  }
-
-  // 追踪角色升级事件
-  if (role === 'creator') {
-    await trackEvent('user_upgraded_to_creator', {
-      user_id: userId,
-    })
   }
 
   revalidatePath('/admin/users')

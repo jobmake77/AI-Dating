@@ -6,7 +6,6 @@ import { ProgressCard } from "@/components/onboarding/progress-card";
 import { ProgressCheckpoint } from "@/components/onboarding/progress-checkpoint";
 import { getOnboardingProgress } from "@/lib/actions/onboarding";
 import { createClient } from "@/lib/supabase/server";
-import { WelcomeBanner } from "@/components/home/welcome-banner";
 import { CategoriesSidebar } from "@/components/home/categories-sidebar";
 import { CommunitySidebar } from "@/components/home/community-sidebar";
 import { getHomepageData } from "@/lib/queries/home";
@@ -65,38 +64,16 @@ export default async function Home({ searchParams }: HomeProps) {
 
   // 获取引导进度
   const onboardingProgress = user ? await getOnboardingProgress() : null
-  const featuredContent = contents[0]
 
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,hsl(var(--background)),hsl(220_33%_97%))]">
-      {/* Welcome Banner */}
-      <WelcomeBanner
-        stats={{
-          developers: homepageData.stats.totalUsers,
-          contents: homepageData.stats.totalContents,
-          communities: homepageData.stats.totalCommunities,
-        }}
-        activeTab={sortBy}
-        featuredPost={featuredContent ? {
-          id: featuredContent.content_id || featuredContent.id,
-          href: featuredContent.href,
-          title: featuredContent.title,
-          excerpt: featuredContent.excerpt,
-          author: featuredContent.users?.full_name || featuredContent.users?.username || "匿名作者",
-          tag: featuredContent.community?.name || featuredContent.tags?.[0],
-        } : null}
-      />
-
       <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex gap-4 lg:gap-6">
-          {/* Left Sidebar - Categories */}
           <CategoriesSidebar
             isAuthenticated={isAuthenticated}
             communities={homepageData.userCommunities}
-            trendingCommunities={homepageData.trendingCommunities.slice(0, 3)}
           />
 
-          {/* Main Content */}
           <main className="min-w-0 flex-1 space-y-4">
             <div className="flex justify-start">
               <FeedTabs showFollowing={isAuthenticated} />
@@ -121,7 +98,6 @@ export default async function Home({ searchParams }: HomeProps) {
             </div>
           </main>
 
-          {/* Right Sidebar - Community Info */}
           <CommunitySidebar
             communityInfo={{
               name: "AI-Dating",

@@ -1,14 +1,14 @@
 import { getAllUsers } from '@/lib/actions/admin'
 import { UserManagementList } from '@/components/admin/user-management-list'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Users, PenSquare, UserCheck } from 'lucide-react'
+import { Users, ShieldCheck, UserCheck } from 'lucide-react'
 
 export default async function UsersManagementPage() {
   const users = await getAllUsers()
 
   // 统计数据
   const totalUsers = users.length
-  const creatorCount = users.filter(u => u.role === 'creator').length
+  const regularUserCount = users.filter(u => u.role !== 'admin').length
   const adminCount = users.filter(u => u.role === 'admin').length
 
   return (
@@ -35,12 +35,12 @@ export default async function UsersManagementPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">创作者</CardTitle>
-            <PenSquare className="h-4 w-4 text-primary" />
+            <CardTitle className="text-sm font-medium">普通用户</CardTitle>
+            <ShieldCheck className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{creatorCount}</div>
-            <p className="text-xs text-muted-foreground">具备创作权限的用户</p>
+            <div className="text-2xl font-bold">{regularUserCount}</div>
+            <p className="text-xs text-muted-foreground">非管理员账号</p>
           </CardContent>
         </Card>
 
