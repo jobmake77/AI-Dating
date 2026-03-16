@@ -302,13 +302,15 @@ async function CommunityRulesSidebar({ communityId }: { communityId: string }) {
 
   const members = (managementTeam || []) as MemberWithUser[]
 
-  // In a real implementation, fetch rules from database
-  const rules = [
-    '保持友善，尊重他人',
-    '内容需与社区主题相关',
-    '禁止广告和垃圾信息',
-    '遵守社区发帖规范'
-  ]
+  const { data: rulesData } = await supabase
+    .from('community_rules')
+    .select('id, rule_text')
+    .eq('community_id', communityId)
+    .eq('is_active', true)
+    .order('sort_order', { ascending: true })
+    .order('created_at', { ascending: true })
+
+  const rules = (rulesData || []).map((rule) => rule.rule_text)
 
   return (
     <aside className="hidden lg:block w-64 shrink-0">
@@ -359,14 +361,18 @@ async function CommunityRulesSidebar({ communityId }: { communityId: string }) {
             <Shield className="h-3.5 w-3.5 text-yellow-500" />
             社区规则
           </h3>
-          <ol className="space-y-2">
-            {rules.map((rule, i) => (
-              <li key={i} className="flex gap-2.5 text-xs text-muted-foreground">
-                <span className="font-mono text-primary font-bold shrink-0">{i + 1}.</span>
-                {rule}
-              </li>
-            ))}
-          </ol>
+          {rules.length === 0 ? (
+            <p className="text-xs text-muted-foreground">当前社区暂未配置规则。</p>
+          ) : (
+            <ol className="space-y-2">
+              {rules.map((rule, i) => (
+                <li key={rule} className="flex gap-2.5 text-xs text-muted-foreground">
+                  <span className="font-mono text-primary font-bold shrink-0">{i + 1}.</span>
+                  {rule}
+                </li>
+              ))}
+            </ol>
+          )}
         </div>
       </div>
     </aside>

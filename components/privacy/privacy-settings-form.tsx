@@ -8,11 +8,27 @@ import { Separator } from "@/components/ui/separator"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Download, Trash2, Shield, Eye, EyeOff } from "lucide-react"
 import { toast } from "sonner"
-import { exportUserData, requestAccountDeletion, getUserPrivacySettings, updateUserPrivacySettings } from "@/lib/actions/privacy"
+import {
+  exportUserData,
+  requestAccountDeletion,
+  getUserPrivacySettings,
+  getUserPrivacyRequestSummary,
+  updateUserPrivacySettings,
+} from "@/lib/actions/privacy"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import Link from "next/link"
 
 interface PrivacySettingsFormProps {
   userId: string
+}
+
+async function loadPrivacyPageData(userId: string) {
+  const [settingsResult, summaryResult] = await Promise.all([
+    getUserPrivacySettings(userId),
+    getUserPrivacyRequestSummary(userId),
+  ])
+
+  return { settingsResult, summaryResult }
 }
 
 export function PrivacySettingsForm({ userId }: PrivacySettingsFormProps) {
@@ -26,36 +42,86 @@ export function PrivacySettingsForm({ userId }: PrivacySettingsFormProps) {
     allow_messages: true,
     allow_notifications: true,
   })
+  const [requestSummary, setRequestSummary] = useState<{
+    latestExportRequest: {
+      status: string
+      requested_at: string
+      completed_at: string | null
+      download_url: string | null
+      expires_at: string | null
+    } | null
+    latestDeletionRequest: {
+      status: string
+      requested_at: string
+      completed_at: string | null
+    } | null
+  }>({
+    latestExportRequest: null,
+    latestDeletionRequest: null,
+  })
+
+  const refreshPrivacyData = async () => {
+    const { settingsResult, summaryResult } = await loadPrivacyPageData(userId)
+
+    if (settingsResult.success && settingsResult.data) {
+      setSettings(settingsResult.data)
+    }
+
+    if (summaryResult.success && summaryResult.data) {
+      setRequestSummary(summaryResult.data)
+    }
+  }
 
   useEffect(() => {
-    async function loadSettings() {
-      const result = await getUserPrivacySettings(userId)
-      if (result.success && result.data) {
-        setSettings(result.data)
+    let isMounted = true
+
+    const syncPrivacyData = async () => {
+      const { settingsResult, summaryResult } = await loadPrivacyPageData(userId)
+
+      if (!isMounted) {
+        return
+      }
+
+      if (settingsResult.success && settingsResult.data) {
+        setSettings(settingsResult.data)
+      }
+
+      if (summaryResult.success && summaryResult.data) {
+        setRequestSummary(summaryResult.data)
       }
     }
 
-    void loadSettings()
+    void syncPrivacyData()
+
+    return () => {
+      isMounted = false
+    }
   }, [userId])
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "pending":
+        return "待处理"
+      case "processing":
+        return "处理中"
+      case "completed":
+        return "已完成"
+      case "failed":
+        return "失败"
+      case "cancelled":
+        return "已取消"
+      default:
+        return status
+    }
+  }
 
   const handleExportData = async () => {
     setExporting(true)
     try {
       const result = await exportUserData(userId)
-      if (result.success && result.data) {
-        // Create download link
-        const dataStr = JSON.stringify(result.data, null, 2)
-        const dataBlob = new Blob([dataStr], { type: "application/json" })
-        const url = URL.createObjectURL(dataBlob)
-        const link = document.createElement("a")
-        link.href = url
-        link.download = `ai-dating-data-export-${new Date().toISOString().split("T")[0]}.json`
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        URL.revokeObjectURL(url)
-
-        toast.success("数据导出成功")
+      if (result.success) {
+        toast.success("导出请求已提交，后台处理完成后可在此下载")
+        await refreshPrivacyData()
       } else {
         toast.error(result.error || "导出失败")
       }
@@ -71,9 +137,8 @@ export function PrivacySettingsForm({ userId }: PrivacySettingsFormProps) {
     try {
       const result = await requestAccountDeletion(userId)
       if (result.success) {
-        toast.success("账户删除请求已提交")
-        // Redirect to logout
-        window.location.href = "/logout"
+        toast.success("账户注销请求已提交，后台审核通过后才会执行匿名化")
+        await refreshPrivacyData()
       } else {
         toast.error(result.error || "删除失败")
       }
@@ -254,15 +319,37 @@ export function PrivacySettingsForm({ userId }: PrivacySettingsFormProps) {
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
             根据 GDPR 规定，您有权获取我们存储的关于您的所有数据。
-            导出的数据将以 JSON 格式提供，包括您的个人资料、内容、评论、点赞等。
+            导出的数据会在后台完成后以 JSON 格式提供，包括您的个人资料、内容、评论、点赞等。
           </p>
+          {requestSummary.latestExportRequest && (
+            <div className="mb-4 rounded-lg border border-border bg-muted/30 p-3 text-sm">
+              <p className="font-medium text-foreground">
+                最近一次请求：{getStatusLabel(requestSummary.latestExportRequest.status)}
+              </p>
+              <p className="mt-1 text-muted-foreground">
+                提交时间：{new Date(requestSummary.latestExportRequest.requested_at).toLocaleString("zh-CN")}
+              </p>
+              {requestSummary.latestExportRequest.completed_at && (
+                <p className="mt-1 text-muted-foreground">
+                  完成时间：{new Date(requestSummary.latestExportRequest.completed_at).toLocaleString("zh-CN")}
+                </p>
+              )}
+              {requestSummary.latestExportRequest.download_url && requestSummary.latestExportRequest.status === "completed" && (
+                <Button asChild variant="secondary" size="sm" className="mt-3">
+                  <Link href={requestSummary.latestExportRequest.download_url}>
+                    下载已准备好的数据
+                  </Link>
+                </Button>
+              )}
+            </div>
+          )}
           <Button
             variant="outline"
             onClick={handleExportData}
             disabled={exporting}
           >
             <Download className="h-4 w-4 mr-2" />
-            {exporting ? "导出中..." : "导出我的数据"}
+            {exporting ? "提交中..." : "申请导出我的数据"}
           </Button>
         </CardContent>
       </Card>
@@ -280,9 +367,24 @@ export function PrivacySettingsForm({ userId }: PrivacySettingsFormProps) {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
-            删除账户后，您的所有数据将被匿名化处理。此操作无法撤销。
-            您的内容将被标记为 &ldquo;已删除&rdquo;，但会保留用于审计目的。
+            删除账户请求提交后会进入后台审核。审核通过后，您的所有数据将被匿名化处理。
+            此操作无法撤销，您的内容会被标记为 &ldquo;已删除&rdquo; 以保留审计链。
           </p>
+          {requestSummary.latestDeletionRequest && (
+            <div className="mb-4 rounded-lg border border-border bg-muted/30 p-3 text-sm">
+              <p className="font-medium text-foreground">
+                最近一次请求：{getStatusLabel(requestSummary.latestDeletionRequest.status)}
+              </p>
+              <p className="mt-1 text-muted-foreground">
+                提交时间：{new Date(requestSummary.latestDeletionRequest.requested_at).toLocaleString("zh-CN")}
+              </p>
+              {requestSummary.latestDeletionRequest.completed_at && (
+                <p className="mt-1 text-muted-foreground">
+                  完成时间：{new Date(requestSummary.latestDeletionRequest.completed_at).toLocaleString("zh-CN")}
+                </p>
+              )}
+            </div>
+          )}
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive">
@@ -294,8 +396,8 @@ export function PrivacySettingsForm({ userId }: PrivacySettingsFormProps) {
               <AlertDialogHeader>
                 <AlertDialogTitle>确定要删除账户吗？</AlertDialogTitle>
                 <AlertDialogDescription>
-                  此操作无法撤销。您的账户将被永久删除，所有数据将被匿名化。
-                  您将无法恢复您的内容、评论或其他数据。
+                  这会向后台提交注销请求。审核通过后，您的账户将被匿名化处理，
+                  您将无法恢复自己的内容、评论或其他数据。
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

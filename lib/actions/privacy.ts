@@ -1,235 +1,256 @@
-"use server"
+'use server'
 
-import type { User } from '@supabase/supabase-js'
-import { createClient } from "@/lib/supabase/server"
-import { revalidatePath } from "next/cache"
+import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+
+import { createClient } from '@/lib/supabase/server'
 import type { Tables } from '@/types/database.types'
 
-type ExportedAuthUser = Pick<User, 'id' | 'email' | 'created_at'>
-type CommunityExport = Tables<'community_members'> & {
-  communities: Tables<'communities'> | null
-}
-type EventExport = Tables<'event_participants'> & {
-  events: Tables<'events'> | null
-}
-
-export interface UserDataExport {
-  user: ExportedAuthUser
-  profile: Tables<'users'> | null
-  contents: Tables<'contents'>[]
-  comments: Tables<'comments'>[]
-  likes: Tables<'likes'>[]
-  follows: Tables<'follows'>[]
-  communities: CommunityExport[]
-  events: EventExport[]
-  messages: Tables<'messages'>[]
-  notifications: Tables<'notifications'>[]
-}
-
-// Validation schema
 const userIdSchema = z.string().uuid('无效的用户ID')
 
-/**
- * Export all user data in JSON format (GDPR compliance)
- */
-export async function exportUserData(userId: string): Promise<{ success: boolean; data?: UserDataExport; error?: string }> {
-  // Validate input
+async function ensureCurrentUser(userId: string) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser()
+
+  if (error || !user || user.id !== userId) {
+    throw new Error('未授权访问')
+  }
+
+  return supabase
+}
+
+export async function performAccountDeletion(
+  userId: string,
+  suppliedClient?: Awaited<ReturnType<typeof createClient>>
+) {
+  const supabase = suppliedClient || (await createClient())
+  const deletedAt = new Date().toISOString()
+  const anonymousUsername = `deleted_user_${userId.substring(0, 8)}`
+
+  const { error: userUpdateError } = await supabase
+    .from('users')
+    .update({
+      username: anonymousUsername,
+      full_name: '已删除用户',
+      bio: null,
+      avatar: null,
+      github_url: null,
+      github_username: null,
+      deleted_at: deletedAt,
+      updated_at: deletedAt,
+    })
+    .eq('id', userId)
+
+  if (userUpdateError) {
+    throw new Error(`更新用户信息失败: ${userUpdateError.message}`)
+  }
+
+  const { error: contentUpdateError } = await supabase
+    .from('contents')
+    .update({
+      title: '[已删除]',
+      content: '[此内容已被作者删除]',
+      excerpt: '[此内容已被作者删除]',
+      deleted_at: deletedAt,
+      updated_at: deletedAt,
+    })
+    .eq('author_id', userId)
+
+  if (contentUpdateError) {
+    throw new Error(`更新内容失败: ${contentUpdateError.message}`)
+  }
+
+  const { error: commentUpdateError } = await supabase
+    .from('comments')
+    .update({
+      content: '[已删除]',
+      deleted_at: deletedAt,
+      updated_at: deletedAt,
+    })
+    .eq('user_id', userId)
+
+  if (commentUpdateError) {
+    throw new Error(`更新评论失败: ${commentUpdateError.message}`)
+  }
+}
+
+export async function exportUserData(userId: string): Promise<{ success: boolean; requestId?: string; error?: string }> {
   const validation = userIdSchema.safeParse(userId)
   if (!validation.success) {
     return { success: false, error: validation.error.issues[0].message }
   }
 
   try {
-    const supabase = await createClient()
+    const supabase = await ensureCurrentUser(userId)
 
-    // Get user basic info
-    const { data: user, error: userError } = await supabase.auth.getUser()
-    if (userError || !user || user.user.id !== userId) {
-      return { success: false, error: "未授权访问" }
+    const { data: existingRequests, error: existingError } = await supabase
+      .from('data_export_requests')
+      .select('id')
+      .eq('user_id', userId)
+      .in('status', ['pending', 'processing'])
+      .order('requested_at', { ascending: false })
+      .limit(1)
+
+    if (existingError) {
+      throw existingError
     }
 
-    // Get profile
-    const { data: profile } = await supabase
-      .from("users")
-      .select("*")
-      .eq("id", userId)
+    if ((existingRequests || []).length > 0) {
+      return { success: false, error: '已有处理中的数据导出请求，请等待后台完成后再试。' }
+    }
+
+    const { data: request, error: insertError } = await supabase
+      .from('data_export_requests')
+      .insert({
+        user_id: userId,
+        status: 'pending',
+        requested_at: new Date().toISOString(),
+      })
+      .select('id')
       .single()
 
-    // Get contents
-    const { data: contents } = await supabase
-      .from("contents")
-      .select("*")
-      .eq("author_id", userId)
-
-    // Get comments
-    const { data: comments } = await supabase
-      .from("comments")
-      .select("*")
-      .eq("user_id", userId)
-
-    // Get likes
-    const { data: likes } = await supabase
-      .from("likes")
-      .select("*")
-      .eq("user_id", userId)
-
-    // Get follows
-    const { data: follows } = await supabase
-      .from("follows")
-      .select("*")
-      .or(`follower_id.eq.${userId},following_id.eq.${userId}`)
-
-    // Get communities
-    const { data: communities } = await supabase
-      .from("community_members")
-      .select("*, communities(*)")
-      .eq("user_id", userId)
-
-    // Get events
-    const { data: events } = await supabase
-      .from("event_participants")
-      .select("*, events(*)")
-      .eq("user_id", userId)
-
-    // Get messages (sent)
-    const { data: messages } = await supabase
-      .from("messages")
-      .select("*")
-      .eq("sender_id", userId)
-
-    // Get notifications
-    const { data: notifications } = await supabase
-      .from("notifications")
-      .select("*")
-      .eq("user_id", userId)
-
-    const exportData: UserDataExport = {
-      user: {
-        id: user.user.id,
-        email: user.user.email,
-        created_at: user.user.created_at,
-      },
-      profile: profile || {},
-      contents: contents || [],
-      comments: comments || [],
-      likes: likes || [],
-      follows: follows || [],
-      communities: communities || [],
-      events: events || [],
-      messages: messages || [],
-      notifications: notifications || [],
+    if (insertError || !request) {
+      throw insertError || new Error('创建导出请求失败')
     }
 
-    // Log export request
-    await supabase.from("data_export_requests").insert({
-      user_id: userId,
-      status: "completed",
-      completed_at: new Date().toISOString(),
-    })
+    revalidatePath('/settings/privacy')
+    revalidatePath('/admin/privacy-requests')
 
-    return { success: true, data: exportData }
+    return { success: true, requestId: request.id }
   } catch (error) {
-    console.error("Error exporting user data:", error)
-    return { success: false, error: "导出数据失败" }
+    console.error('Error creating export request:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : '提交导出请求失败',
+    }
   }
 }
 
-/**
- * Request account deletion (soft delete with anonymization)
- */
-export async function requestAccountDeletion(userId: string, reason?: string): Promise<{ success: boolean; error?: string }> {
-  try {
-    const supabase = await createClient()
+export async function requestAccountDeletion(
+  userId: string,
+  reason?: string
+): Promise<{ success: boolean; requestId?: string; error?: string }> {
+  const validation = userIdSchema.safeParse(userId)
+  if (!validation.success) {
+    return { success: false, error: validation.error.issues[0].message }
+  }
 
-    // Verify user
-    const { data: user, error: userError } = await supabase.auth.getUser()
-    if (userError || !user || user.user.id !== userId) {
-      return { success: false, error: "未授权访问" }
+  try {
+    const supabase = await ensureCurrentUser(userId)
+
+    const { data: existingRequests, error: existingError } = await supabase
+      .from('account_deletion_requests')
+      .select('id')
+      .eq('user_id', userId)
+      .in('status', ['pending', 'processing'])
+      .order('requested_at', { ascending: false })
+      .limit(1)
+
+    if (existingError) {
+      throw existingError
     }
 
-    // Create deletion request
-    const { error: requestError } = await supabase
-      .from("account_deletion_requests")
+    if ((existingRequests || []).length > 0) {
+      return { success: false, error: '已有待处理的注销请求，请等待后台处理。' }
+    }
+
+    const { data: request, error: insertError } = await supabase
+      .from('account_deletion_requests')
       .insert({
         user_id: userId,
         reason: reason || null,
-        status: "pending",
+        status: 'pending',
         requested_at: new Date().toISOString(),
       })
+      .select('id')
+      .single()
 
-    if (requestError) {
-      return { success: false, error: "创建删除请求失败" }
+    if (insertError || !request) {
+      throw insertError || new Error('创建注销请求失败')
     }
 
-    // Anonymize user data (soft delete)
-    const anonymousUsername = `deleted_user_${userId.substring(0, 8)}`
+    revalidatePath('/settings/privacy')
+    revalidatePath('/admin/privacy-requests')
 
-    // Update profile
-    await supabase
-      .from("users")
-      .update({
-        username: anonymousUsername,
-        full_name: "已删除用户",
-        bio: null,
-        avatar: null,
-        github_url: null,
-        deleted_at: new Date().toISOString(),
-      })
-      .eq("id", userId)
-
-    // Soft delete contents (mark as deleted but keep for audit)
-    await supabase
-      .from("contents")
-      .update({
-        title: "[已删除]",
-        content: "[此内容已被作者删除]",
-        deleted_at: new Date().toISOString(),
-      })
-      .eq("author_id", userId)
-
-    // Delete comments
-    await supabase
-      .from("comments")
-      .update({
-        content: "[已删除]",
-        deleted_at: new Date().toISOString(),
-      })
-      .eq("user_id", userId)
-
-    // Mark deletion request as completed
-    await supabase
-      .from("account_deletion_requests")
-      .update({
-        status: "completed",
-        completed_at: new Date().toISOString(),
-      })
-      .eq("user_id", userId)
-      .eq("status", "pending")
-
-    revalidatePath("/")
-
-    return { success: true }
+    return { success: true, requestId: request.id }
   } catch (error) {
-    console.error("Error deleting account:", error)
-    return { success: false, error: "删除账户失败" }
+    console.error('Error requesting account deletion:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : '创建删除请求失败',
+    }
   }
 }
 
-/**
- * Get user privacy settings
- */
+export async function getUserPrivacyRequestSummary(userId: string): Promise<{
+  success: boolean
+  data?: {
+    latestExportRequest: Tables<'data_export_requests'> | null
+    latestDeletionRequest: Tables<'account_deletion_requests'> | null
+  }
+  error?: string
+}> {
+  const validation = userIdSchema.safeParse(userId)
+  if (!validation.success) {
+    return { success: false, error: validation.error.issues[0].message }
+  }
+
+  try {
+    const supabase = await ensureCurrentUser(userId)
+
+    const [{ data: latestExportRequest, error: exportError }, { data: latestDeletionRequest, error: deletionError }] =
+      await Promise.all([
+        supabase
+          .from('data_export_requests')
+          .select('*')
+          .eq('user_id', userId)
+          .order('requested_at', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from('account_deletion_requests')
+          .select('*')
+          .eq('user_id', userId)
+          .order('requested_at', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ])
+
+    if (exportError) {
+      throw exportError
+    }
+
+    if (deletionError) {
+      throw deletionError
+    }
+
+    return {
+      success: true,
+      data: {
+        latestExportRequest: latestExportRequest || null,
+        latestDeletionRequest: latestDeletionRequest || null,
+      },
+    }
+  } catch (error) {
+    console.error('Error loading privacy request summary:', error)
+    return { success: false, error: '获取隐私请求状态失败' }
+  }
+}
+
 export async function getUserPrivacySettings(userId: string) {
   try {
     const supabase = await createClient()
 
     const { data, error } = await supabase
-      .from("user_privacy_settings")
-      .select("*")
-      .eq("user_id", userId)
+      .from('user_privacy_settings')
+      .select('*')
+      .eq('user_id', userId)
       .single()
 
-    if (error && error.code !== "PGRST116") {
+    if (error && error.code !== 'PGRST116') {
       throw error
     }
 
@@ -237,7 +258,7 @@ export async function getUserPrivacySettings(userId: string) {
       success: true,
       data: data || {
         user_id: userId,
-        profile_visibility: "public",
+        profile_visibility: 'public',
         show_email: false,
         show_location: false,
         allow_messages: true,
@@ -245,18 +266,15 @@ export async function getUserPrivacySettings(userId: string) {
       },
     }
   } catch (error) {
-    console.error("Error getting privacy settings:", error)
-    return { success: false, error: "获取隐私设置失败" }
+    console.error('Error getting privacy settings:', error)
+    return { success: false, error: '获取隐私设置失败' }
   }
 }
 
-/**
- * Update user privacy settings
- */
 export async function updateUserPrivacySettings(
   userId: string,
   settings: {
-    profile_visibility?: "public" | "private" | "followers_only"
+    profile_visibility?: 'public' | 'private' | 'followers_only'
     show_email?: boolean
     show_location?: boolean
     allow_messages?: boolean
@@ -264,31 +282,26 @@ export async function updateUserPrivacySettings(
   }
 ) {
   try {
-    const supabase = await createClient()
+    const supabase = await ensureCurrentUser(userId)
 
-    // Verify user
-    const { data: user, error: userError } = await supabase.auth.getUser()
-    if (userError || !user || user.user.id !== userId) {
-      return { success: false, error: "未授权访问" }
-    }
-
-    const { error } = await supabase
-      .from("user_privacy_settings")
-      .upsert({
-        user_id: userId,
-        ...settings,
-        updated_at: new Date().toISOString(),
-      })
+    const { error } = await supabase.from('user_privacy_settings').upsert({
+      user_id: userId,
+      ...settings,
+      updated_at: new Date().toISOString(),
+    })
 
     if (error) {
       throw error
     }
 
-    revalidatePath("/settings/privacy")
+    revalidatePath('/settings/privacy')
 
     return { success: true }
   } catch (error) {
-    console.error("Error updating privacy settings:", error)
-    return { success: false, error: "更新隐私设置失败" }
+    console.error('Error updating privacy settings:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : '更新隐私设置失败',
+    }
   }
 }

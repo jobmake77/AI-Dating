@@ -256,6 +256,44 @@ export type Database = {
           },
         ]
       }
+      community_rules: {
+        Row: {
+          community_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          rule_text: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          community_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          rule_text: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          community_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          rule_text?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_rules_community_id_fkey"
+            columns: ["community_id"]
+            isOneToOne: false
+            referencedRelation: "communities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       community_invitations: {
         Row: {
           community_id: string
