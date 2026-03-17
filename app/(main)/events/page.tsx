@@ -44,6 +44,14 @@ async function EventsList() {
 export default async function EventsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  const { data: profile } = user
+    ? await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+    : { data: null }
+  const isAdmin = profile?.role === 'admin'
 
   return (
     <div className="min-h-screen bg-background">
@@ -60,7 +68,7 @@ export default async function EventsPage() {
               </p>
             </div>
           </div>
-          {user && (
+          {isAdmin && (
             <Button
               size="sm"
               className="h-9 gap-1.5 gradient-primary text-white hover:opacity-90 text-xs shadow-primary"

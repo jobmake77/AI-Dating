@@ -1,5 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { requireAdmin } from '@/lib/middleware/admin'
 import { EventCreateForm } from '@/components/events/event-create-form'
 import { Calendar, MapPin } from 'lucide-react'
 
@@ -8,17 +7,7 @@ export const metadata = {
 }
 
 export default async function CreateEventPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) redirect('/login')
-
-  const { data: profile } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-  const isAdmin = profile?.role === 'admin'
+  await requireAdmin()
 
   return (
     <div className="min-h-screen bg-background">
@@ -32,7 +21,7 @@ export default async function CreateEventPage() {
             <div>
               <h1 className="text-xl font-bold">发起活动</h1>
               <p className="text-xs text-muted-foreground mt-0.5">
-                {isAdmin ? '创建官方活动或线下活动' : '创建一个线下活动，邀请大家参与'}
+                创建官方活动或线下活动
               </p>
             </div>
           </div>
@@ -42,7 +31,7 @@ export default async function CreateEventPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left: Form */}
           <div>
-            <EventCreateForm isAdmin={isAdmin} />
+            <EventCreateForm isAdmin />
           </div>
 
           {/* Right: Preview Card */}

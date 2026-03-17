@@ -33,13 +33,16 @@ export async function createEvent(formData: FormData) {
       .single()
     const isAdmin = profile?.role === 'admin'
 
+    if (!isAdmin) {
+      return { success: false, error: '只有管理员可以发起活动' }
+    }
+
     const rawEndTime = formData.get('end_time')
     const rawDescription = formData.get('description')
     const rawCoverUrl = formData.get('cover_url')
     const rawType = formData.get('type') as string | null
 
-    // 只有管理员可以创建 official 类型
-    const eventType = isAdmin && rawType === 'official' ? 'official' : 'offline'
+    const eventType = rawType === 'official' ? 'official' : 'offline'
 
     const data = {
       title: formData.get('title') as string,
