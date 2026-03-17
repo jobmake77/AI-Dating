@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Users, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 interface CompactCommunityCardProps {
   community: {
@@ -58,7 +59,14 @@ export function CompactCommunityCard({
         <div className="p-4">
           <div className="flex items-start gap-3">
             {community.icon_url ? (
-              <span className="text-3xl shrink-0">{community.icon_url}</span>
+              <Image
+                src={community.icon_url}
+                alt={community.name}
+                width={48}
+                height={48}
+                unoptimized
+                className="h-12 w-12 shrink-0 rounded-lg object-cover"
+              />
             ) : (
               <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                 <Users className="w-6 h-6 text-primary" />

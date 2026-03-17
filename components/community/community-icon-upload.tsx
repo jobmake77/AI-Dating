@@ -34,8 +34,8 @@ export function CommunityIconUpload({ currentIcon, onUploadSuccess }: CommunityI
     setImageToCrop(null)
 
     // 客户端预览
-    const previewUrl = URL.createObjectURL(croppedBlob)
-    setPreviewUrl(previewUrl)
+    const localPreviewUrl = URL.createObjectURL(croppedBlob)
+    setPreviewUrl(localPreviewUrl)
 
     // 上传到 R2
     setIsUploading(true)
@@ -52,16 +52,26 @@ export function CommunityIconUpload({ currentIcon, onUploadSuccess }: CommunityI
     }
 
     toast.success('上传成功', { description: '社区图标已更新' })
+    setPreviewUrl(result.url!)
     onUploadSuccess(result.url!)
   }
 
   return (
     <div className="flex items-center gap-4">
-      <div className="w-20 h-20 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
+      <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-muted">
         {previewUrl ? (
-          <Image src={previewUrl} alt="社区图标" fill unoptimized sizes="80px" className="object-cover" />
+          <Image
+            src={previewUrl}
+            alt="社区图标"
+            width={80}
+            height={80}
+            unoptimized
+            className="h-full w-full object-cover"
+          />
         ) : (
-          <Users className="w-10 h-10 text-muted-foreground" />
+          <div className="flex h-full w-full items-center justify-center">
+            <Users className="w-10 h-10 text-muted-foreground" />
+          </div>
         )}
       </div>
 

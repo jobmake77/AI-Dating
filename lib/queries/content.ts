@@ -44,7 +44,7 @@ export interface FeedItem {
     full_name: string | null
   }
   href?: string
-  source_type?: 'content' | 'repost' | 'community_post'
+  source_type?: 'content' | 'repost'
   community?: {
     id: string
     slug: string
@@ -82,50 +82,9 @@ type LikeWithContent = {
 type RepostWithContent = {
   contents: FeedContentRow | FeedContentRow[] | null
 }
-type CommunityRelation = {
-  id: string
-  slug: string
-  name: string
-  type?: string
-}
-type CommunityPostRow = {
-  id: string
-  title: string | null
-  content: string
-  likes_count: number
-  comments_count: number
-  is_pinned: boolean
-  created_at: string
-  updated_at: string
-  author_id: string
-  author: FeedUser | FeedUser[] | null
-  community: CommunityRelation | CommunityRelation[] | null
-}
 
 const FEED_CANDIDATE_MULTIPLIER = 4
 const FEED_MAX_CANDIDATES = 120
-
-function stripHtml(html: string) {
-  return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
-}
-
-function extractCommunityPostTitle(post: CommunityPostRow) {
-  if (post.title?.trim()) {
-    return post.title.trim()
-  }
-
-  const text = stripHtml(post.content)
-  return text.slice(0, 50) + (text.length > 50 ? '...' : '')
-}
-
-function extractCommunityPostExcerpt(post: CommunityPostRow) {
-  const text = stripHtml(post.content)
-  return text.slice(0, 200) + (text.length > 200 ? '...' : '')
-}
-
-function calculateReadingTime(text: string) {
-  return Math.max(1, Math.ceil(stripHtml(text).length / 300))
-}
 
 async function getCategoryMetaMap() {
   const categories = await getContentCategories({ includeInactive: true })
@@ -191,35 +150,6 @@ function buildRepostsBaseQuery(supabase: Awaited<ReturnType<typeof createClient>
     .eq('contents.status', status || 'approved')
 }
 
-function buildCommunityPostsBaseQuery(supabase: Awaited<ReturnType<typeof createClient>>) {
-  return supabase
-    .from('community_posts')
-    .select(`
-      id,
-      title,
-      content,
-      likes_count,
-      comments_count,
-      is_pinned,
-      created_at,
-      updated_at,
-      author_id,
-      author:users!community_posts_author_id_fkey(
-        id,
-        username,
-        avatar,
-        full_name
-      ),
-      community:communities!community_posts_community_id_fkey(
-        id,
-        slug,
-        name,
-        type
-      )
-    `, { count: 'exact' })
-    .eq('community.type', 'public')
-}
-
 async function getFollowingIds(supabase: Awaited<ReturnType<typeof createClient>>, userId?: string) {
   if (!userId) {
     return []
@@ -283,28 +213,12 @@ export async function getContentsFeed(params: ContentListParams = {}) {
   }
   repostsQuery = repostsQuery.order('created_at', { ascending: false }).range(0, candidateWindow - 1)
 
-  let communityPostsQuery = buildCommunityPostsBaseQuery(supabase)
-  if (sortBy === 'following') {
-    communityPostsQuery = communityPostsQuery.in('author_id', followingIds)
-  }
-  if (sortBy === 'latest' || sortBy === 'following') {
-    communityPostsQuery = communityPostsQuery.order('created_at', { ascending: false })
-  } else {
-    communityPostsQuery = communityPostsQuery
-      .order('likes_count', { ascending: false })
-      .order('comments_count', { ascending: false })
-      .order('created_at', { ascending: false })
-  }
-  communityPostsQuery = communityPostsQuery.range(0, candidateWindow - 1)
-
   const [
     { data: originalContents, error: originalError, count: originalCount },
     { data: reposts, error: repostsError, count: repostsCount },
-    { data: communityPosts, error: communityPostsError, count: communityPostsCount },
   ] = await Promise.all([
     originalQuery,
     repostsQuery,
-    communityPostsQuery,
   ])
 
   if (originalError) {
@@ -320,10 +234,6 @@ export async function getContentsFeed(params: ContentListParams = {}) {
 
   if (repostsError) {
     logger.error('Failed to fetch reposts:', repostsError)
-  }
-
-  if (communityPostsError) {
-    logger.error('Failed to fetch community posts for feed:', communityPostsError)
   }
 
   // 3. 合并数据
@@ -371,53 +281,6 @@ export async function getContentsFeed(params: ContentListParams = {}) {
     })
   }
 
-  if (communityPosts) {
-    communityPosts.forEach((post: CommunityPostRow) => {
-      const author = normalizeSingleRelation(post.author)
-      const community = normalizeSingleRelation(post.community)
-
-      if (!author || !community || community.type !== 'public') {
-        return
-      }
-
-      feedItems.push({
-        id: post.id,
-        content_id: post.id,
-        title: extractCommunityPostTitle(post),
-        slug: `${community.slug}-${post.id}`,
-        content: post.content,
-        excerpt: extractCommunityPostExcerpt(post),
-        cover_image: null,
-        tags: ['社区帖子'],
-        category: null,
-        category_name: null,
-        category_color: null,
-        price_type: 'free',
-        status: 'approved',
-        reject_reason: null,
-        views: 0,
-        view_count: 0,
-        likes_count: post.likes_count,
-        comments_count: post.comments_count,
-        reposts_count: 0,
-        reading_time: calculateReadingTime(post.content),
-        created_at: post.created_at,
-        updated_at: post.updated_at,
-        author_id: post.author_id,
-        users: author,
-        href: `/communities/${community.slug}/posts/${post.id}`,
-        source_type: 'community_post',
-        community: {
-          id: community.id,
-          slug: community.slug,
-          name: community.name,
-        },
-        is_repost: false,
-        is_pinned: post.is_pinned,
-      })
-    })
-  }
-
   // 4. Filter by following if needed
   let filteredItems = feedItems
   if (sortBy === 'following' && user) {
@@ -449,10 +312,10 @@ export async function getContentsFeed(params: ContentListParams = {}) {
 
   return {
     contents: paginatedItems,
-    total: (originalCount || 0) + (repostsCount || 0) + (communityPostsCount || 0),
+    total: (originalCount || 0) + (repostsCount || 0),
     page,
     limit,
-    totalPages: Math.ceil(((originalCount || 0) + (repostsCount || 0) + (communityPostsCount || 0)) / limit),
+    totalPages: Math.ceil(((originalCount || 0) + (repostsCount || 0)) / limit),
   }
 }
 

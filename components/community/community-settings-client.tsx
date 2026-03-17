@@ -50,16 +50,13 @@ export function CommunitySettingsClient({ community, slug }: CommunitySettingsCl
     setIsSubmitting(true)
 
     const formData = new FormData(e.currentTarget)
-    if (iconUrl) formData.set('icon_url', iconUrl)
-    if (coverUrl) formData.set('cover_url', coverUrl)
 
     const result = await updateCommunity(community.id, formData)
     setIsSubmitting(false)
 
     if (result.success) {
       toast.success('保存成功', { description: '社区信息已更新' })
-      router.push(`/communities/${slug}`)
-      router.refresh()
+      window.location.href = `/communities/${slug}`
     } else {
       toast.error('保存失败', { description: result.error || '请稍后重试' })
     }
@@ -115,6 +112,9 @@ export function CommunitySettingsClient({ community, slug }: CommunitySettingsCl
           >
             <h2 className="text-sm font-bold text-foreground mb-5">基本信息</h2>
             <form onSubmit={handleUpdate} className="space-y-5">
+              <input type="hidden" name="icon_url" value={iconUrl} readOnly />
+              <input type="hidden" name="cover_url" value={coverUrl} readOnly />
+
               <div>
                 <label className="text-xs font-medium text-muted-foreground mb-1.5 block">社区名称</label>
                 <Input

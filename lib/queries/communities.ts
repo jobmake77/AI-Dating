@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { cache } from 'react'
 
 // =====================================================
 // Community Queries
@@ -42,7 +43,7 @@ export async function getCommunities(options?: {
   return { data: data || [], count: count || 0, error: null }
 }
 
-export async function getCommunityBySlug(slug: string) {
+export const getCommunityBySlug = cache(async (slug: string) => {
   const supabase = await createClient()
 
   const { data, error } = await supabase
@@ -67,7 +68,7 @@ export async function getCommunityBySlug(slug: string) {
   }
 
   return { data, error: null }
-}
+})
 
 export async function getUserCommunities(userId: string, options?: {
   limit?: number

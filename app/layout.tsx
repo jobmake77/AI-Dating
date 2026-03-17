@@ -6,7 +6,6 @@ import { getOrganizationSchema } from "@/lib/seo/structured-data";
 import { GoogleAnalytics } from '@next/third-parties/google';
 import "@/lib/utils/env"; // 验证环境变量
 import { WebVitalsReporter } from "@/components/analytics/web-vitals-reporter";
-import { OfflineIndicator } from "@/components/offline-indicator";
 import { CookieConsent } from "@/components/privacy/cookie-consent";
 
 export const metadata: Metadata = {
@@ -94,7 +93,6 @@ export default function RootLayout({
         <Toaster />
         <Sonner />
         <WebVitalsReporter />
-        <OfflineIndicator />
         <CookieConsent />
       </body>
       {gaId && <GoogleAnalytics gaId={gaId} />}

@@ -3,23 +3,11 @@
 import Link from "next/link";
 import { ArrowUpRight, Users } from "lucide-react";
 import type { HomepageCommunityItem } from "@/lib/queries/home";
+import Image from "next/image";
 
 interface CategoriesSidebarProps {
   communities: HomepageCommunityItem[];
   isAuthenticated?: boolean;
-}
-
-const accentPalette = [
-  "hsl(221 83% 53%)",
-  "hsl(262 83% 58%)",
-  "hsl(142 76% 36%)",
-  "hsl(24 95% 53%)",
-  "hsl(199 89% 48%)",
-];
-
-function getCommunityAccent(slug: string) {
-  const hash = slug.split("").reduce((sum, char) => sum + char.charCodeAt(0), 0);
-  return accentPalette[hash % accentPalette.length];
 }
 
 export function CategoriesSidebar({
@@ -59,10 +47,20 @@ export function CategoriesSidebar({
                   className="group flex items-center justify-between py-2.5 text-xs transition-colors hover:text-primary"
                 >
                   <div className="flex min-w-0 flex-1 items-center gap-2">
-                    <span
-                      className="h-2.5 w-2.5 shrink-0 rounded-full"
-                      style={{ backgroundColor: getCommunityAccent(community.slug) }}
-                    />
+                    {community.icon_url ? (
+                      <Image
+                        src={community.icon_url}
+                        alt={community.name}
+                        width={18}
+                        height={18}
+                        unoptimized
+                        className="h-[18px] w-[18px] shrink-0 rounded-[5px] object-cover"
+                      />
+                    ) : (
+                      <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] bg-muted text-[9px] font-semibold uppercase text-muted-foreground">
+                        {community.name.charAt(0)}
+                      </span>
+                    )}
                     <span className="truncate text-foreground transition-colors group-hover:text-primary">
                       {community.name}
                     </span>

@@ -38,16 +38,13 @@ export function CommunitySettingsForm({ community }: CommunitySettingsFormProps)
     setIsSubmitting(true)
 
     const formData = new FormData(e.currentTarget)
-    if (iconUrl) formData.set('icon_url', iconUrl)
-    if (coverUrl) formData.set('cover_url', coverUrl)
 
     const result = await updateCommunity(community.id, formData)
     setIsSubmitting(false)
 
     if (result.success) {
       toast.success('保存成功', { description: '社区信息已更新' })
-      router.push(`/communities/${community.slug}`)
-      router.refresh()
+      window.location.href = `/communities/${community.slug}`
     } else {
       toast.error('保存失败', { description: result.error || '请稍后重试' })
     }
@@ -77,6 +74,9 @@ export function CommunitySettingsForm({ community }: CommunitySettingsFormProps)
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-4">基本信息</h2>
         <form onSubmit={handleUpdate} className="space-y-6">
+          <input type="hidden" name="icon_url" value={iconUrl} readOnly />
+          <input type="hidden" name="cover_url" value={coverUrl} readOnly />
+
           <div className="space-y-2">
             <Label htmlFor="name">社区名称</Label>
             <Input

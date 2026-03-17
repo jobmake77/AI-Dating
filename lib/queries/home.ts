@@ -5,6 +5,7 @@ export interface HomepageCommunityItem {
   id: string
   name: string
   slug: string
+  icon_url: string | null
   members_count: number
   posts_count: number
 }
@@ -68,6 +69,7 @@ export async function getHomepageData(userId?: string): Promise<HomepageData> {
               id,
               name,
               slug,
+              icon_url,
               members_count,
               posts_count
             )
@@ -78,7 +80,7 @@ export async function getHomepageData(userId?: string): Promise<HomepageData> {
       : Promise.resolve({ data: [], error: null } as const),
     supabase
       .from('communities')
-      .select('id, name, slug, members_count, posts_count')
+      .select('id, name, slug, icon_url, members_count, posts_count')
       .eq('type', 'public')
       .order('members_count', { ascending: false })
       .order('posts_count', { ascending: false })

@@ -217,8 +217,10 @@ export async function updateCommunity(communityId: string, formData: FormData) {
     const name = formData.get('name')
     const description = formData.get('description')
     const type = formData.get('type')
-    const iconUrl = formData.get('icon_url')
-    const coverUrl = formData.get('cover_url')
+    const rawIconUrl = formData.get('icon_url')
+    const rawCoverUrl = formData.get('cover_url')
+    const iconUrl = typeof rawIconUrl === 'string' ? rawIconUrl.trim() : ''
+    const coverUrl = typeof rawCoverUrl === 'string' ? rawCoverUrl.trim() : ''
 
     if (name) data.name = name
     if (description) data.description = description
@@ -241,8 +243,10 @@ export async function updateCommunity(communityId: string, formData: FormData) {
       return { success: false, error: '更新社区失败' }
     }
 
-    revalidatePath(`/communities/${updatedCommunity.slug}`)
-    revalidatePath('/communities')
+    revalidatePath(`/communities/${updatedCommunity.slug}`, 'page')
+    revalidatePath(`/communities/${updatedCommunity.slug}/settings`, 'page')
+    revalidatePath('/communities', 'page')
+    revalidatePath('/', 'page')
     return { success: true, data: updatedCommunity }
   } catch (error) {
     logger.error('更新社区错误:', error)

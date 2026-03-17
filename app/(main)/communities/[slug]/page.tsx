@@ -53,9 +53,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 async function CommunityHeader({ slug }: { slug: string }) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  const { data: community } = await getCommunityBySlug(slug)
+  const [{ data: { user } }, { data: community }] = await Promise.all([
+    supabase.auth.getUser(),
+    getCommunityBySlug(slug),
+  ])
   if (!community) return null
 
   let membership = null
@@ -274,21 +275,29 @@ async function PostsList({ communityId, sortBy }: { communityId: string; sortBy:
 async function CommunityRulesSidebar({ communityId }: { communityId: string }) {
   const supabase = await createClient()
 
-  // Fetch community management team
-  const { data: managementTeam } = await supabase
-    .from('community_members')
-    .select(`
-      role,
-      users!inner (
-        id,
-        username,
-        full_name,
-        avatar
-      )
-    `)
-    .eq('community_id', communityId)
-    .in('role', ['admin', 'moderator'])
-    .order('role', { ascending: true })
+  const [{ data: managementTeam }, { data: rulesData }] = await Promise.all([
+    supabase
+      .from('community_members')
+      .select(`
+        role,
+        users!inner (
+          id,
+          username,
+          full_name,
+          avatar
+        )
+      `)
+      .eq('community_id', communityId)
+      .in('role', ['admin', 'moderator'])
+      .order('role', { ascending: true }),
+    supabase
+      .from('community_rules')
+      .select('id, rule_text')
+      .eq('community_id', communityId)
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: true }),
+  ])
 
   type MemberWithUser = {
     role: string
@@ -301,14 +310,6 @@ async function CommunityRulesSidebar({ communityId }: { communityId: string }) {
   }
 
   const members = (managementTeam || []) as MemberWithUser[]
-
-  const { data: rulesData } = await supabase
-    .from('community_rules')
-    .select('id, rule_text')
-    .eq('community_id', communityId)
-    .eq('is_active', true)
-    .order('sort_order', { ascending: true })
-    .order('created_at', { ascending: true })
 
   const rules = (rulesData || []).map((rule) => rule.rule_text)
 

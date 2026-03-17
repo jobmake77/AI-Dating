@@ -29,8 +29,6 @@ export default function CreateCommunityPage() {
     setIsSubmitting(true)
 
     const formData = new FormData(e.currentTarget)
-    if (iconUrl) formData.set('icon_url', iconUrl)
-    if (coverUrl) formData.set('cover_url', coverUrl)
 
     const result = await createCommunity(formData)
     setIsSubmitting(false)
@@ -61,6 +59,9 @@ export default function CreateCommunityPage() {
             className="flex-1 rounded-lg border border-border bg-card p-6 shadow-card"
           >
             <form onSubmit={handleSubmit} className="space-y-5">
+              <input type="hidden" name="icon_url" value={iconUrl} readOnly />
+              <input type="hidden" name="cover_url" value={coverUrl} readOnly />
+
               <div>
                 <label className="text-xs font-medium text-muted-foreground mb-1.5 block">社区名称 *</label>
                 <Input

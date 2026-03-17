@@ -58,12 +58,11 @@ export default async function Home({ searchParams }: HomeProps) {
       : requestedTab === 'following' && isAuthenticated
         ? 'following'
         : 'hot'
-  const { contents, totalPages } = await getContentsFeed({ page, sortBy })
-
-  const homepageData = await getHomepageData(user?.id)
-
-  // 获取引导进度
-  const onboardingProgress = user ? await getOnboardingProgress() : null
+  const [{ contents, totalPages }, homepageData, onboardingProgress] = await Promise.all([
+    getContentsFeed({ page, sortBy }),
+    getHomepageData(user?.id),
+    user ? getOnboardingProgress() : Promise.resolve(null),
+  ])
 
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,hsl(var(--background)),hsl(220_33%_97%))]">
