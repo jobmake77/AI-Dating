@@ -12,8 +12,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Github, Mail, Sparkles, Zap } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { signInWithEmail, signInWithGitHub } from '@/lib/actions/auth'
+import { useTranslations } from 'use-intl'
 
 export default function LoginPage() {
+  const t = useTranslations('authPages.login')
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -102,10 +104,10 @@ export default function LoginPage() {
               </div>
             </div>
             <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
-              欢迎来到 AI-Dating
+              {t('title')}
             </CardTitle>
             <CardDescription className="text-base mt-2">
-              选择你喜欢的方式登录或注册
+              {t('description')}
             </CardDescription>
           </CardHeader>
 
@@ -132,18 +134,18 @@ export default function LoginPage() {
 
             <Tabs defaultValue="signin" className="w-full" onValueChange={() => { setError(null); setSuccess(null) }}>
               <TabsList className="grid w-full grid-cols-1">
-                <TabsTrigger value="signin">登录</TabsTrigger>
+                <TabsTrigger value="signin">{t('tab')}</TabsTrigger>
               </TabsList>
 
               <TabsContent value="signin" className="space-y-4">
                 <form onSubmit={handleEmailSignIn} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signin-email">邮箱</Label>
+                    <Label htmlFor="signin-email">{t('emailLabel')}</Label>
                     <Input
                       id="signin-email"
                       name="email"
                       type="email"
-                      placeholder="your@email.com"
+                      placeholder={t('emailPlaceholder')}
                       required
                       disabled={loading}
                     />
@@ -151,19 +153,19 @@ export default function LoginPage() {
 
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="signin-password">密码</Label>
+                      <Label htmlFor="signin-password">{t('passwordLabel')}</Label>
                       <Link
                         href="/forgot-password"
                         className="text-xs text-muted-foreground hover:text-primary transition-colors"
                       >
-                        忘记密码？
+                        {t('forgotPassword')}
                       </Link>
                     </div>
                     <Input
                       id="signin-password"
                       name="password"
                       type="password"
-                      placeholder="••••••••"
+                      placeholder={t('passwordPlaceholder')}
                       required
                       disabled={loading}
                     />
@@ -171,7 +173,7 @@ export default function LoginPage() {
 
                   <Button type="submit" className="w-full" disabled={loading}>
                     <Mail className="mr-2 h-4 w-4" />
-                    {loading ? '登录中...' : '邮箱登录'}
+                    {loading ? t('submitting') : t('submit')}
                   </Button>
                 </form>
 
@@ -180,24 +182,24 @@ export default function LoginPage() {
                     <span className="w-full border-t" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">或</span>
+                    <span className="bg-background px-2 text-muted-foreground">{t('divider')}</span>
                   </div>
                 </div>
 
                 <Button onClick={handleGitHubLogin} disabled={loading} variant="outline" className="w-full group">
                   <Github className="mr-2 h-4 w-4 group-hover:rotate-12 transition-transform" />
-                  {loading ? '跳转中...' : '使用 GitHub 登录'}
+                  {loading ? t('githubRedirecting') : t('github')}
                 </Button>
                 <p className="text-center text-[11px] text-muted-foreground">
-                  当前 OAuth 仅支持 GitHub，其他第三方登录暂未开放。
+                  {t('oauthHint')}
                 </p>
               </TabsContent>
             </Tabs>
 
             <p className="text-center text-sm text-muted-foreground">
-              还没有账号？{' '}
+              {t('signupPrompt')}{' '}
               <Link href="/register" className="text-primary font-medium hover:underline">
-                立即注册
+                {t('signupLink')}
               </Link>
             </p>
           </CardContent>

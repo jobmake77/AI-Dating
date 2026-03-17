@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Users, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { useTranslations } from "use-intl";
 
 interface CompactCommunityCardProps {
   community: {
@@ -36,8 +37,9 @@ export function CompactCommunityCard({
   index = 0,
   onJoinToggle
 }: CompactCommunityCardProps) {
+  const t = useTranslations('communitiesPage')
   const gradientClass = gradients[index % gradients.length];
-  const primaryTag = community.tags?.[0] || "社区";
+  const primaryTag = community.tags?.[0] || t('title');
 
   const handleJoinClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -77,7 +79,7 @@ export function CompactCommunityCard({
                 {community.name}
               </h3>
               <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-                {community.description || "暂无描述"}
+                {community.description || t('noDescription')}
               </p>
               <div className="flex items-center gap-3 mt-2.5 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
@@ -108,7 +110,7 @@ export function CompactCommunityCard({
                   : "gradient-primary text-white hover:opacity-90 shadow-primary"
               }`}
             >
-              {community.is_joined ? "已加入" : "加入"}
+              {community.is_joined ? t('joined') : t('join')}
             </Button>
           </div>
         </div>

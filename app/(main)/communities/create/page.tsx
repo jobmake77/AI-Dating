@@ -14,8 +14,10 @@ import Link from 'next/link'
 import { ArrowLeft, Users, Send } from 'lucide-react'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
+import { useTranslations } from 'use-intl'
 
 export default function CreateCommunityPage() {
+  const t = useTranslations('communitiesPage')
   const router = useRouter()
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
@@ -34,10 +36,10 @@ export default function CreateCommunityPage() {
     setIsSubmitting(false)
 
     if (result.success && result.data) {
-      toast.success('创建成功', { description: '社区已创建' })
+      toast.success(t('createSuccess'), { description: t('createSuccessDescription') })
       router.push(`/communities/${result.data.slug}`)
     } else {
-      toast.error('创建失败', { description: result.error || '请稍后重试' })
+      toast.error(t('createFailed'), { description: result.error || t('actionFailed') })
     }
   }
 
@@ -46,10 +48,10 @@ export default function CreateCommunityPage() {
       <div className="mx-auto max-w-6xl px-4 py-6">
         <Link href="/communities" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary mb-4 transition-colors">
           <ArrowLeft className="h-3.5 w-3.5" />
-          返回社区列表
+          {t('backToList')}
         </Link>
 
-        <h1 className="text-xl font-bold text-foreground mb-5">创建社区</h1>
+        <h1 className="text-xl font-bold text-foreground mb-5">{t('create')}</h1>
 
         <div className="flex gap-5">
           {/* Left: Form */}
@@ -63,10 +65,10 @@ export default function CreateCommunityPage() {
               <input type="hidden" name="cover_url" value={coverUrl} readOnly />
 
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">社区名称 *</label>
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t('name')}</label>
                 <Input
                   name="name"
-                  placeholder="例如：前端开发者"
+                  placeholder={t('namePlaceholder')}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
@@ -74,14 +76,14 @@ export default function CreateCommunityPage() {
                   maxLength={50}
                   className="h-10 text-sm bg-secondary/60 border-none focus:ring-2 focus:ring-primary/20"
                 />
-                <p className="text-[10px] text-muted-foreground mt-1">2-50 个字符</p>
+                <p className="text-[10px] text-muted-foreground mt-1">{t('nameHint')}</p>
               </div>
 
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">社区描述</label>
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t('descriptionLabel')}</label>
                 <Textarea
                   name="description"
-                  placeholder="介绍一下这个社区..."
+                  placeholder={t('descriptionPlaceholder')}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={4}
@@ -90,27 +92,27 @@ export default function CreateCommunityPage() {
               </div>
 
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">社区类型 *</label>
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t('typeLabel')}</label>
                 <RadioGroup name="type" value={type} onValueChange={setType} required>
                   <div className="flex items-center space-x-2 rounded-md px-3 py-2.5 hover:bg-secondary/50 transition-colors">
                     <RadioGroupItem value="public" id="public" />
                     <label htmlFor="public" className="text-xs cursor-pointer flex-1">
-                      <span className="font-medium text-foreground">公开社区</span>
-                      <span className="text-muted-foreground"> - 任何人都可以查看和加入</span>
+                      <span className="font-medium text-foreground">{t('public')}</span>
+                      <span className="text-muted-foreground"> - {t('publicDescription')}</span>
                     </label>
                   </div>
                   <div className="flex items-center space-x-2 rounded-md px-3 py-2.5 hover:bg-secondary/50 transition-colors">
                     <RadioGroupItem value="private" id="private" />
                     <label htmlFor="private" className="text-xs cursor-pointer flex-1">
-                      <span className="font-medium text-foreground">私密社区</span>
-                      <span className="text-muted-foreground"> - 需要邀请才能加入</span>
+                      <span className="font-medium text-foreground">{t('private')}</span>
+                      <span className="text-muted-foreground"> - {t('privateDescription')}</span>
                     </label>
                   </div>
                 </RadioGroup>
               </div>
 
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">社区图标</label>
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t('icon')}</label>
                 <CommunityIconUpload
                   currentIcon={iconUrl || null}
                   onUploadSuccess={setIconUrl}
@@ -118,7 +120,7 @@ export default function CreateCommunityPage() {
               </div>
 
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">社区封面</label>
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t('cover')}</label>
                 <CommunityCoverUpload
                   currentCover={coverUrl || null}
                   onUploadSuccess={setCoverUrl}
@@ -129,7 +131,7 @@ export default function CreateCommunityPage() {
               <div className="flex justify-between items-center pt-4 border-t border-border">
                 <Link href="/communities">
                   <Button type="button" variant="ghost" size="sm" className="h-9 text-xs text-muted-foreground">
-                    取消
+                    {t('cancel')}
                   </Button>
                 </Link>
                 <Button
@@ -139,7 +141,7 @@ export default function CreateCommunityPage() {
                   disabled={isSubmitting || !name.trim()}
                 >
                   <Send className="h-3 w-3" />
-                  {isSubmitting ? '创建中...' : '创建社区'}
+                  {isSubmitting ? t('creating') : t('create')}
                 </Button>
               </div>
             </form>
@@ -157,7 +159,7 @@ export default function CreateCommunityPage() {
                 <div className="h-2 gradient-primary" />
                 {coverUrl && (
                   <div className="h-24 bg-gradient-to-r from-primary/20 via-accent/10 to-info/20 relative">
-                    <Image src={coverUrl} alt="封面预览" fill unoptimized sizes="320px" className="object-cover" />
+                    <Image src={coverUrl} alt={t('cover')} fill unoptimized sizes="320px" className="object-cover" />
                   </div>
                 )}
                 <div className="p-4">
@@ -165,7 +167,7 @@ export default function CreateCommunityPage() {
                     {iconUrl ? (
                       <Image
                         src={iconUrl}
-                        alt="图标预览"
+                        alt={t('icon')}
                         width={48}
                         height={48}
                         unoptimized
@@ -178,10 +180,10 @@ export default function CreateCommunityPage() {
                     )}
                     <div className="flex-1 min-w-0">
                       <h3 className="text-sm font-semibold text-foreground">
-                        {name || '社区名称'}
+                        {name || t('previewName')}
                       </h3>
                       <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                        {description || '社区描述将在这里显示...'}
+                        {description || t('previewDescription')}
                       </p>
                     </div>
                   </div>
@@ -191,15 +193,15 @@ export default function CreateCommunityPage() {
                       <span className="font-mono font-medium text-foreground">0</span>
                     </span>
                     <span className="rounded-full bg-primary/10 px-2 py-0.5 font-mono text-[10px] text-primary font-medium">
-                      {type === 'public' ? '公开' : '私密'}
+                      {type === 'public' ? t('previewPublic') : t('previewPrivate')}
                     </span>
                   </div>
                 </div>
               </div>
               <div className="mt-3 rounded-lg border border-border bg-card p-4 shadow-card">
-                <h3 className="text-xs font-bold text-foreground mb-2">预览提示</h3>
+                <h3 className="text-xs font-bold text-foreground mb-2">{t('previewTitle')}</h3>
                 <p className="text-[10px] text-muted-foreground leading-relaxed">
-                  这是你的社区在列表中的显示效果。上传图标和封面可以让社区更有吸引力。
+                  {t('previewHint')}
                 </p>
               </div>
             </div>

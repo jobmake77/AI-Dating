@@ -11,17 +11,18 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
 import type { SearchResult, SearchTag } from '@/lib/types/search'
+import { useTranslations } from 'use-intl'
 
-const searchTabs = ['内容', '用户', '标签'] as const
-type SearchTab = typeof searchTabs[number]
+type SearchTab = 'contents' | 'users' | 'tags'
 
 export default function SearchPage() {
+  const t = useTranslations('searchPage')
   const searchParams = useSearchParams()
   const router = useRouter()
   const initialQuery = searchParams.get('q') || ''
 
   const [query, setQuery] = useState(initialQuery)
-  const [activeTab, setActiveTab] = useState<SearchTab>('内容')
+  const [activeTab, setActiveTab] = useState<SearchTab>('contents')
   const [results, setResults] = useState<SearchResult>({
     contents: [],
     users: [],
@@ -100,9 +101,14 @@ export default function SearchPage() {
   }
 
   // 根据当前标签过滤结果
-  const filteredContents = activeTab === '内容' ? results.contents : []
-  const filteredUsers = activeTab === '用户' ? results.users : []
-  const filteredTags = activeTab === '标签' ? results.tags : []
+  const filteredContents = activeTab === 'contents' ? results.contents : []
+  const filteredUsers = activeTab === 'users' ? results.users : []
+  const filteredTags = activeTab === 'tags' ? results.tags : []
+  const searchTabs: Array<{ key: SearchTab; label: string }> = [
+    { key: 'contents', label: t('tabContents') },
+    { key: 'users', label: t('tabUsers') },
+    { key: 'tags', label: t('tabTags') },
+  ]
 
   return (
     <div className="min-h-screen bg-background">
@@ -111,7 +117,7 @@ export default function SearchPage() {
         <div className="relative mb-5">
           <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="搜索内容、用户、标签..."
+            placeholder={t('placeholder')}
             value={query}
             onChange={handleInputChange}
             className="h-12 pl-12 pr-10 text-sm bg-card border-border shadow-sm focus:ring-2 focus:ring-primary/20 rounded-xl"
@@ -134,15 +140,15 @@ export default function SearchPage() {
             <div className="flex items-center gap-1 rounded-lg border border-border bg-card p-1 mb-5 shadow-sm">
               {searchTabs.map((tab) => (
                 <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
                   className={`px-3.5 py-2 rounded-md text-xs font-medium transition-all ${
-                    activeTab === tab
+                    activeTab === tab.key
                       ? 'bg-gradient-to-r from-primary to-primary/80 text-white shadow-sm'
                       : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                   }`}
                 >
-                  {tab}
+                  {tab.label}
                 </button>
               ))}
             </div>
@@ -151,12 +157,12 @@ export default function SearchPage() {
             {isLoading ? (
               <div className="rounded-lg border border-border bg-card p-10 text-center shadow-sm">
                 <Search className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2 animate-pulse" />
-                <p className="text-xs text-muted-foreground">搜索中...</p>
+                <p className="text-xs text-muted-foreground">{t('loading')}</p>
               </div>
             ) : (
               <>
                 {/* 内容标签 */}
-                {activeTab === '内容' && (
+                {activeTab === 'contents' && (
                   <div className="space-y-2">
                     {filteredContents.length > 0 ? (
                       <div className="border border-border rounded-xl bg-card overflow-hidden shadow-sm">
@@ -167,14 +173,14 @@ export default function SearchPage() {
                     ) : (
                       <div className="rounded-lg border border-border bg-card p-10 text-center shadow-sm">
                         <Search className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
-                        <p className="text-xs text-muted-foreground">未找到相关内容</p>
+                        <p className="text-xs text-muted-foreground">{t('emptyContents')}</p>
                       </div>
                     )}
                   </div>
                 )}
 
                 {/* 用户标签 */}
-                {activeTab === '用户' && (
+                {activeTab === 'users' && (
                   <div>
                     {filteredUsers.length > 0 ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -211,14 +217,14 @@ export default function SearchPage() {
                     ) : (
                       <div className="rounded-lg border border-border bg-card p-10 text-center shadow-sm">
                         <Users className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
-                        <p className="text-xs text-muted-foreground">未找到相关用户</p>
+                        <p className="text-xs text-muted-foreground">{t('emptyUsers')}</p>
                       </div>
                     )}
                   </div>
                 )}
 
                 {/* 标签标签 */}
-                {activeTab === '标签' && (
+                {activeTab === 'tags' && (
                   <div>
                     {filteredTags.length > 0 ? (
                       <div className="grid grid-cols-2 gap-2">
@@ -237,7 +243,7 @@ export default function SearchPage() {
                     ) : (
                       <div className="rounded-lg border border-border bg-card p-10 text-center shadow-sm">
                         <Hash className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
-                        <p className="text-xs text-muted-foreground">未找到相关标签</p>
+                        <p className="text-xs text-muted-foreground">{t('emptyTags')}</p>
                       </div>
                     )}
                   </div>
@@ -252,7 +258,7 @@ export default function SearchPage() {
           <div className="space-y-5">
             {/* 热门标签 */}
             <div>
-              <h2 className="text-sm font-bold text-foreground mb-3">热门标签</h2>
+              <h2 className="text-sm font-bold text-foreground mb-3">{t('popularTags')}</h2>
               <div className="grid grid-cols-2 gap-2">
                 {popularTags.map((tag) => (
                   <button

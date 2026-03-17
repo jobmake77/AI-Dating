@@ -2,8 +2,9 @@
 
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
-import { zhCN } from 'date-fns/locale'
+import { enUS, zhCN } from 'date-fns/locale'
 import { MessageCircle } from 'lucide-react'
+import { useLocale, useTranslations } from 'use-intl'
 
 interface Conversation {
   id: string
@@ -33,12 +34,12 @@ function isImageMessage(content: string): boolean {
 }
 
 // 辅助函数：格式化时间
-function formatTime(dateString: string): string {
+function formatTime(dateString: string, locale: string, justNowLabel: string): string {
   const date = new Date(dateString)
   const now = new Date()
   const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / 60000)
 
-  if (diffInMinutes < 1) return '刚刚'
+  if (diffInMinutes < 1) return justNowLabel
   if (diffInMinutes < 60) return `${diffInMinutes}m`
 
   const diffInHours = Math.floor(diffInMinutes / 60)
@@ -47,17 +48,22 @@ function formatTime(dateString: string): string {
   const diffInDays = Math.floor(diffInHours / 24)
   if (diffInDays < 7) return `${diffInDays}d`
 
-  return formatDistanceToNow(date, { addSuffix: false, locale: zhCN })
+  return formatDistanceToNow(date, {
+    addSuffix: false,
+    locale: locale === 'en' ? enUS : zhCN,
+  })
 }
 
 export function ConversationList({ conversations, activeConversationId }: ConversationListProps) {
+  const t = useTranslations('messagesPage')
+  const locale = useLocale()
   if (conversations.length === 0) {
     return (
       <div className="text-center py-12 px-4">
         <MessageCircle className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
-        <p className="text-muted-foreground text-xs mb-1">还没有消息</p>
+        <p className="text-muted-foreground text-xs mb-1">{t('noMessages')}</p>
         <p className="text-muted-foreground text-[10px]">
-          访问其他用户的主页开始对话
+          {t('startConversationHint')}
         </p>
       </div>
     )
@@ -68,8 +74,8 @@ export function ConversationList({ conversations, activeConversationId }: Conver
       {conversations.map((conversation) => {
         const isActive = conversation.id === activeConversationId
         const displayContent = conversation.lastMessage?.content
-          ? (isImageMessage(conversation.lastMessage.content) ? '[图片]' : conversation.lastMessage.content)
-          : '开始对话...'
+          ? (isImageMessage(conversation.lastMessage.content) ? t('imageMessage') : conversation.lastMessage.content)
+          : t('startConversation')
 
         return (
           <Link
@@ -95,7 +101,7 @@ export function ConversationList({ conversations, activeConversationId }: Conver
                   </span>
                   {conversation.lastMessage && (
                     <span className="text-[10px] text-muted-foreground ml-1 shrink-0">
-                      {formatTime(conversation.lastMessage.created_at)}
+                      {formatTime(conversation.lastMessage.created_at, locale, t('justNow'))}
                     </span>
                   )}
                 </div>

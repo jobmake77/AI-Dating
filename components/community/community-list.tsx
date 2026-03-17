@@ -1,6 +1,7 @@
 "use client";
 
 import { CompactCommunityCard } from "./compact-community-card";
+import { useTranslations } from "use-intl";
 
 interface CommunityListProps {
   communities: Array<{
@@ -18,10 +19,11 @@ interface CommunityListProps {
 }
 
 export function CommunityList({ communities, onJoinToggle }: CommunityListProps) {
+  const t = useTranslations('communitiesPage')
   if (communities.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground text-sm">暂无社区</p>
+        <p className="text-muted-foreground text-sm">{t('empty')}</p>
       </div>
     );
   }

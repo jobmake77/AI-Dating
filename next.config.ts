@@ -1,5 +1,4 @@
 import type { NextConfig } from "next";
-
 const securityHeaders = [
   {
     key: "X-Content-Type-Options",

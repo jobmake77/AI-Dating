@@ -4,12 +4,14 @@ import { Bell, AlertCircle, Heart, MessageSquare, UserPlus, Award } from 'lucide
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import { getRequestLocale } from '@/i18n/request'
+import { getTranslation } from '@/i18n/dictionaries'
 
 interface NotificationsPageProps {
   searchParams: Promise<{ page?: string; filter?: string }>
 }
 
-function formatTime(dateStr: string): string {
+function formatTime(dateStr: string, locale: string): string {
   const now = Date.now()
   const time = new Date(dateStr).getTime()
   const diff = (now - time) / 60000 // 分钟
@@ -19,7 +21,10 @@ function formatTime(dateStr: string): string {
   if (diff < 10080) return `${Math.floor(diff / 1440)}d`
 
   const d = new Date(dateStr)
-  return `${d.getMonth() + 1}/${d.getDate()}`
+  return d.toLocaleDateString(locale === 'en' ? 'en-US' : 'zh-CN', {
+    month: 'numeric',
+    day: 'numeric',
+  })
 }
 
 const iconMap: Record<string, typeof Heart> = {
@@ -39,14 +44,6 @@ const colorMap: Record<string, string> = {
   community_invite: 'text-amber-500 bg-amber-500/10',
   repost: 'text-green-500 bg-green-500/10',
 }
-
-const filterTabs = [
-  { key: 'all', label: '全部' },
-  { key: 'like', label: '点赞' },
-  { key: 'comment', label: '评论' },
-  { key: 'follow', label: '关注' },
-  { key: 'system', label: '系统' },
-]
 
 async function loadNotificationsPageData(page: number, filter: string) {
   try {
@@ -78,6 +75,8 @@ async function loadNotificationsPageData(page: number, filter: string) {
 }
 
 export default async function NotificationsPage({ searchParams }: NotificationsPageProps) {
+  const locale = await getRequestLocale()
+  const t = (key: string, fallback?: string) => getTranslation(locale, `notificationsPage.${key}`, fallback)
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -87,6 +86,13 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
   const page = Number(params.page) || 1
   const filter = params.filter || 'all'
   const { filteredNotifications, totalPages, hasError } = await loadNotificationsPageData(page, filter)
+  const filterTabs = [
+    { key: 'all', label: t('tabAll', '全部') },
+    { key: 'like', label: t('tabLike', '点赞') },
+    { key: 'comment', label: t('tabComment', '评论') },
+    { key: 'follow', label: t('tabFollow', '关注') },
+    { key: 'system', label: t('tabSystem', '系统') },
+  ]
 
   if (hasError) {
     return (
@@ -94,8 +100,8 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
         <div className="mx-auto max-w-2xl px-4 py-20">
           <EmptyState
             icon={AlertCircle}
-            title="加载通知失败"
-            description="请稍后重试"
+            title={t('loadFailed', '加载通知失败')}
+            description={t('retryLater', '请稍后重试')}
           />
         </div>
       </div>
@@ -112,8 +118,8 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
                 <Bell className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-foreground">通知</h1>
-                <p className="text-xs text-muted-foreground mt-0.5">查看你的最新动态</p>
+                <h1 className="text-xl font-bold text-foreground">{t('title', '通知')}</h1>
+                <p className="text-xs text-muted-foreground mt-0.5">{t('subtitle', '查看你的最新动态')}</p>
               </div>
             </div>
           </div>
@@ -140,8 +146,8 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
             <div className="py-20">
               <EmptyState
                 icon={Bell}
-                title="暂无通知"
-                description="当有人点赞、评论或关注你时，你会在这里收到通知"
+                title={t('empty', '暂无通知')}
+                description={t('emptyDescription', '当有人点赞、评论或关注你时，你会在这里收到通知')}
               />
             </div>
           ) : (
@@ -156,12 +162,12 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
 
                 let actionText = ''
                 switch (n.type) {
-                  case 'like': actionText = '赞了你的帖子'; break
-                  case 'comment': actionText = '评论了你的帖子'; break
-                  case 'repost': actionText = '转发了你的帖子'; break
-                  case 'follow': actionText = '关注了你'; break
-                  case 'event_reminder': actionText = '活动提醒'; break
-                  case 'community_invite': actionText = '邀请你加入社区'; break
+                  case 'like': actionText = t('likedPost', '赞了你的帖子'); break
+                  case 'comment': actionText = t('commentedPost', '评论了你的帖子'); break
+                  case 'repost': actionText = t('repostedPost', '转发了你的帖子'); break
+                  case 'follow': actionText = t('followedYou', '关注了你'); break
+                  case 'event_reminder': actionText = t('eventReminder', '活动提醒'); break
+                  case 'community_invite': actionText = t('communityInvite', '邀请你加入社区'); break
                 }
 
                 return (
@@ -184,10 +190,10 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
                         {' '}
                         {actionText}
                         {n.content && (
-                          <span className="text-muted-foreground">「{n.content.title}」</span>
+                          <span className="text-muted-foreground">{locale === 'en' ? ` "${n.content.title}"` : `「${n.content.title}」`}</span>
                         )}
                       </p>
-                      <span className="text-[10px] text-muted-foreground">{formatTime(n.created_at)}</span>
+                      <span className="text-[10px] text-muted-foreground">{formatTime(n.created_at, locale)}</span>
                     </div>
 
                     {/* 未读标识 */}
@@ -208,7 +214,7 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
                   href={`/notifications?page=${page - 1}&filter=${filter}`}
                   className="px-3 py-1.5 rounded-md border border-border hover:bg-secondary transition-colors"
                 >
-                  上一页
+                  {t('previous', '上一页')}
                 </Link>
               )}
               <span className="flex items-center px-3 text-muted-foreground">
@@ -219,7 +225,7 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
                   href={`/notifications?page=${page + 1}&filter=${filter}`}
                   className="px-3 py-1.5 rounded-md border border-border hover:bg-secondary transition-colors"
                 >
-                  下一页
+                  {t('next', '下一页')}
                 </Link>
               )}
             </div>

@@ -4,6 +4,8 @@ import { TrendingTimeFilter } from '@/components/content/trending-time-filter'
 import { Flame } from 'lucide-react'
 import { Metadata } from 'next'
 import type { TrendingContentItem } from '@/lib/types/content'
+import { getRequestLocale } from '@/i18n/request'
+import { getTranslation } from '@/i18n/dictionaries'
 
 export const metadata: Metadata = {
   title: '热门内容 - AI-Dating',
@@ -38,6 +40,8 @@ interface TrendingPageProps {
 }
 
 export default async function TrendingPage({ searchParams }: TrendingPageProps) {
+  const locale = await getRequestLocale()
+  const t = (key: string, fallback?: string) => getTranslation(locale, `trendingPage.${key}`, fallback)
   const params = await searchParams
   const timeRange = (params.range as 'day' | 'week' | 'month' | 'all') || 'week'
 
@@ -54,8 +58,8 @@ export default async function TrendingPage({ searchParams }: TrendingPageProps) 
             <Flame className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-foreground">热门内容</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">社区中最受欢迎的内容</p>
+            <h1 className="text-xl font-bold text-foreground">{t('title', '热门内容')}</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">{t('subtitle', '社区中最受欢迎的内容')}</p>
           </div>
         </div>
 

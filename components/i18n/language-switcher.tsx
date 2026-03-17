@@ -1,13 +1,9 @@
 'use client'
 
-/**
- * Language Switcher Component
- * Allows users to switch between languages
- */
-
 import React from 'react'
 import { Globe } from 'lucide-react'
-import { locales, localeNames, localeFlags, type Locale } from '@/i18n/config'
+import { localeNames, type Locale } from '@/i18n/config'
+import { useLocaleSwitcher, useOptionalTranslation } from '@/components/i18n/locale-provider'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,18 +18,13 @@ interface LanguageSwitcherProps {
 }
 
 export function LanguageSwitcher({ currentLocale = 'zh', onLocaleChange }: LanguageSwitcherProps) {
-  const handleLocaleChange = (locale: Locale) => {
-    // Save to localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('locale', locale)
-    }
+  const { locale: activeLocale, setLocale } = useLocaleSwitcher()
+  const t = useOptionalTranslation()
+  const selectedLocale = currentLocale ?? activeLocale
 
-    // Call callback
+  const handleLocaleChange = async (locale: Locale) => {
+    await setLocale(locale)
     onLocaleChange?.(locale)
-
-    // Reload page to apply new locale
-    // In a real implementation with next-intl, this would use router.push
-    window.location.reload()
   }
 
   return (
@@ -41,24 +32,24 @@ export function LanguageSwitcher({ currentLocale = 'zh', onLocaleChange }: Langu
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          size="icon"
-          aria-label="切换语言 / Switch language"
-          className="relative"
+          size="sm"
+          aria-label={t('common.languageSwitcher', '切换语言 / Switch language')}
+          className="h-8 gap-1.5 px-2 text-xs"
         >
           <Globe className="h-5 w-5" />
-          <span className="sr-only">切换语言 / Switch language</span>
+          <span className="font-medium uppercase">{selectedLocale}</span>
+          <span className="sr-only">{t('common.languageSwitcher', '切换语言 / Switch language')}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {locales.map((locale) => (
+      <DropdownMenuContent align="end" className="min-w-36">
+        {(['zh', 'en'] as const).map((locale) => (
           <DropdownMenuItem
             key={locale}
-            onClick={() => handleLocaleChange(locale)}
+            onClick={() => void handleLocaleChange(locale)}
             className="flex items-center gap-2"
           >
-            <span className="text-lg">{localeFlags[locale]}</span>
             <span>{localeNames[locale]}</span>
-            {currentLocale === locale && (
+            {selectedLocale === locale && (
               <span className="ml-auto text-xs">✓</span>
             )}
           </DropdownMenuItem>

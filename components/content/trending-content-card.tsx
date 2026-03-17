@@ -4,9 +4,10 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Heart, MessageCircle, Eye, Repeat2, Flame, Pin, Trophy, Medal, Award } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { zhCN } from "date-fns/locale";
+import { enUS, zhCN } from "date-fns/locale";
 import { getCategoryColor } from "@/lib/utils/categories";
 import type { TrendingContentItem } from "@/lib/types/content";
+import { useLocale, useTranslations } from "use-intl";
 
 interface TrendingContentCardProps {
   content: TrendingContentItem;
@@ -31,8 +32,10 @@ const rankStyles = [
 ];
 
 export function TrendingContentCard({ content, rank }: TrendingContentCardProps) {
+  const locale = useLocale();
+  const t = useTranslations('trendingPage');
   const catColorHsl = content.category_color || (content.category ? getCategoryColor(content.category) : "221 83% 53%");
-  const primaryTag = content.tags?.[0] || "讨论";
+  const primaryTag = content.tags?.[0] || t('defaultTag');
   const tagColor = tagColors[primaryTag] || "bg-tag text-tag-foreground";
   const rankStyle = rank < 3 ? rankStyles[rank] : null;
   const RankIcon = rankStyle ? rankStyle.icon : null;
@@ -112,7 +115,7 @@ export function TrendingContentCard({ content, rank }: TrendingContentCardProps)
               <span>
                 {formatDistanceToNow(new Date(content.created_at), {
                   addSuffix: true,
-                  locale: zhCN,
+                  locale: locale === 'en' ? enUS : zhCN,
                 })}
               </span>
               {content.is_hot && (

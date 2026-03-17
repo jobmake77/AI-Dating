@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
 import { User, Search, SearchX } from 'lucide-react'
 import type { SearchContent, SearchUser } from '@/lib/types/search'
+import { useTranslations } from 'use-intl'
 
 interface SearchResultsProps {
   contents: SearchContent[]
@@ -15,6 +16,7 @@ interface SearchResultsProps {
 }
 
 export function SearchResults({ contents, users, query }: SearchResultsProps) {
+  const t = useTranslations('searchPage')
   const hasResults = contents.length > 0 || users.length > 0
 
   if (!query) {
@@ -22,8 +24,8 @@ export function SearchResults({ contents, users, query }: SearchResultsProps) {
       <div className="py-20">
         <EmptyState
           icon={Search}
-          title="输入关键词开始搜索"
-          description="搜索内容、标签或用户"
+          title={t('emptyPromptTitle')}
+          description={t('emptyPromptDescription')}
         />
       </div>
     )
@@ -34,8 +36,8 @@ export function SearchResults({ contents, users, query }: SearchResultsProps) {
       <div className="py-20">
         <EmptyState
           icon={SearchX}
-          title="没有找到相关结果"
-          description="试试其他关键词或检查拼写"
+          title={t('noResultsTitle')}
+          description={t('noResultsDescription')}
         />
       </div>
     )
@@ -47,7 +49,7 @@ export function SearchResults({ contents, users, query }: SearchResultsProps) {
       {users.length > 0 && (
         <div>
           <h2 className="text-lg font-bold mb-4">
-            用户 <span className="text-muted-foreground text-sm ml-2">({users.length})</span>
+            {t('userResults')} <span className="text-muted-foreground text-sm ml-2">({users.length})</span>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {users.map((user) => (
@@ -87,7 +89,7 @@ export function SearchResults({ contents, users, query }: SearchResultsProps) {
       {contents.length > 0 && (
         <div>
           <h2 className="text-lg font-bold mb-4">
-            内容 <span className="text-muted-foreground text-sm ml-2">({contents.length})</span>
+            {t('contentResults')} <span className="text-muted-foreground text-sm ml-2">({contents.length})</span>
           </h2>
           <div className="border border-border rounded-xl bg-card overflow-hidden shadow-sm">
             {contents.map((content) => (

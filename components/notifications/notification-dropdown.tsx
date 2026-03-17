@@ -7,12 +7,17 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import Link from 'next/link'
 import { getNotifications, markAllAsRead } from '@/lib/actions/notifications'
 import type { Notification } from '@/lib/actions/notifications'
+import { useOptionalTranslation } from '@/components/i18n/locale-provider'
+import { useLocale } from 'use-intl'
 
-function formatTime(dateStr: string): string {
+function formatTime(dateStr: string, locale: 'zh' | 'en'): string {
   const diff = (Date.now() - new Date(dateStr).getTime()) / 3600000
-  if (diff < 24) return `${Math.max(1, Math.floor(diff))}h前`
+  if (diff < 24) {
+    const hours = Math.max(1, Math.floor(diff))
+    return locale === 'en' ? `${hours}h ago` : `${hours}h前`
+  }
   const d = new Date(dateStr)
-  return `${d.getMonth() + 1}月${d.getDate()}日`
+  return locale === 'en' ? `${d.getMonth() + 1}/${d.getDate()}` : `${d.getMonth() + 1}月${d.getDate()}日`
 }
 
 function typeIcon(type: string) {
@@ -24,13 +29,13 @@ function typeIcon(type: string) {
   }
 }
 
-function typeText(n: Notification): string {
+function typeText(n: Notification, locale: 'zh' | 'en'): string {
   const name = n.actor.full_name || n.actor.username
   switch (n.type) {
-    case 'like': return `${name} 赞了你的内容`
-    case 'comment': return `${name} 评论了你的内容`
-    case 'repost': return `${name} 转发了你的内容`
-    case 'follow': return `${name} 关注了你`
+    case 'like': return locale === 'en' ? `${name} liked your post` : `${name} 赞了你的内容`
+    case 'comment': return locale === 'en' ? `${name} commented on your post` : `${name} 评论了你的内容`
+    case 'repost': return locale === 'en' ? `${name} reposted your post` : `${name} 转发了你的内容`
+    case 'follow': return locale === 'en' ? `${name} followed you` : `${name} 关注了你`
     default: return ''
   }
 }
@@ -41,6 +46,8 @@ interface Props {
 }
 
 export function NotificationDropdown({ unreadCount, onRead }: Props) {
+  const locale = useLocale() as 'zh' | 'en'
+  const t = useOptionalTranslation()
   const [open, setOpen] = useState(false)
   const [items, setItems] = useState<Notification[]>([])
   const [loading, setLoading] = useState(false)
@@ -82,7 +89,7 @@ export function NotificationDropdown({ unreadCount, onRead }: Props) {
         size="sm"
         onClick={handleOpen}
         className="relative"
-        aria-label="通知"
+        aria-label={t('nav.notifications', '通知')}
       >
         <Bell className="w-5 h-5" />
         {unreadCount > 0 && (
@@ -93,21 +100,21 @@ export function NotificationDropdown({ unreadCount, onRead }: Props) {
       {open && (
         <div className="absolute right-0 top-full mt-2 w-80 bg-background border border-border rounded-xl shadow-lg z-50 overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-            <span className="font-semibold text-sm">通知</span>
+            <span className="font-semibold text-sm">{t('nav.notifications', '通知')}</span>
             <Link
               href="/notifications"
               className="text-xs text-primary hover:underline"
               onClick={() => setOpen(false)}
             >
-              查看全部
+              {t('common.viewAll', '查看全部')}
             </Link>
           </div>
 
           <div className="max-h-[400px] overflow-y-auto">
             {loading ? (
-              <div className="py-8 text-center text-sm text-muted-foreground">加载中...</div>
+              <div className="py-8 text-center text-sm text-muted-foreground">{t('common.loading', '加载中...')}</div>
             ) : items.length === 0 ? (
-              <div className="py-8 text-center text-sm text-muted-foreground">暂无通知</div>
+              <div className="py-8 text-center text-sm text-muted-foreground">{t('notifications.empty', '暂无通知')}</div>
             ) : (
               items.map((n) => (
                 <Link
@@ -126,12 +133,12 @@ export function NotificationDropdown({ unreadCount, onRead }: Props) {
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm leading-snug line-clamp-2">{typeText(n)}</p>
+                    <p className="text-sm leading-snug line-clamp-2">{typeText(n, locale)}</p>
                     {n.content && (
                       <p className="text-xs text-muted-foreground truncate mt-0.5">{n.content.title}</p>
                     )}
                   </div>
-                  <span className="text-xs text-muted-foreground flex-shrink-0">{formatTime(n.created_at)}</span>
+                  <span className="text-xs text-muted-foreground flex-shrink-0">{formatTime(n.created_at, locale)}</span>
                 </Link>
               ))
             )}

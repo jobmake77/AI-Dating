@@ -8,8 +8,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { ThemePreferences } from '@/types/theme'
-import { Locale } from '@/i18n/config'
+import { isLocale, localeCookieName, type Locale } from '@/i18n/config'
 import { z } from 'zod'
+import { cookies } from 'next/headers'
 
 export interface UserPreferences extends ThemePreferences {
   locale: Locale
@@ -27,6 +28,43 @@ const userPreferencesSchema = z.object({
   reduceMotion: z.boolean().optional(),
   keyboardShortcutsEnabled: z.boolean().optional(),
 })
+
+async function saveLocaleCookie(locale: Locale) {
+  const cookieStore = await cookies()
+  cookieStore.set(localeCookieName, locale, {
+    path: '/',
+    sameSite: 'lax',
+    maxAge: 60 * 60 * 24 * 365,
+  })
+}
+
+async function upsertUserPreferences(userId: string, updateData: Record<string, unknown>) {
+  const supabase = await createClient()
+  const { data: existingPreferences, error: selectError } = await supabase
+    .from('user_preferences')
+    .select('user_id')
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  if (selectError) {
+    return { success: false, error: selectError.message }
+  }
+
+  const query = existingPreferences
+    ? supabase.from('user_preferences').update(updateData).eq('user_id', userId)
+    : supabase.from('user_preferences').insert({
+        user_id: userId,
+        ...updateData,
+      })
+
+  const { error } = await query
+
+  if (error) {
+    return { success: false, error: error.message }
+  }
+
+  return { success: true }
+}
 
 /**
  * Get user preferences from database
@@ -95,6 +133,7 @@ export async function updateUserPreferences(
   }
   if (preferences.locale !== undefined) {
     updateData.locale = preferences.locale
+    await saveLocaleCookie(preferences.locale)
   }
   if (preferences.reduceMotion !== undefined) {
     updateData.reduce_motion = preferences.reduceMotion
@@ -103,28 +142,38 @@ export async function updateUserPreferences(
     updateData.keyboard_shortcuts_enabled = preferences.keyboardShortcutsEnabled
   }
 
-  // Try to update existing preferences
-  const { error: updateError } = await supabase
-    .from('user_preferences')
-    .update(updateData)
-    .eq('user_id', user.id)
-
-  // If no rows were updated, insert new preferences
-  if (updateError) {
-    const { error: insertError } = await supabase
-      .from('user_preferences')
-      .insert({
-        user_id: user.id,
-        ...updateData,
-      })
-
-    if (insertError) {
-      console.error('Failed to insert user preferences:', insertError)
-      return { success: false, error: insertError.message }
-    }
+  const result = await upsertUserPreferences(user.id, updateData)
+  if (!result.success) {
+    console.error('Failed to update user preferences:', result.error)
+    return result
   }
 
   revalidatePath('/settings')
+  revalidatePath('/', 'layout')
+  return { success: true }
+}
+
+export async function updateUserLocale(locale: Locale): Promise<{ success: boolean; error?: string }> {
+  if (!isLocale(locale)) {
+    return { success: false, error: 'Invalid locale' }
+  }
+
+  await saveLocaleCookie(locale)
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (user) {
+    const result = await upsertUserPreferences(user.id, { locale })
+    if (!result.success) {
+      console.error('Failed to update locale preference:', result.error)
+      return result
+    }
+  }
+
+  revalidatePath('/', 'layout')
   return { success: true }
 }
 

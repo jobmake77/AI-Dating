@@ -9,6 +9,7 @@ import { CommunityList } from "@/components/community/community-list";
 import { joinCommunity, leaveCommunity } from "@/lib/actions/communities";
 import { toast } from "sonner";
 import type { CommunityListItem } from '@/lib/types/community'
+import { useTranslations } from "use-intl";
 
 type CommunityTab = 'all' | 'joined' | 'trending'
 
@@ -27,6 +28,7 @@ export function CommunitiesClient({
   trendingCommunities,
   showJoined
 }: CommunitiesClientProps) {
+  const t = useTranslations('communitiesPage')
   const [activeTab, setActiveTab] = useState(initialTab);
   const [searchQuery, setSearchQuery] = useState("");
   const [, startTransition] = useTransition();
@@ -38,22 +40,22 @@ export function CommunitiesClient({
         if (isJoined) {
           const result = await leaveCommunity(communityId);
           if (result.success) {
-            toast.success("已退出社区");
+            toast.success(t('leaveSuccess'));
             router.refresh();
           } else {
-            toast.error(result.error || "退出失败");
+            toast.error(result.error || t('leaveFailed'));
           }
         } else {
           const result = await joinCommunity(communityId);
           if (result.success) {
-            toast.success("已加入社区");
+            toast.success(t('joinSuccess'));
             router.refresh();
           } else {
-            toast.error(result.error || "加入失败");
+            toast.error(result.error || t('joinFailed'));
           }
         }
       } catch {
-        toast.error("操作失败，请重试");
+        toast.error(t('actionFailed'));
       }
     });
   };
@@ -86,7 +88,7 @@ export function CommunitiesClient({
         <div className="relative flex-1 max-w-xs">
           <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="搜索社区..."
+            placeholder={t('searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="h-9 pl-9 bg-card border-border text-xs shadow-card"

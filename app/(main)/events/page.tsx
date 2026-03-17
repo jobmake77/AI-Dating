@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { Plus, Sparkles } from 'lucide-react'
 import { Metadata } from 'next'
+import { getRequestLocale } from '@/i18n/request'
+import { getTranslation } from '@/i18n/dictionaries'
 
 export const metadata: Metadata = {
   title: '活动 - AI-Dating',
@@ -42,6 +44,8 @@ async function EventsList() {
 }
 
 export default async function EventsPage() {
+  const locale = await getRequestLocale()
+  const t = (key: string, fallback?: string) => getTranslation(locale, `eventsPage.${key}`, fallback)
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const { data: profile } = user
@@ -62,9 +66,9 @@ export default async function EventsPage() {
               <Sparkles className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground">活动</h1>
+              <h1 className="text-xl font-bold text-foreground">{t('title', '活动')}</h1>
               <p className="text-xs text-muted-foreground mt-0.5">
-                参与社区活动，提升技能、拓展人脉
+                {t('subtitle', '参与社区活动，提升技能、拓展人脉')}
               </p>
             </div>
           </div>
@@ -76,13 +80,13 @@ export default async function EventsPage() {
             >
               <Link href="/events/create">
                 <Plus className="h-3.5 w-3.5" />
-                创建活动
+                {t('create', '创建活动')}
               </Link>
             </Button>
           )}
         </div>
 
-        <Suspense fallback={<div>加载中...</div>}>
+        <Suspense fallback={<div>{t('loading', '加载中...')}</div>}>
           <EventsList />
         </Suspense>
       </div>

@@ -4,12 +4,14 @@ import { useState } from "react";
 import { CompactEventCard } from "@/components/events/compact-event-card";
 import { EventFilterTabs, type EventFilterId } from "@/components/events/event-filter-tabs";
 import type { EventListItem } from "@/lib/types/events";
+import { useTranslations } from "use-intl";
 
 interface EventsListClientProps {
   events: EventListItem[];
 }
 
 export function EventsListClient({ events }: EventsListClientProps) {
+  const t = useTranslations('eventsPage')
   const [filter, setFilter] = useState<EventFilterId>("upcoming");
 
   const now = new Date();
@@ -33,10 +35,10 @@ export function EventsListClient({ events }: EventsListClientProps) {
         <div className="text-center py-12">
           <p className="text-muted-foreground">
             {filter === "upcoming"
-              ? "暂无即将开始的活动"
+              ? t('emptyUpcoming')
               : filter === "past"
-              ? "暂无已结束的活动"
-              : "暂无活动"}
+              ? t('emptyPast')
+              : t('emptyAll')}
           </p>
         </div>
       ) : (

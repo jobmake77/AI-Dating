@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent } from '@/components/ui/card'
 import type { SearchResult } from '@/lib/types/search'
 import type { Tag } from '@/lib/types/tag'
+import { useTranslations } from 'use-intl'
 
 interface MobileSearchModalProps {
   open: boolean
@@ -23,6 +24,7 @@ const SEARCH_HISTORY_KEY = 'ai-dating-search-history'
 const MAX_HISTORY_ITEMS = 10
 
 export function MobileSearchModal({ open, onOpenChange }: MobileSearchModalProps) {
+  const t = useTranslations('searchPage')
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Pick<SearchResult, 'contents' | 'users'>>({
     contents: [],
@@ -129,7 +131,7 @@ export function MobileSearchModal({ open, onOpenChange }: MobileSearchModalProps
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <Input
                 type="text"
-                placeholder="搜索内容、用户..."
+                placeholder={t('mobilePlaceholder')}
                 value={query}
                 onChange={handleInputChange}
                 className="pl-10 pr-10 h-12 text-base"
@@ -160,7 +162,7 @@ export function MobileSearchModal({ open, onOpenChange }: MobileSearchModalProps
                       <div className="flex items-center justify-between mb-3">
                         <h3 className="text-sm font-semibold flex items-center gap-2">
                           <Clock className="w-4 h-4" />
-                          搜索历史
+                          {t('history')}
                         </h3>
                         <Button
                           variant="ghost"
@@ -168,7 +170,7 @@ export function MobileSearchModal({ open, onOpenChange }: MobileSearchModalProps
                           onClick={clearHistory}
                           className="text-xs h-7"
                         >
-                          清除
+                          {t('clearHistory')}
                         </Button>
                       </div>
                       <div className="flex flex-wrap gap-2">
@@ -192,7 +194,7 @@ export function MobileSearchModal({ open, onOpenChange }: MobileSearchModalProps
                     <div>
                       <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
                         <TrendingUp className="w-4 h-4" />
-                        热门标签
+                        {t('popularTags')}
                       </h3>
                       <div className="flex flex-wrap gap-2">
                         {popularTags.map((tag) => (
@@ -221,8 +223,8 @@ export function MobileSearchModal({ open, onOpenChange }: MobileSearchModalProps
                   {!isLoading && !hasResults && (
                     <div className="text-center py-12">
                       <Search className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                      <p className="text-muted-foreground">没有找到相关结果</p>
-                      <p className="text-sm text-muted-foreground mt-1">试试其他关键词</p>
+                      <p className="text-muted-foreground">{t('mobileNoResults')}</p>
+                      <p className="text-sm text-muted-foreground mt-1">{t('mobileTryAnother')}</p>
                     </div>
                   )}
 
@@ -230,7 +232,7 @@ export function MobileSearchModal({ open, onOpenChange }: MobileSearchModalProps
                   {results.users.length > 0 && (
                     <div className="mb-6">
                       <h3 className="text-sm font-semibold mb-3">
-                        用户 ({results.users.length})
+                        {t('userResults')} ({results.users.length})
                       </h3>
                       <div className="space-y-2">
                         {results.users.map((user) => (
@@ -267,7 +269,7 @@ export function MobileSearchModal({ open, onOpenChange }: MobileSearchModalProps
                   {results.contents.length > 0 && (
                     <div>
                       <h3 className="text-sm font-semibold mb-3">
-                        内容 ({results.contents.length})
+                        {t('contentResults')} ({results.contents.length})
                       </h3>
                       <div className="space-y-2">
                         {results.contents.map((content) => (

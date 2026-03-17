@@ -6,6 +6,7 @@ import { Home, MessageCircle, PenSquare, Users, User } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useOptionalTranslation } from '@/components/i18n/locale-provider'
 
 interface MobileBottomNavProps {
   isAuthenticated: boolean
@@ -14,6 +15,7 @@ interface MobileBottomNavProps {
 
 export function MobileBottomNav({ isAuthenticated, username }: MobileBottomNavProps) {
   const pathname = usePathname()
+  const t = useOptionalTranslation()
   const [unreadMessages, setUnreadMessages] = useState(0)
 
   useEffect(() => {
@@ -52,18 +54,18 @@ export function MobileBottomNav({ isAuthenticated, username }: MobileBottomNavPr
   if (!isAuthenticated) return null
 
   const navItems = [
-    { href: '/', label: '首页', icon: Home },
+    { href: '/', label: t('nav.home', '首页'), icon: Home },
     {
       href: '/messages',
-      label: '消息',
+      label: t('nav.messages', '消息'),
       icon: MessageCircle,
       badge: unreadMessages > 0 ? unreadMessages : undefined,
     },
-    { href: '/create', label: '发布', icon: PenSquare },
-    { href: '/communities', label: '社区', icon: Users },
+    { href: '/create', label: t('content.publish', '发布'), icon: PenSquare },
+    { href: '/communities', label: t('nav.communities', '社区'), icon: Users },
     {
       href: username ? `/u/${username}` : '/settings',
-      label: '我的',
+      label: t('nav.me', '我的'),
       icon: User,
     },
   ]

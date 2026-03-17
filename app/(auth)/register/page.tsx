@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { signUpWithEmail, signInWithGitHub } from '@/lib/actions/auth'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { useTranslations } from 'use-intl'
 
 const DECORATION_BLOBS = Array.from({ length: 20 }, (_, index) => ({
   width: 72 + (index % 5) * 38,
@@ -19,6 +20,7 @@ const DECORATION_BLOBS = Array.from({ length: 20 }, (_, index) => ({
 }))
 
 export default function RegisterPage() {
+  const t = useTranslations('authPages.register')
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [username, setUsername] = useState('')
@@ -30,15 +32,15 @@ export default function RegisterPage() {
   const [success, setSuccess] = useState<string | null>(null)
 
   const features = [
-    { icon: Users, label: '加入真实活跃的开发者社区' },
-    { icon: Zap, label: 'AI 驱动的智能匹配' },
-    { icon: Shield, label: '安全可靠的交流环境' },
+    { icon: Users, label: t('featureCommunity') },
+    { icon: Zap, label: t('featureMatch') },
+    { icon: Shield, label: t('featureSafety') },
   ]
 
   const handleEmailSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!agreed) {
-      setError('请先同意服务条款和隐私政策')
+      setError(t('agreementError'))
       return
     }
 
@@ -57,7 +59,7 @@ export default function RegisterPage() {
       setError(result.error)
       setLoading(false)
     } else if (result?.success) {
-      setSuccess(result.message || '注册成功！')
+      setSuccess(result.message || t('success'))
       if (result?.redirect) {
         setTimeout(() => router.push('/'), 1000)
       } else {
@@ -103,10 +105,8 @@ export default function RegisterPage() {
                 <Rocket className="h-7 w-7 text-white" />
               </div>
             </div>
-            <h2 className="text-3xl font-bold text-white mb-3">开启你的旅程</h2>
-            <p className="text-white/70 text-base max-w-sm mx-auto mb-10">
-              技术讨论 · 项目分享 · 职业成长
-            </p>
+            <h2 className="text-3xl font-bold text-white mb-3">{t('heroTitle')}</h2>
+            <p className="text-white/70 text-base max-w-sm mx-auto mb-10">{t('heroSubtitle')}</p>
             <div className="space-y-4">
               {features.map((f, i) => (
                 <motion.div
@@ -140,8 +140,8 @@ export default function RegisterPage() {
           </div>
 
           <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-            <h1 className="text-lg font-bold text-foreground mb-1">创建账号</h1>
-            <p className="text-xs text-muted-foreground mb-5">加入 AI 开发者社区，开始你的技术之旅</p>
+            <h1 className="text-lg font-bold text-foreground mb-1">{t('title')}</h1>
+            <p className="text-xs text-muted-foreground mb-5">{t('description')}</p>
 
             {error && (
               <Alert variant="destructive" className="mb-4">
@@ -163,10 +163,10 @@ export default function RegisterPage() {
                 disabled={loading}
               >
                 <Github className="h-4 w-4" />
-                使用 GitHub 注册
+                {t('github')}
               </Button>
               <p className="text-[11px] text-muted-foreground">
-                当前 OAuth 仅开放 GitHub，Google 登录暂未启用。
+                {t('oauthHint')}
               </p>
             </div>
 
@@ -175,7 +175,7 @@ export default function RegisterPage() {
                 <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-xs">
-                <span className="bg-card px-3 text-muted-foreground">或使用邮箱注册</span>
+                <span className="bg-card px-3 text-muted-foreground">{t('divider')}</span>
               </div>
             </div>
 
@@ -183,7 +183,7 @@ export default function RegisterPage() {
               <div className="relative">
                 <User className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder="用户名"
+                  placeholder={t('username')}
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className="h-10 pl-9 text-sm bg-secondary/60 border-none focus:ring-2 focus:ring-primary/20"
@@ -194,7 +194,7 @@ export default function RegisterPage() {
                 <Mail className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   type="email"
-                  placeholder="邮箱地址"
+                  placeholder={t('email')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -206,7 +206,7 @@ export default function RegisterPage() {
                 <Lock className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="密码（至少 6 位）"
+                  placeholder={t('password')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -231,10 +231,10 @@ export default function RegisterPage() {
                   className="mt-0.5"
                 />
                 <label htmlFor="agree" className="text-[11px] text-muted-foreground leading-relaxed cursor-pointer">
-                  我已阅读并同意{' '}
-                  <Link href="/terms" className="text-primary hover:underline">服务条款</Link>
-                  {' '}和{' '}
-                  <Link href="/privacy" className="text-primary hover:underline">隐私政策</Link>
+                  {t('agreePrefix')}{' '}
+                  <Link href="/terms" className="text-primary hover:underline">{t('terms')}</Link>
+                  {' '}{t('and')}{' '}
+                  <Link href="/privacy" className="text-primary hover:underline">{t('privacy')}</Link>
                 </label>
               </div>
 
@@ -245,15 +245,15 @@ export default function RegisterPage() {
                 style={{ background: 'linear-gradient(135deg, hsl(221, 83%, 53%), hsl(262, 83%, 58%))' }}
               >
                 <Rocket className="h-4 w-4 mr-1" />
-                {loading ? '创建中...' : '创建账号'}
+                {loading ? t('submitting') : t('submit')}
               </Button>
             </form>
           </div>
 
           <p className="text-center text-xs text-muted-foreground mt-4">
-            已有账号？{' '}
+            {t('loginPrompt')}{' '}
             <Link href="/login" className="text-primary font-medium hover:underline">
-              立即登录
+              {t('loginLink')}
             </Link>
           </p>
         </motion.div>

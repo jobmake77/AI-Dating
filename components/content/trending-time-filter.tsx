@@ -1,22 +1,23 @@
 "use client";
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-
-const timeFilters = [
-  { value: "day", label: "今日" },
-  { value: "week", label: "本周" },
-  { value: "month", label: "本月" },
-  { value: "all", label: "全部" },
-] as const;
+import { useTranslations } from "use-intl";
 
 interface TrendingTimeFilterProps {
   currentRange: string;
 }
 
 export function TrendingTimeFilter({ currentRange }: TrendingTimeFilterProps) {
+  const t = useTranslations('trendingPage');
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const timeFilters = [
+    { value: "day", label: t('today') },
+    { value: "week", label: t('thisWeek') },
+    { value: "month", label: t('thisMonth') },
+    { value: "all", label: t('allTime') },
+  ] as const;
 
   const handleFilterChange = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());

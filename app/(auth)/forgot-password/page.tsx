@@ -8,8 +8,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { sendPasswordReset } from '@/lib/actions/auth'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { useTranslations } from 'use-intl'
 
 export default function ForgotPasswordPage() {
+  const t = useTranslations('authPages.forgotPassword')
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -64,10 +66,8 @@ export default function ForgotPasswordPage() {
                     <KeyRound className="h-6 w-6 text-warning" />
                   </div>
                 </div>
-                <h1 className="text-lg font-bold text-foreground text-center mb-1">忘记密码？</h1>
-                <p className="text-xs text-muted-foreground text-center mb-5">
-                  输入你的注册邮箱，我们将发送重置链接
-                </p>
+                <h1 className="text-lg font-bold text-foreground text-center mb-1">{t('title')}</h1>
+                <p className="text-xs text-muted-foreground text-center mb-5">{t('description')}</p>
 
                 {error && (
                   <Alert variant="destructive" className="mb-4">
@@ -79,7 +79,7 @@ export default function ForgotPasswordPage() {
                   <Mail className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     type="email"
-                    placeholder="邮箱地址"
+                    placeholder={t('email')}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -95,7 +95,7 @@ export default function ForgotPasswordPage() {
                   style={{ background: 'linear-gradient(135deg, hsl(221, 83%, 53%), hsl(199, 89%, 48%))' }}
                 >
                   <Send className="h-4 w-4 mr-1" />
-                  {loading ? '发送中...' : '发送重置链接'}
+                  {loading ? t('submitting') : t('submit')}
                 </Button>
               </motion.form>
             ) : (
@@ -110,18 +110,16 @@ export default function ForgotPasswordPage() {
                     <CheckCircle2 className="h-7 w-7 text-success" />
                   </div>
                 </div>
-                <h2 className="text-lg font-bold text-foreground mb-2">邮件已发送！</h2>
-                <p className="text-xs text-muted-foreground mb-1">
-                  重置链接已发送至
-                </p>
+                <h2 className="text-lg font-bold text-foreground mb-2">{t('successTitle')}</h2>
+                <p className="text-xs text-muted-foreground mb-1">{t('successDescription')}</p>
                 <p className="text-sm font-medium text-foreground mb-4 font-mono">{email}</p>
                 <p className="text-[11px] text-muted-foreground">
-                  没收到？请检查垃圾邮件或{' '}
+                  {t('resendHint')}{' '}
                   <button
                     onClick={() => setSent(false)}
                     className="text-primary hover:underline"
                   >
-                    重新发送
+                    {t('resend')}
                   </button>
                 </p>
               </motion.div>
@@ -132,7 +130,7 @@ export default function ForgotPasswordPage() {
         <p className="text-center mt-4">
           <Link href="/login" className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
             <ArrowLeft className="h-3.5 w-3.5" />
-            返回登录
+            {t('backToLogin')}
           </Link>
         </p>
       </motion.div>

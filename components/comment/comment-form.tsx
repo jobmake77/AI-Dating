@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { createComment } from '@/lib/actions/comments'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'use-intl'
 
 interface CommentFormProps {
   contentId: string
@@ -12,6 +13,7 @@ interface CommentFormProps {
 }
 
 export function CommentForm({ contentId, isAuthenticated }: CommentFormProps) {
+  const t = useTranslations('comments')
   const [content, setContent] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -20,9 +22,9 @@ export function CommentForm({ contentId, isAuthenticated }: CommentFormProps) {
   if (!isAuthenticated) {
     return (
       <div className="text-center py-8 text-muted-foreground">
-        <p>登录后才能发表评论</p>
+        <p>{t('loginRequired')}</p>
         <Button className="mt-4" onClick={() => router.push('/login')}>
-          登录
+          {t('login')}
         </Button>
       </div>
     )
@@ -33,12 +35,12 @@ export function CommentForm({ contentId, isAuthenticated }: CommentFormProps) {
     setError('')
 
     if (!content.trim()) {
-      setError('评论内容不能为空')
+      setError(t('empty'))
       return
     }
 
     if (content.length > 1000) {
-      setError('评论内容不能超过 1000 字符')
+      setError(t('tooLong'))
       return
     }
 
@@ -48,7 +50,7 @@ export function CommentForm({ contentId, isAuthenticated }: CommentFormProps) {
       setContent('')
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : '发表评论失败')
+      setError(err instanceof Error ? err.message : t('submitError'))
     } finally {
       setIsSubmitting(false)
     }
@@ -59,7 +61,7 @@ export function CommentForm({ contentId, isAuthenticated }: CommentFormProps) {
       <Textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        placeholder="写下你的评论..."
+        placeholder={t('placeholder')}
         className="min-h-[100px]"
         disabled={isSubmitting}
       />
@@ -71,7 +73,7 @@ export function CommentForm({ contentId, isAuthenticated }: CommentFormProps) {
           {content.length} / 1000
         </span>
         <Button type="submit" disabled={isSubmitting || !content.trim()}>
-          {isSubmitting ? '发表中...' : '发表评论'}
+          {isSubmitting ? t('submitting') : t('submit')}
         </Button>
       </div>
     </form>

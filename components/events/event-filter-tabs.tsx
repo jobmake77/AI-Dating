@@ -1,14 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "use-intl";
 
-const filters = [
-  { id: "upcoming", label: "即将开始" },
-  { id: "all", label: "全部" },
-  { id: "past", label: "已结束" },
-] as const;
-
-export type EventFilterId = (typeof filters)[number]["id"];
+export type EventFilterId = "upcoming" | "all" | "past";
 
 interface EventFilterTabsProps {
   activeFilter?: EventFilterId;
@@ -19,7 +14,13 @@ export function EventFilterTabs({
   activeFilter = "upcoming",
   onFilterChange,
 }: EventFilterTabsProps) {
+  const t = useTranslations('eventsPage')
   const [active, setActive] = useState<EventFilterId>(activeFilter);
+  const filters = [
+    { id: "upcoming", label: t('filterUpcoming') },
+    { id: "all", label: t('filterAll') },
+    { id: "past", label: t('filterPast') },
+  ] as const;
 
   const handleFilterClick = (filterId: EventFilterId) => {
     setActive(filterId);

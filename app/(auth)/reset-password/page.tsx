@@ -9,8 +9,10 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { KeyRound } from 'lucide-react'
+import { useTranslations } from 'use-intl'
 
 export default function ResetPasswordPage() {
+  const t = useTranslations('authPages.resetPassword')
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -23,11 +25,11 @@ export default function ResetPasswordPage() {
     const confirm = formData.get('confirm') as string
 
     if (password !== confirm) {
-      setError('两次输入的密码不一致')
+      setError(t('mismatch'))
       return
     }
     if (password.length < 6) {
-      setError('密码至少需要 6 个字符')
+      setError(t('tooShort'))
       return
     }
 
@@ -54,8 +56,8 @@ export default function ResetPasswordPage() {
           <div className="flex justify-center mb-4">
             <KeyRound className="h-10 w-10 text-primary" />
           </div>
-          <CardTitle>设置新密码</CardTitle>
-          <CardDescription>请输入你的新密码</CardDescription>
+          <CardTitle>{t('title')}</CardTitle>
+          <CardDescription>{t('description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {error && (
@@ -65,20 +67,20 @@ export default function ResetPasswordPage() {
           )}
           {success ? (
             <Alert>
-              <AlertDescription>密码已更新，正在跳转...</AlertDescription>
+              <AlertDescription>{t('success')}</AlertDescription>
             </Alert>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="password">新密码</Label>
-                <Input id="password" name="password" type="password" placeholder="至少 6 个字符" required minLength={6} disabled={loading} />
+                <Label htmlFor="password">{t('password')}</Label>
+                <Input id="password" name="password" type="password" placeholder={t('passwordPlaceholder')} required minLength={6} disabled={loading} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirm">确认密码</Label>
-                <Input id="confirm" name="confirm" type="password" placeholder="再次输入密码" required minLength={6} disabled={loading} />
+                <Label htmlFor="confirm">{t('confirm')}</Label>
+                <Input id="confirm" name="confirm" type="password" placeholder={t('confirmPlaceholder')} required minLength={6} disabled={loading} />
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? '保存中...' : '保存新密码'}
+                {loading ? t('submitting') : t('submit')}
               </Button>
             </form>
           )}

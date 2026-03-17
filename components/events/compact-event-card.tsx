@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Calendar, MapPin, Users, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLocale, useTranslations } from "use-intl";
 
 interface CompactEventCardProps {
   event: {
@@ -30,25 +31,27 @@ const gradients = [
   "gradient-success",
 ];
 
-function formatDate(dateStr: string) {
+function formatDate(dateStr: string, locale: string) {
   const date = new Date(dateStr);
-  return date.toLocaleString("zh-CN", {
+  return date.toLocaleString(locale === 'en' ? "en-US" : "zh-CN", {
     month: "short",
     day: "numeric",
   });
 }
 
-function formatTime(dateStr: string) {
+function formatTime(dateStr: string, locale: string) {
   const date = new Date(dateStr);
-  return date.toLocaleString("zh-CN", {
+  return date.toLocaleString(locale === 'en' ? "en-US" : "zh-CN", {
     hour: "2-digit",
     minute: "2-digit",
   });
 }
 
 export function CompactEventCard({ event, index = 0 }: CompactEventCardProps) {
+  const t = useTranslations('eventsPage')
+  const locale = useLocale()
   const gradientClass = gradients[index % gradients.length];
-  const primaryTag = event.tags?.[0] || (event.type === "official" ? "官方活动" : "线下活动");
+  const primaryTag = event.tags?.[0] || (event.type === "official" ? t('officialEvent') : t('offlineEvent'));
 
   return (
     <motion.article
@@ -69,7 +72,7 @@ export function CompactEventCard({ event, index = 0 }: CompactEventCardProps) {
               </Link>
               {event.type === "official" && (
                 <span className="rounded-full gradient-primary px-2 py-0.5 text-[10px] font-medium text-white">
-                  官方
+                  {t('official')}
                 </span>
               )}
               <span className="rounded-full bg-accent/10 px-2 py-0.5 font-mono text-[10px] text-accent font-medium">
@@ -84,11 +87,11 @@ export function CompactEventCard({ event, index = 0 }: CompactEventCardProps) {
             <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
               <span className="flex items-center gap-1.5 bg-primary/5 rounded-full px-2.5 py-1">
                 <Calendar className="h-3 w-3 text-primary" />
-                {formatDate(event.start_time)}
+                {formatDate(event.start_time, locale)}
               </span>
               <span className="flex items-center gap-1.5 bg-info/5 rounded-full px-2.5 py-1">
                 <Clock className="h-3 w-3 text-info" />
-                {formatTime(event.start_time)}
+                {formatTime(event.start_time, locale)}
               </span>
               <span className="flex items-center gap-1.5 bg-warning/5 rounded-full px-2.5 py-1">
                 <MapPin className="h-3 w-3 text-warning" />
@@ -108,7 +111,7 @@ export function CompactEventCard({ event, index = 0 }: CompactEventCardProps) {
             className="h-9 text-xs shrink-0 ml-4 gradient-primary text-white hover:opacity-90 shadow-primary"
             asChild
           >
-            <Link href={`/events/${event.id}`}>报名参加</Link>
+            <Link href={`/events/${event.id}`}>{t('join')}</Link>
           </Button>
         </div>
       </div>

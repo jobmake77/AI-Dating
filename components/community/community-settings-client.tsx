@@ -13,6 +13,7 @@ import { Settings, Users, Shield, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { useTranslations } from 'use-intl'
 
 interface CommunitySettingsClientProps {
   community: {
@@ -27,14 +28,8 @@ interface CommunitySettingsClientProps {
   slug: string
 }
 
-const settingsTabs = [
-  { id: 'basic', label: '基本信息', icon: Settings, color: 'text-primary' },
-  { id: 'members', label: '成员管理', icon: Users, color: 'text-info' },
-  { id: 'permissions', label: '权限设置', icon: Shield, color: 'text-warning' },
-  { id: 'danger', label: '危险操作', icon: Trash2, color: 'text-destructive' },
-] as const
-
 export function CommunitySettingsClient({ community, slug }: CommunitySettingsClientProps) {
+  const t = useTranslations('communitiesPage')
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<string>('basic')
   const [name, setName] = useState(community.name)
@@ -55,15 +50,15 @@ export function CommunitySettingsClient({ community, slug }: CommunitySettingsCl
     setIsSubmitting(false)
 
     if (result.success) {
-      toast.success('保存成功', { description: '社区信息已更新' })
+      toast.success(t('saveSuccess'), { description: t('saveSuccessDescription') })
       window.location.href = `/communities/${slug}`
     } else {
-      toast.error('保存失败', { description: result.error || '请稍后重试' })
+      toast.error(t('saveFailed'), { description: result.error || t('actionFailed') })
     }
   }
 
   async function handleDelete() {
-    if (!confirm('确定要删除这个社区吗？此操作无法撤销，所有帖子和成员关系都将被删除。')) {
+    if (!confirm(t('deleteConfirm'))) {
       return
     }
 
@@ -72,13 +67,20 @@ export function CommunitySettingsClient({ community, slug }: CommunitySettingsCl
     setIsDeleting(false)
 
     if (result.success) {
-      toast.success('删除成功', { description: '社区已删除' })
+      toast.success(t('deleteSuccess'), { description: t('deleteSuccessDescription') })
       router.push('/communities')
       router.refresh()
     } else {
-      toast.error('删除失败', { description: result.error || '请稍后重试' })
+      toast.error(t('deleteFailed'), { description: result.error || t('actionFailed') })
     }
   }
+
+  const settingsTabs = [
+    { id: 'basic', label: t('settingsBasic'), icon: Settings, color: 'text-primary' },
+    { id: 'members', label: t('settingsMembers'), icon: Users, color: 'text-info' },
+    { id: 'permissions', label: t('settingsPermissions'), icon: Shield, color: 'text-warning' },
+    { id: 'danger', label: t('settingsDanger'), icon: Trash2, color: 'text-destructive' },
+  ] as const
 
   return (
     <div className="flex gap-5">
@@ -110,13 +112,13 @@ export function CommunitySettingsClient({ community, slug }: CommunitySettingsCl
             animate={{ opacity: 1, y: 0 }}
             className="rounded-lg border border-border bg-card p-6 shadow-card"
           >
-            <h2 className="text-sm font-bold text-foreground mb-5">基本信息</h2>
+            <h2 className="text-sm font-bold text-foreground mb-5">{t('settingsBasic')}</h2>
             <form onSubmit={handleUpdate} className="space-y-5">
               <input type="hidden" name="icon_url" value={iconUrl} readOnly />
               <input type="hidden" name="cover_url" value={coverUrl} readOnly />
 
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">社区名称</label>
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t('name')}</label>
                 <Input
                   name="name"
                   value={name}
@@ -128,7 +130,7 @@ export function CommunitySettingsClient({ community, slug }: CommunitySettingsCl
               </div>
 
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">社区描述</label>
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t('descriptionLabel')}</label>
                 <Textarea
                   name="description"
                   value={description}
@@ -139,27 +141,27 @@ export function CommunitySettingsClient({ community, slug }: CommunitySettingsCl
               </div>
 
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">社区类型</label>
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t('typeLabel')}</label>
                 <RadioGroup name="type" value={type} onValueChange={setType}>
                   <div className="flex items-center space-x-2 rounded-md px-3 py-2.5 hover:bg-secondary/50 transition-colors">
                     <RadioGroupItem value="public" id="public" />
                     <label htmlFor="public" className="text-xs cursor-pointer flex-1">
-                      <span className="font-medium text-foreground">公开社区</span>
-                      <span className="text-muted-foreground"> - 任何人都可以查看和加入</span>
+                      <span className="font-medium text-foreground">{t('public')}</span>
+                      <span className="text-muted-foreground"> - {t('publicDescription')}</span>
                     </label>
                   </div>
                   <div className="flex items-center space-x-2 rounded-md px-3 py-2.5 hover:bg-secondary/50 transition-colors">
                     <RadioGroupItem value="private" id="private" />
                     <label htmlFor="private" className="text-xs cursor-pointer flex-1">
-                      <span className="font-medium text-foreground">私密社区</span>
-                      <span className="text-muted-foreground"> - 需要邀请才能加入</span>
+                      <span className="font-medium text-foreground">{t('private')}</span>
+                      <span className="text-muted-foreground"> - {t('privateDescription')}</span>
                     </label>
                   </div>
                 </RadioGroup>
               </div>
 
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">社区图标</label>
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t('icon')}</label>
                 <CommunityIconUpload
                   currentIcon={iconUrl || null}
                   onUploadSuccess={setIconUrl}
@@ -167,7 +169,7 @@ export function CommunitySettingsClient({ community, slug }: CommunitySettingsCl
               </div>
 
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">社区封面</label>
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t('cover')}</label>
                 <CommunityCoverUpload
                   currentCover={coverUrl || null}
                   onUploadSuccess={setCoverUrl}
@@ -182,7 +184,7 @@ export function CommunitySettingsClient({ community, slug }: CommunitySettingsCl
                   className="h-9 gradient-primary text-white hover:opacity-90 text-xs shadow-primary"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? '保存中...' : '保存修改'}
+                  {isSubmitting ? t('saving') : t('save')}
                 </Button>
               </div>
             </form>
@@ -195,15 +197,15 @@ export function CommunitySettingsClient({ community, slug }: CommunitySettingsCl
             animate={{ opacity: 1, y: 0 }}
             className="rounded-lg border border-border bg-card p-6 shadow-card"
           >
-            <h2 className="text-sm font-bold text-foreground mb-5">成员管理</h2>
+            <h2 className="text-sm font-bold text-foreground mb-5">{t('settingsMembers')}</h2>
             <div className="rounded-lg bg-secondary/60 p-8 text-center">
               <Users className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-              <p className="text-xs text-muted-foreground">成员管理已开放在独立页面</p>
+              <p className="text-xs text-muted-foreground">{t('membersOpenElsewhere')}</p>
               <p className="text-[10px] text-muted-foreground mt-1">
-                创建者默认为版主，可在成员页把后续加入的成员设为管理员或版主
+                {t('membersHint')}
               </p>
               <Button asChild size="sm" className="mt-4 h-9 text-xs">
-                <Link href={`/communities/${slug}/members`}>前往成员管理</Link>
+                <Link href={`/communities/${slug}/members`}>{t('goMembers')}</Link>
               </Button>
             </div>
           </motion.div>
@@ -215,11 +217,11 @@ export function CommunitySettingsClient({ community, slug }: CommunitySettingsCl
             animate={{ opacity: 1, y: 0 }}
             className="rounded-lg border border-border bg-card p-6 shadow-card"
           >
-            <h2 className="text-sm font-bold text-foreground mb-5">权限设置</h2>
+            <h2 className="text-sm font-bold text-foreground mb-5">{t('settingsPermissions')}</h2>
             <div className="rounded-lg bg-secondary/60 p-8 text-center">
               <Shield className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-              <p className="text-xs text-muted-foreground">权限设置功能即将推出</p>
-              <p className="text-[10px] text-muted-foreground mt-1">你可以在这里设置发帖权限、审核规则等</p>
+              <p className="text-xs text-muted-foreground">{t('permissionsSoon')}</p>
+              <p className="text-[10px] text-muted-foreground mt-1">{t('permissionsHint')}</p>
             </div>
           </motion.div>
         )}
@@ -230,9 +232,9 @@ export function CommunitySettingsClient({ community, slug }: CommunitySettingsCl
             animate={{ opacity: 1, y: 0 }}
             className="rounded-lg border border-destructive bg-card p-6 shadow-card"
           >
-            <h2 className="text-sm font-bold text-destructive mb-3">危险操作</h2>
+            <h2 className="text-sm font-bold text-destructive mb-3">{t('settingsDanger')}</h2>
             <p className="text-xs text-muted-foreground mb-5">
-              删除社区将永久删除所有帖子、评论和成员关系。此操作无法撤销。
+              {t('dangerHint')}
             </p>
             <Button
               type="button"
@@ -243,7 +245,7 @@ export function CommunitySettingsClient({ community, slug }: CommunitySettingsCl
               disabled={isDeleting}
             >
               <Trash2 className="w-3.5 h-3.5 mr-1.5" />
-              {isDeleting ? '删除中...' : '删除社区'}
+              {isDeleting ? t('deleting') : t('deleteCommunity')}
             </Button>
           </motion.div>
         )}

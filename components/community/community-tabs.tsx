@@ -2,12 +2,7 @@
 
 import { LayoutGrid, UserCheck, TrendingUp } from "lucide-react";
 import { useState } from "react";
-
-const tabs = [
-  { id: "all", label: "全部", icon: LayoutGrid, color: "text-primary" },
-  { id: "joined", label: "已加入", icon: UserCheck, color: "text-success" },
-  { id: "trending", label: "热门", icon: TrendingUp, color: "text-warning" },
-];
+import { useTranslations } from "use-intl";
 
 interface CommunityTabsProps {
   activeTab?: string;
@@ -20,7 +15,13 @@ export function CommunityTabs({
   onTabChange,
   showJoined = true
 }: CommunityTabsProps) {
+  const t = useTranslations('communitiesPage');
   const [active, setActive] = useState(activeTab);
+  const tabs = [
+    { id: "all", label: t('tabAll'), icon: LayoutGrid, color: "text-primary" },
+    { id: "joined", label: t('tabJoined'), icon: UserCheck, color: "text-success" },
+    { id: "trending", label: t('tabTrending'), icon: TrendingUp, color: "text-warning" },
+  ];
 
   const handleTabClick = (tabId: string) => {
     setActive(tabId);

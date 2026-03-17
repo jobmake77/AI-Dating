@@ -6,6 +6,8 @@ import { Plus } from 'lucide-react'
 import { Metadata } from 'next'
 import { CommunitiesClient } from '@/components/community/communities-client'
 import type { CommunityListItem, CommunityMembershipRecord } from '@/lib/types/community'
+import { getRequestLocale } from '@/i18n/request'
+import { getTranslation } from '@/i18n/dictionaries'
 
 export const metadata: Metadata = {
   title: '社区 - AI-Dating',
@@ -49,6 +51,8 @@ function isCommunityListItem(
 }
 
 export default async function CommunitiesPage() {
+  const locale = await getRequestLocale()
+  const t = (key: string, fallback?: string) => getTranslation(locale, `communitiesPage.${key}`, fallback)
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -85,9 +89,9 @@ export default async function CommunitiesPage() {
     <div className="mx-auto max-w-4xl px-4 py-6">
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h1 className="text-xl font-bold text-foreground">社区</h1>
+          <h1 className="text-xl font-bold text-foreground">{t('title', '社区')}</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            发现并加入感兴趣的技术社区
+            {t('subtitle', '发现并加入感兴趣的技术社区')}
           </p>
         </div>
         {user && (
@@ -97,7 +101,7 @@ export default async function CommunitiesPage() {
               className="h-9 gap-1.5 gradient-primary text-white hover:opacity-90 text-xs shadow-primary"
             >
               <Plus className="h-3.5 w-3.5" />
-              创建社区
+              {t('create', '创建社区')}
             </Button>
           </Link>
         )}

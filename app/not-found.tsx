@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Code2, Home, ArrowLeft, SearchX } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
+import { useTranslations } from 'use-intl'
 
 /**
  * 404 页面
@@ -13,6 +14,7 @@ import { Button } from '@/components/ui/button'
  */
 export default function NotFound() {
   const pathname = usePathname()
+  const t = useTranslations('notFound')
 
   useEffect(() => {
     console.error('404 Error: User attempted to access non-existent route:', pathname)
@@ -51,11 +53,11 @@ export default function NotFound() {
         >
           404
         </h1>
-        <p className="text-base font-medium text-foreground mb-1">页面未找到</p>
+        <p className="text-base font-medium text-foreground mb-1">{t('title')}</p>
         <p className="text-sm text-muted-foreground mb-2">
-          路径 <code className="font-mono text-xs bg-secondary px-1.5 py-0.5 rounded text-foreground">{pathname}</code> 不存在
+          {t('pathPrefix')} <code className="font-mono text-xs bg-secondary px-1.5 py-0.5 rounded text-foreground">{pathname}</code> {t('pathSuffix')}
         </p>
-        <p className="text-xs text-muted-foreground mb-8">该页面可能已被移除、重命名或暂时不可用</p>
+        <p className="text-xs text-muted-foreground mb-8">{t('description')}</p>
 
         <div className="flex items-center justify-center gap-3">
           <Link href="/">
@@ -64,12 +66,12 @@ export default function NotFound() {
               style={{ background: 'linear-gradient(135deg, hsl(221, 83%, 53%), hsl(262, 83%, 58%))' }}
             >
               <Home className="h-4 w-4" />
-              返回首页
+              {t('home')}
             </Button>
           </Link>
           <Button variant="outline" onClick={() => window.history.back()} className="h-10 gap-2 text-sm">
             <ArrowLeft className="h-4 w-4" />
-            返回上一页
+            {t('back')}
           </Button>
         </div>
 

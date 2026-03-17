@@ -7,6 +7,10 @@ import { GoogleAnalytics } from '@next/third-parties/google';
 import "@/lib/utils/env"; // 验证环境变量
 import { WebVitalsReporter } from "@/components/analytics/web-vitals-reporter";
 import { CookieConsent } from "@/components/privacy/cookie-consent";
+import { getHtmlLang, getMessagesForLocale } from '@/i18n/dictionaries'
+import { LocaleProvider } from '@/components/i18n/locale-provider'
+import { AppIntlProvider } from '@/components/i18n/intl-provider'
+import { getRequestLocale } from '@/i18n/request'
 
 export const metadata: Metadata = {
   title: {
@@ -72,16 +76,18 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const organizationSchema = getOrganizationSchema()
   const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
+  const locale = await getRequestLocale()
+  const messages = getMessagesForLocale(locale)
 
   return (
-    <html lang="zh-CN">
+    <html lang={getHtmlLang(locale)}>
       <head>
         <script
           type="application/ld+json"
@@ -89,11 +95,15 @@ export default function RootLayout({
         />
       </head>
       <body>
-        {children}
-        <Toaster />
-        <Sonner />
-        <WebVitalsReporter />
-        <CookieConsent />
+        <AppIntlProvider locale={locale} messages={messages}>
+          <LocaleProvider>
+            {children}
+            <Toaster />
+            <Sonner />
+            <WebVitalsReporter />
+            <CookieConsent />
+          </LocaleProvider>
+        </AppIntlProvider>
       </body>
       {gaId && <GoogleAnalytics gaId={gaId} />}
     </html>
