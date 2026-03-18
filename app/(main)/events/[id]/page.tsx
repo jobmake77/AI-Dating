@@ -8,6 +8,8 @@ import { MapPin, Clock, Users, Calendar } from 'lucide-react'
 import type { Metadata } from 'next'
 import { getEventSchema, getBreadcrumbSchema } from '@/lib/seo/structured-data'
 import Image from 'next/image'
+import { getRequestLocale } from '@/i18n/request'
+import { getTranslation } from '@/i18n/dictionaries'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -53,8 +55,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-function formatDateTime(dateStr: string) {
-  return new Date(dateStr).toLocaleString('zh-CN', {
+function formatDateTime(dateStr: string, locale: string) {
+  return new Date(dateStr).toLocaleString(locale === 'en' ? 'en-US' : 'zh-CN', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -66,6 +68,9 @@ function formatDateTime(dateStr: string) {
 
 export default async function EventDetailPage({ params }: Props) {
   const { id } = await params
+  const locale = await getRequestLocale()
+  const format = (key: string, fallback: string, values?: Record<string, string | number>) =>
+    getTranslation(locale, `eventDetail.${key}`, fallback).replace(/\{(\w+)\}/g, (_, name) => String(values?.[name] ?? `{${name}}`))
   const { data: event } = await getEventById(id)
   if (!event) {
     notFound()
@@ -95,8 +100,8 @@ export default async function EventDetailPage({ params }: Props) {
   })
 
   const breadcrumbSchema = getBreadcrumbSchema([
-    { name: '首页', url: '/' },
-    { name: '活动', url: '/events' },
+    { name: format('home', '首页'), url: '/' },
+    { name: format('events', '活动'), url: '/events' },
     { name: event.title, url: `/events/${event.id}` },
   ])
 
@@ -133,12 +138,12 @@ export default async function EventDetailPage({ params }: Props) {
             <div className="flex items-center gap-2 mb-2">
               {event.type === 'official' && (
                 <span className="rounded-full gradient-primary px-2.5 py-0.5 text-[10px] font-medium text-white shadow-primary">
-                  官方
+                  {format('official', '官方')}
                 </span>
               )}
               {event.status === 'cancelled' && (
                 <span className="rounded-full bg-destructive px-2.5 py-0.5 text-[10px] font-medium text-white">
-                  已取消
+                  {format('cancelled', '已取消')}
                 </span>
               )}
             </div>
@@ -146,7 +151,7 @@ export default async function EventDetailPage({ params }: Props) {
             <div className="flex items-center gap-3 text-xs text-white/90">
               <span className="flex items-center gap-1">
                 <Users className="h-3.5 w-3.5" />
-                {event.participants_count} 人参与
+                {format('participants', '{count} 人参与', { count: event.participants_count })}
               </span>
               <span className="flex items-center gap-1">
                 <MapPin className="h-3.5 w-3.5" />
@@ -163,11 +168,11 @@ export default async function EventDetailPage({ params }: Props) {
         <Breadcrumb className="mb-5">
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/" className="text-xs">首页</BreadcrumbLink>
+              <BreadcrumbLink href="/" className="text-xs">{format('home', '首页')}</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink href="/events" className="text-xs">活动</BreadcrumbLink>
+              <BreadcrumbLink href="/events" className="text-xs">{format('events', '活动')}</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
@@ -180,21 +185,21 @@ export default async function EventDetailPage({ params }: Props) {
         <div className="rounded-lg border border-border bg-card overflow-hidden shadow-card mb-4">
           <div className="h-1 gradient-primary" />
           <div className="p-5">
-            <h2 className="text-sm font-semibold mb-3">活动详情</h2>
+            <h2 className="text-sm font-semibold mb-3">{format('details', '活动详情')}</h2>
 
             {/* Time & Location Info */}
             <div className="space-y-2 mb-4">
               <div className="flex items-center gap-2 text-xs">
                 <div className="flex items-center gap-1.5 bg-primary/5 rounded-full px-2.5 py-1.5">
                   <Calendar className="h-3 w-3 text-primary" />
-                  <span>{formatDateTime(event.start_time)}</span>
+                  <span>{formatDateTime(event.start_time, locale)}</span>
                 </div>
               </div>
               {event.end_time && (
                 <div className="flex items-center gap-2 text-xs">
                   <div className="flex items-center gap-1.5 bg-info/5 rounded-full px-2.5 py-1.5">
                     <Clock className="h-3 w-3 text-info" />
-                    <span>结束：{formatDateTime(event.end_time)}</span>
+                    <span>{format('endsAt', '结束：{date}', { date: formatDateTime(event.end_time, locale) })}</span>
                   </div>
                 </div>
               )}
@@ -207,7 +212,7 @@ export default async function EventDetailPage({ params }: Props) {
               <div className="flex items-center gap-2 text-xs">
                 <div className="flex items-center gap-1.5 bg-success/5 rounded-full px-2.5 py-1.5">
                   <Users className="h-3 w-3 text-success" />
-                  <span className="font-mono">{event.participants_count} 人参与</span>
+                  <span className="font-mono">{format('participants', '{count} 人参与', { count: event.participants_count })}</span>
                 </div>
               </div>
             </div>
@@ -224,7 +229,7 @@ export default async function EventDetailPage({ params }: Props) {
             {/* Organizer */}
             {event.creator && (
               <div className="text-xs text-muted-foreground pt-3 border-t">
-                发起人：{organizerName || '匿名'}
+                {format('organizer', '发起人：{name}', { name: organizerName || format('anonymous', '匿名') })}
               </div>
             )}
           </div>

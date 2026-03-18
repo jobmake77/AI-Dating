@@ -7,16 +7,19 @@ import { Button } from '@/components/ui/button'
 import { Heart, MessageCircle, Repeat2, UserPlus, User, X } from 'lucide-react'
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
-import { zhCN } from 'date-fns/locale'
+import { enUS, zhCN } from 'date-fns/locale'
 import { markAsRead, deleteNotification } from '@/lib/actions/notifications'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { useLocale, useTranslations } from 'use-intl'
 
 interface NotificationItemProps {
   notification: Notification
 }
 
 export function NotificationItem({ notification }: NotificationItemProps) {
+  const locale = useLocale()
+  const t = useTranslations()
   const router = useRouter()
 
   const getIcon = () => {
@@ -36,13 +39,13 @@ export function NotificationItem({ notification }: NotificationItemProps) {
     const actorName = notification.actor.full_name || notification.actor.username
     switch (notification.type) {
       case 'like':
-        return `${actorName} 赞了你的内容`
+        return locale === 'en' ? `${actorName} ${t('notifications.like')}` : `${actorName} 赞了你的内容`
       case 'comment':
-        return `${actorName} 评论了你的内容`
+        return locale === 'en' ? `${actorName} ${t('notifications.comment')}` : `${actorName} 评论了你的内容`
       case 'repost':
-        return `${actorName} 转发了你的内容`
+        return locale === 'en' ? `${actorName} ${t('notifications.repost')}` : `${actorName} 转发了你的内容`
       case 'follow':
-        return `${actorName} 关注了你`
+        return locale === 'en' ? `${actorName} ${t('notifications.follow')}` : `${actorName} 关注了你`
     }
   }
 
@@ -73,11 +76,11 @@ export function NotificationItem({ notification }: NotificationItemProps) {
 
     try {
       await deleteNotification(notification.id)
-      toast.success('通知已删除')
+      toast.success(t('notificationItem.deleted'))
       router.refresh()
     } catch (error) {
       console.error('Delete notification error:', error)
-      toast.error('删除失败')
+      toast.error(t('notificationItem.deleteFailed'))
     }
   }
 
@@ -124,7 +127,7 @@ export function NotificationItem({ notification }: NotificationItemProps) {
             <p className="text-xs text-muted-foreground mt-2">
               {formatDistanceToNow(new Date(notification.created_at), {
                 addSuffix: true,
-                locale: zhCN,
+                locale: locale === 'en' ? enUS : zhCN,
               })}
             </p>
           </div>

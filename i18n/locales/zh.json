@@ -357,6 +357,108 @@
     "allTime": "全部",
     "defaultTag": "讨论"
   },
+  "mobileNav": {
+    "openMenu": "打开菜单",
+    "openNavigationMenu": "打开导航菜单",
+    "sheetLabel": "移动端导航菜单",
+    "primaryNav": "主要功能",
+    "myCommunities": "我的社区",
+    "loginAccount": "登录账号"
+  },
+  "homeSidebar": {
+    "eyebrow": "社区目录",
+    "title": "已加入社区",
+    "descriptionHasCommunities": "这里展示你已经加入的社区，方便快速回到熟悉的讨论区。",
+    "descriptionAuthenticatedEmpty": "你还没有加入社区，可以先去社区广场看看。",
+    "descriptionLoggedOut": "登录后，这里会展示你已经加入的社区。",
+    "emptyAuthenticatedHint": "加入社区后，这里会优先显示你的常驻版块。",
+    "emptyLoggedOutHint": "登录并加入社区后，这里会展示你的社区列表。",
+    "browseAll": "浏览全部社区"
+  },
+  "feedTabs": {
+    "hot": "热门",
+    "latest": "最新",
+    "following": "关注"
+  },
+  "legacyFeedTabs": {
+    "new": "最新",
+    "hot": "热门",
+    "top": "精华"
+  },
+  "communityDetail": {
+    "home": "首页",
+    "communities": "社区",
+    "allCommunities": "所有社区",
+    "manageMembers": "成员管理",
+    "createPost": "发帖",
+    "leave": "退出社区",
+    "join": "加入社区",
+    "members": "成员",
+    "posts": "帖子",
+    "createdAt": "创建于 {date}",
+    "emptyPosts": "还没有帖子",
+    "replies": "回复",
+    "likes": "点赞",
+    "managementTeam": "管理团队",
+    "admin": "管理员",
+    "moderator": "版主",
+    "rules": "社区规则",
+    "noRules": "当前社区暂未配置规则。",
+    "loading": "加载中...",
+    "tabLatest": "最新",
+    "tabPopular": "热门"
+  },
+  "communityMembers": {
+    "title": "成员",
+    "back": "返回社区",
+    "empty": "暂无成员",
+    "creatorModerator": "创建者 / 版主",
+    "admin": "管理员",
+    "moderator": "版主",
+    "member": "成员",
+    "joinedAt": "加入于 {date}",
+    "setAdmin": "设为管理员",
+    "setModerator": "设为版主",
+    "setMember": "设为成员",
+    "remove": "移除",
+    "totalMembers": "共 {count} 名成员",
+    "loading": "加载中..."
+  },
+  "communityPost": {
+    "back": "返回社区",
+    "members": "成员",
+    "comments": "评论",
+    "noComments": "还没有评论",
+    "loginToComment": "请先登录后评论",
+    "locked": "帖子已被锁定，无法评论",
+    "commentPlaceholder": "写下你的评论...",
+    "submitComment": "发表评论",
+    "loading": "加载中..."
+  },
+  "eventDetail": {
+    "home": "首页",
+    "events": "活动",
+    "official": "官方",
+    "cancelled": "已取消",
+    "participants": "{count} 人参与",
+    "details": "活动详情",
+    "endsAt": "结束：{date}",
+    "organizer": "发起人：{name}",
+    "anonymous": "匿名",
+    "actionFailed": "操作失败，请重试",
+    "left": "已取消参与",
+    "joined": "报名成功！",
+    "joinedState": "已参加",
+    "joinAction": "报名参加",
+    "linkCopied": "链接已复制",
+    "linkCopiedDescription": "可粘贴到微信等平台分享",
+    "copyFailed": "复制失败，请手动复制链接",
+    "share": "分享"
+  },
+  "notificationItem": {
+    "deleted": "通知已删除",
+    "deleteFailed": "删除失败"
+  },
   "errors": {
     "generic": "发生错误，请稍后重试",
     "notFound": "未找到",

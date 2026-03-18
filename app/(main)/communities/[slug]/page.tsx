@@ -11,6 +11,8 @@ import { joinCommunity, leaveCommunity } from '@/lib/actions/communities'
 import { Metadata } from 'next'
 import { getOrganizationSchema, getBreadcrumbSchema } from '@/lib/seo/structured-data'
 import { CommunityFeedTabs } from '@/components/community/community-feed-tabs'
+import { getRequestLocale } from '@/i18n/request'
+import { getTranslation } from '@/i18n/dictionaries'
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
@@ -52,6 +54,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 async function CommunityHeader({ slug }: { slug: string }) {
+  const locale = await getRequestLocale()
+  const format = (key: string, fallback: string, values?: Record<string, string | number>) =>
+    getTranslation(locale, `communityDetail.${key}`, fallback).replace(/\{(\w+)\}/g, (_, name) => String(values?.[name] ?? `{${name}}`))
   const supabase = await createClient()
   const [{ data: { user } }, { data: community }] = await Promise.all([
     supabase.auth.getUser(),
@@ -116,7 +121,7 @@ async function CommunityHeader({ slug }: { slug: string }) {
                   <Link href={`/communities/${slug}/members`}>
                     <Button variant="outline" size="sm" className="h-9 text-xs border-border">
                       <Shield className="h-3.5 w-3.5 mr-1.5" />
-                      成员管理
+                      {format('manageMembers', '成员管理')}
                     </Button>
                   </Link>
                 )}
@@ -132,7 +137,7 @@ async function CommunityHeader({ slug }: { slug: string }) {
                     <Link href={`/communities/${slug}/posts/create`}>
                       <Button size="sm" className="h-9 text-xs">
                         <Plus className="w-3.5 h-3.5 mr-1.5" />
-                        发帖
+                        {format('createPost', '发帖')}
                       </Button>
                     </Link>
                     <form action={async () => {
@@ -140,7 +145,7 @@ async function CommunityHeader({ slug }: { slug: string }) {
                       await leaveCommunity(community.id)
                     }}>
                       <Button variant="outline" size="sm" className="h-9 text-xs" type="submit">
-                        退出社区
+                        {format('leave', '退出社区')}
                       </Button>
                     </form>
                   </>
@@ -150,7 +155,7 @@ async function CommunityHeader({ slug }: { slug: string }) {
                     await joinCommunity(community.id)
                   }}>
                     <Button size="sm" className="h-9 text-xs" type="submit">
-                      加入社区
+                      {format('join', '加入社区')}
                     </Button>
                   </form>
                 )}
@@ -167,15 +172,17 @@ async function CommunityHeader({ slug }: { slug: string }) {
               {community.members_count >= 1000
                 ? `${(community.members_count / 1000).toFixed(1)}k`
                 : community.members_count}
-            </span> 成员
+            </span> {format('members', '成员')}
           </span>
           <span className="flex items-center gap-1.5">
             <MessageCircle className="h-3.5 w-3.5" />
-            <span className="font-mono font-bold text-foreground">{community.posts_count}</span> 帖子
+            <span className="font-mono font-bold text-foreground">{community.posts_count}</span> {format('posts', '帖子')}
           </span>
           <span className="flex items-center gap-1.5">
             <Calendar className="h-3.5 w-3.5" />
-            创建于 {new Date(community.created_at).toLocaleDateString('zh-CN')}
+            {format('createdAt', '创建于 {date}', {
+              date: new Date(community.created_at).toLocaleDateString(locale === 'en' ? 'en-US' : 'zh-CN'),
+            })}
           </span>
         </div>
       </div>
@@ -184,13 +191,15 @@ async function CommunityHeader({ slug }: { slug: string }) {
 }
 
 async function PostsList({ communityId, sortBy }: { communityId: string; sortBy: 'latest' | 'popular' }) {
+  const locale = await getRequestLocale()
+  const t = (key: string, fallback: string) => getTranslation(locale, `communityDetail.${key}`, fallback)
   const { data: posts } = await getCommunityPosts(communityId, { sortBy, limit: 50 })
   type CommunityPost = Awaited<ReturnType<typeof getCommunityPosts>>['data'][number]
 
   if (posts.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground text-sm">还没有帖子</p>
+        <p className="text-muted-foreground text-sm">{t('emptyPosts', '还没有帖子')}</p>
       </div>
     )
   }
@@ -235,7 +244,7 @@ async function PostsList({ communityId, sortBy }: { communityId: string; sortBy:
                     {post.author.display_name || post.author.username}
                   </span>
                   <span className="text-muted-foreground/50">·</span>
-                  <span>{new Date(post.created_at).toLocaleDateString('zh-CN')}</span>
+                  <span>{new Date(post.created_at).toLocaleDateString(locale === 'en' ? 'en-US' : 'zh-CN')}</span>
                   {post.is_locked && (
                     <Lock className="h-3 w-3 text-muted-foreground" />
                   )}
@@ -254,13 +263,13 @@ async function PostsList({ communityId, sortBy }: { communityId: string; sortBy:
                 <div className="flex flex-col items-center w-12">
                   <span className="font-mono font-bold text-foreground">{post.comments_count}</span>
                   <span className="text-[10px] flex items-center gap-0.5">
-                    <MessageCircle className="h-2.5 w-2.5" /> 回复
+                    <MessageCircle className="h-2.5 w-2.5" /> {t('replies', '回复')}
                   </span>
                 </div>
                 <div className="flex flex-col items-center w-12">
                   <span className="font-mono font-bold text-foreground">{post.likes_count}</span>
                   <span className="text-[10px] flex items-center gap-0.5">
-                    <ThumbsUp className="h-2.5 w-2.5" /> 点赞
+                    <ThumbsUp className="h-2.5 w-2.5" /> {t('likes', '点赞')}
                   </span>
                 </div>
               </div>
@@ -273,6 +282,8 @@ async function PostsList({ communityId, sortBy }: { communityId: string; sortBy:
 }
 
 async function CommunityRulesSidebar({ communityId }: { communityId: string }) {
+  const locale = await getRequestLocale()
+  const t = (key: string, fallback: string) => getTranslation(locale, `communityDetail.${key}`, fallback)
   const supabase = await createClient()
 
   const [{ data: managementTeam }, { data: rulesData }] = await Promise.all([
@@ -321,7 +332,7 @@ async function CommunityRulesSidebar({ communityId }: { communityId: string }) {
           <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
             <h3 className="font-mono text-xs font-bold text-foreground mb-3 flex items-center gap-1.5">
               <Shield className="h-3.5 w-3.5 text-primary" />
-              管理团队
+              {t('managementTeam', '管理团队')}
             </h3>
             <div className="space-y-2">
               {members.map((member) => {
@@ -346,7 +357,7 @@ async function CommunityRulesSidebar({ communityId }: { communityId: string }) {
                         {user.full_name || user.username}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {member.role === 'admin' ? '管理员' : '版主'}
+                        {member.role === 'admin' ? t('admin', '管理员') : t('moderator', '版主')}
                       </p>
                     </div>
                   </Link>
@@ -360,10 +371,10 @@ async function CommunityRulesSidebar({ communityId }: { communityId: string }) {
         <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
           <h3 className="font-mono text-xs font-bold text-foreground mb-3 flex items-center gap-1.5">
             <Shield className="h-3.5 w-3.5 text-yellow-500" />
-            社区规则
+            {t('rules', '社区规则')}
           </h3>
           {rules.length === 0 ? (
-            <p className="text-xs text-muted-foreground">当前社区暂未配置规则。</p>
+            <p className="text-xs text-muted-foreground">{t('noRules', '当前社区暂未配置规则。')}</p>
           ) : (
             <ol className="space-y-2">
               {rules.map((rule, i) => (
@@ -389,11 +400,13 @@ async function CommunityContent({
   slug: string
   activeTab: 'latest' | 'popular'
 }) {
+  const locale = await getRequestLocale()
+  const t = (key: string, fallback: string) => getTranslation(locale, `communityDetail.${key}`, fallback)
   return (
     <div className="flex gap-4">
       <main className="flex-1 min-w-0 space-y-3">
         <CommunityFeedTabs activeTab={activeTab} basePath={`/communities/${slug}`} />
-        <Suspense fallback={<div className="text-sm text-muted-foreground">加载中...</div>}>
+        <Suspense fallback={<div className="text-sm text-muted-foreground">{t('loading', '加载中...')}</div>}>
           <PostsList communityId={communityId} sortBy={activeTab} />
         </Suspense>
       </main>
@@ -411,6 +424,8 @@ export default async function CommunityPage({
   searchParams: Promise<{ tab?: string }>
 }) {
   const { slug } = await params
+  const locale = await getRequestLocale()
+  const t = (key: string, fallback: string) => getTranslation(locale, `communityDetail.${key}`, fallback)
   const { tab } = await searchParams
   const { data: community } = await getCommunityBySlug(slug)
   const activeTab: 'latest' | 'popular' = tab === 'popular' ? 'popular' : 'latest'
@@ -440,8 +455,8 @@ export default async function CommunityPage({
   })
 
   const breadcrumbSchema = getBreadcrumbSchema([
-    { name: '首页', url: '/' },
-    { name: '社区', url: '/communities' },
+    { name: t('home', '首页'), url: '/' },
+    { name: t('communities', '社区'), url: '/communities' },
     { name: community.name, url: `/communities/${community.slug}` },
   ])
 
@@ -463,7 +478,7 @@ export default async function CommunityPage({
           className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary mb-4 transition-colors"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          所有社区
+          {t('allCommunities', '所有社区')}
         </Link>
 
         <CommunityHeader slug={slug} />

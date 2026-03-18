@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { Share2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { useTranslations } from 'use-intl'
 
 interface EventShareButtonProps {
   title: string
@@ -10,6 +11,7 @@ interface EventShareButtonProps {
 }
 
 export function EventShareButton({ title, url }: EventShareButtonProps) {
+  const t = useTranslations('eventDetail')
   const handleShare = async () => {
     if (navigator.share) {
       try {
@@ -22,9 +24,9 @@ export function EventShareButton({ title, url }: EventShareButtonProps) {
 
     try {
       await navigator.clipboard.writeText(url)
-      toast.success('链接已复制', { description: '可粘贴到微信等平台分享' })
+      toast.success(t('linkCopied'), { description: t('linkCopiedDescription') })
     } catch {
-      toast.error('复制失败，请手动复制链接')
+      toast.error(t('copyFailed'))
     }
   }
 
@@ -36,7 +38,7 @@ export function EventShareButton({ title, url }: EventShareButtonProps) {
       className="h-9 text-xs gap-1.5 flex-1"
     >
       <Share2 className="h-3.5 w-3.5" />
-      分享
+      {t('share')}
     </Button>
   )
 }

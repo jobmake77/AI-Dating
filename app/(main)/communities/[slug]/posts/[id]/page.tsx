@@ -10,6 +10,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft, ThumbsUp, MessageCircle, Pin, Lock, Trash, Users } from 'lucide-react'
 import { togglePostLike, togglePostPin, togglePostLock, deleteCommunityPost, createPostComment } from '@/lib/actions/community-posts'
+import { getRequestLocale } from '@/i18n/request'
+import { getTranslation } from '@/i18n/dictionaries'
 
 async function handleToggleLike(postId: string): Promise<void> {
   'use server'
@@ -32,6 +34,8 @@ async function handleDeletePost(postId: string): Promise<void> {
 }
 
 async function PostDetail({ postId }: { postId: string }) {
+  const locale = await getRequestLocale()
+  const t = (key: string, fallback: string) => getTranslation(locale, `communityPost.${key}`, fallback)
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -80,7 +84,7 @@ async function PostDetail({ postId }: { postId: string }) {
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {new Date(post.created_at).toLocaleString('zh-CN')}
+                  {new Date(post.created_at).toLocaleString(locale === 'en' ? 'en-US' : 'zh-CN')}
                 </p>
               </div>
               {canEdit && (
@@ -140,7 +144,7 @@ async function PostDetail({ postId }: { postId: string }) {
               )}
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <MessageCircle className="w-3.5 h-3.5" />
-                {post.comments_count} 评论
+                {post.comments_count} {t('comments', '评论')}
               </div>
             </div>
           </div>
@@ -151,13 +155,15 @@ async function PostDetail({ postId }: { postId: string }) {
 }
 
 async function CommentsList({ postId }: { postId: string }) {
+  const locale = await getRequestLocale()
+  const t = (key: string, fallback: string) => getTranslation(locale, `communityPost.${key}`, fallback)
   const { data: comments } = await getPostComments(postId)
   type CommunityPostComment = Awaited<ReturnType<typeof getPostComments>>['data'][number]
 
   if (comments.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground text-sm">
-        还没有评论
+        {t('noComments', '还没有评论')}
       </div>
     )
   }
@@ -181,7 +187,7 @@ async function CommentsList({ postId }: { postId: string }) {
                   {comment.author.display_name || comment.author.username}
                 </Link>
                 <span className="text-xs text-muted-foreground">
-                  {new Date(comment.created_at).toLocaleString('zh-CN')}
+                  {new Date(comment.created_at).toLocaleString(locale === 'en' ? 'en-US' : 'zh-CN')}
                 </span>
               </div>
               <p className="text-sm mt-1 leading-relaxed">{comment.content}</p>
@@ -194,13 +200,15 @@ async function CommentsList({ postId }: { postId: string }) {
 }
 
 async function CommentForm({ postId }: { postId: string }) {
+  const locale = await getRequestLocale()
+  const t = (key: string, fallback: string) => getTranslation(locale, `communityPost.${key}`, fallback)
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
     return (
       <Card className="p-4 text-center shadow-sm">
-        <p className="text-muted-foreground text-sm">请先登录后评论</p>
+        <p className="text-muted-foreground text-sm">{t('loginToComment', '请先登录后评论')}</p>
       </Card>
     )
   }
@@ -209,7 +217,7 @@ async function CommentForm({ postId }: { postId: string }) {
   if (post?.is_locked) {
     return (
       <Card className="p-4 text-center shadow-sm">
-        <p className="text-muted-foreground text-sm">帖子已被锁定，无法评论</p>
+        <p className="text-muted-foreground text-sm">{t('locked', '帖子已被锁定，无法评论')}</p>
       </Card>
     )
   }
@@ -225,7 +233,7 @@ async function CommentForm({ postId }: { postId: string }) {
       <form action={handleSubmit} className="space-y-3">
         <Textarea
           name="content"
-          placeholder="写下你的评论..."
+          placeholder={t('commentPlaceholder', '写下你的评论...')}
           required
           minLength={1}
           maxLength={2000}
@@ -233,7 +241,7 @@ async function CommentForm({ postId }: { postId: string }) {
           className="text-sm"
         />
         <div className="flex justify-end">
-          <Button type="submit" size="sm" className="text-xs">发表评论</Button>
+          <Button type="submit" size="sm" className="text-xs">{t('submitComment', '发表评论')}</Button>
         </div>
       </form>
     </Card>
@@ -246,6 +254,8 @@ export default async function PostDetailPage({
   params: Promise<{ slug: string; id: string }>
 }) {
   const { slug, id } = await params
+  const locale = await getRequestLocale()
+  const t = (key: string, fallback: string) => getTranslation(locale, `communityPost.${key}`, fallback)
   const { data: post } = await getCommunityPostById(id)
 
   if (!post) {
@@ -260,7 +270,7 @@ export default async function PostDetailPage({
           className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary mb-4 transition-colors"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          返回社区
+          {t('back', '返回社区')}
         </Link>
 
         {/* Community Info Banner */}
@@ -287,22 +297,22 @@ export default async function PostDetailPage({
                   {post.community.name}
                 </Link>
                 <p className="text-xs text-muted-foreground">
-                  {post.community.members_count} 成员
+                  {post.community.members_count} {t('members', '成员')}
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        <Suspense fallback={<div className="text-sm text-muted-foreground">加载中...</div>}>
+        <Suspense fallback={<div className="text-sm text-muted-foreground">{t('loading', '加载中...')}</div>}>
           <PostDetail postId={id} />
         </Suspense>
 
         <div className="mt-6">
-          <h2 className="text-base font-bold mb-3">评论</h2>
+          <h2 className="text-base font-bold mb-3">{t('comments', '评论')}</h2>
           <div className="space-y-3">
             <CommentForm postId={id} />
-            <Suspense fallback={<div className="text-sm text-muted-foreground">加载中...</div>}>
+            <Suspense fallback={<div className="text-sm text-muted-foreground">{t('loading', '加载中...')}</div>}>
               <CommentsList postId={id} />
             </Suspense>
           </div>

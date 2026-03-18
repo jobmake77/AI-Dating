@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "use-intl";
 
 interface CommunityFeedTabsProps {
   activeTab: string;
@@ -8,11 +9,12 @@ interface CommunityFeedTabsProps {
 }
 
 export function CommunityFeedTabs({ activeTab, basePath }: CommunityFeedTabsProps) {
+  const t = useTranslations('communityDetail');
   const router = useRouter();
   const searchParams = useSearchParams();
   const tabs = [
-    { id: 'latest', label: '最新' },
-    { id: 'popular', label: '热门' },
+    { id: 'latest', label: t('tabLatest') },
+    { id: 'popular', label: t('tabPopular') },
   ];
 
   const handleTabClick = (tabId: string) => {

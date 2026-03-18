@@ -6,6 +6,7 @@ import { Users } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { joinEvent, leaveEvent } from '@/lib/actions/events'
+import { useTranslations } from 'use-intl'
 
 interface EventJoinButtonProps {
   eventId: string
@@ -20,6 +21,7 @@ export function EventJoinButton({
   initialCount,
   isAuthenticated,
 }: EventJoinButtonProps) {
+  const t = useTranslations('eventDetail')
   const [isJoined, setIsJoined] = useState(initialJoined)
   const [, setCount] = useState(initialCount)
   const [isLoading, setIsLoading] = useState(false)
@@ -38,21 +40,21 @@ export function EventJoinButton({
         : await joinEvent(eventId)
 
       if (!result.success) {
-        toast.error(result.error || '操作失败，请重试')
+        toast.error(result.error || t('actionFailed'))
         return
       }
 
       if (isJoined) {
         setIsJoined(false)
         setCount((c) => Math.max(c - 1, 0))
-        toast.success('已取消参与')
+        toast.success(t('left'))
       } else {
         setIsJoined(true)
         setCount((c) => c + 1)
-        toast.success('报名成功！')
+        toast.success(t('joined'))
       }
     } catch {
-      toast.error('操作失败，请重试')
+      toast.error(t('actionFailed'))
     } finally {
       setIsLoading(false)
     }
@@ -70,7 +72,7 @@ export function EventJoinButton({
       }`}
     >
       <Users className="h-3.5 w-3.5" />
-      {isJoined ? '已参加' : '报名参加'}
+      {isJoined ? t('joinedState') : t('joinAction')}
     </Button>
   )
 }

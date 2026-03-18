@@ -357,6 +357,108 @@
     "allTime": "All time",
     "defaultTag": "Discussion"
   },
+  "mobileNav": {
+    "openMenu": "Open menu",
+    "openNavigationMenu": "Open navigation menu",
+    "sheetLabel": "Mobile navigation menu",
+    "primaryNav": "Primary navigation",
+    "myCommunities": "My communities",
+    "loginAccount": "Sign in"
+  },
+  "homeSidebar": {
+    "eyebrow": "Community directory",
+    "title": "Joined communities",
+    "descriptionHasCommunities": "Your joined communities appear here so you can jump back into familiar discussions quickly.",
+    "descriptionAuthenticatedEmpty": "You haven't joined any communities yet. Try browsing the community hub first.",
+    "descriptionLoggedOut": "After you sign in, your joined communities will appear here.",
+    "emptyAuthenticatedHint": "Once you join communities, your regular spaces will show up here first.",
+    "emptyLoggedOutHint": "Sign in and join communities to see your community list here.",
+    "browseAll": "Browse all communities"
+  },
+  "feedTabs": {
+    "hot": "Hot",
+    "latest": "Latest",
+    "following": "Following"
+  },
+  "legacyFeedTabs": {
+    "new": "New",
+    "hot": "Hot",
+    "top": "Top"
+  },
+  "communityDetail": {
+    "home": "Home",
+    "communities": "Communities",
+    "allCommunities": "All communities",
+    "manageMembers": "Manage members",
+    "createPost": "Create post",
+    "leave": "Leave community",
+    "join": "Join community",
+    "members": "members",
+    "posts": "posts",
+    "createdAt": "Created on {date}",
+    "emptyPosts": "No posts yet",
+    "replies": "Replies",
+    "likes": "Likes",
+    "managementTeam": "Management team",
+    "admin": "Admin",
+    "moderator": "Moderator",
+    "rules": "Community rules",
+    "noRules": "No rules have been configured for this community yet.",
+    "loading": "Loading...",
+    "tabLatest": "Latest",
+    "tabPopular": "Popular"
+  },
+  "communityMembers": {
+    "title": "Members",
+    "back": "Back to community",
+    "empty": "No members yet",
+    "creatorModerator": "Creator / Moderator",
+    "admin": "Admin",
+    "moderator": "Moderator",
+    "member": "Member",
+    "joinedAt": "Joined on {date}",
+    "setAdmin": "Make admin",
+    "setModerator": "Make moderator",
+    "setMember": "Make member",
+    "remove": "Remove",
+    "totalMembers": "{count} members total",
+    "loading": "Loading..."
+  },
+  "communityPost": {
+    "back": "Back to community",
+    "members": "members",
+    "comments": "Comments",
+    "noComments": "No comments yet",
+    "loginToComment": "Please sign in to comment",
+    "locked": "This post is locked and can no longer receive comments",
+    "commentPlaceholder": "Write your comment...",
+    "submitComment": "Post comment",
+    "loading": "Loading..."
+  },
+  "eventDetail": {
+    "home": "Home",
+    "events": "Events",
+    "official": "Official",
+    "cancelled": "Cancelled",
+    "participants": "{count} participants",
+    "details": "Event details",
+    "endsAt": "Ends: {date}",
+    "organizer": "Organizer: {name}",
+    "anonymous": "Anonymous",
+    "actionFailed": "Action failed. Please try again.",
+    "left": "Left event",
+    "joined": "Registered successfully!",
+    "joinedState": "Joined",
+    "joinAction": "Register",
+    "linkCopied": "Link copied",
+    "linkCopiedDescription": "You can now paste it anywhere you want to share it.",
+    "copyFailed": "Copy failed. Please copy the link manually.",
+    "share": "Share"
+  },
+  "notificationItem": {
+    "deleted": "Notification deleted",
+    "deleteFailed": "Delete failed"
+  },
   "errors": {
     "generic": "An error occurred, please try again later",
     "notFound": "Not found",

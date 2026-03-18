@@ -8,6 +8,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft, Shield, Crown, Users } from 'lucide-react'
 import { updateMemberRole, removeMember } from '@/lib/actions/communities'
+import { getRequestLocale } from '@/i18n/request'
+import { getTranslation } from '@/i18n/dictionaries'
 
 async function handleUpdateRole(communityId: string, memberId: string, role: 'admin' | 'moderator' | 'member'): Promise<void> {
   'use server'
@@ -30,13 +32,16 @@ async function MembersList({
   currentUserRole: string | null
   creatorId: string
 }) {
+  const locale = await getRequestLocale()
+  const format = (key: string, fallback: string, values?: Record<string, string | number>) =>
+    getTranslation(locale, `communityMembers.${key}`, fallback).replace(/\{(\w+)\}/g, (_, name) => String(values?.[name] ?? `{${name}}`))
   const { data: members } = await getCommunityMembers(communityId, { limit: 100 })
   type CommunityMember = Awaited<ReturnType<typeof getCommunityMembers>>['data'][number]
 
   if (members.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground text-sm">暂无成员</p>
+        <p className="text-muted-foreground text-sm">{format('empty', '暂无成员')}</p>
       </div>
     )
   }
@@ -83,10 +88,10 @@ async function MembersList({
               </div>
 
               <p className="mb-2 text-xs text-muted-foreground">
-                {isCreatorMember && '创建者 / 版主'}
-                {!isCreatorMember && member.role === 'admin' && '管理员'}
-                {!isCreatorMember && member.role === 'moderator' && '版主'}
-                {member.role === 'member' && '成员'}
+                {isCreatorMember && format('creatorModerator', '创建者 / 版主')}
+                {!isCreatorMember && member.role === 'admin' && format('admin', '管理员')}
+                {!isCreatorMember && member.role === 'moderator' && format('moderator', '版主')}
+                {member.role === 'member' && format('member', '成员')}
               </p>
 
               {member.user.bio && (
@@ -96,7 +101,9 @@ async function MembersList({
               )}
 
               <p className="text-xs text-muted-foreground">
-                加入于 {new Date(member.joined_at).toLocaleDateString('zh-CN')}
+                {format('joinedAt', '加入于 {date}', {
+                  date: new Date(member.joined_at).toLocaleDateString(locale === 'en' ? 'en-US' : 'zh-CN'),
+                })}
               </p>
 
               {canEditRole && (
@@ -104,7 +111,7 @@ async function MembersList({
                   {member.role !== 'admin' && (
                     <form action={handleUpdateRole.bind(null, communityId, member.id, 'admin')}>
                       <Button variant="outline" size="sm" className="w-full text-xs" type="submit">
-                        设为管理员
+                        {format('setAdmin', '设为管理员')}
                       </Button>
                     </form>
                   )}
@@ -112,7 +119,7 @@ async function MembersList({
                   {member.role !== 'moderator' && (
                     <form action={handleUpdateRole.bind(null, communityId, member.id, 'moderator')}>
                       <Button variant="outline" size="sm" className="w-full text-xs" type="submit">
-                        设为版主
+                        {format('setModerator', '设为版主')}
                       </Button>
                     </form>
                   )}
@@ -120,7 +127,7 @@ async function MembersList({
                   {member.role !== 'member' && (
                     <form action={handleUpdateRole.bind(null, communityId, member.id, 'member')}>
                       <Button variant="outline" size="sm" className="w-full text-xs" type="submit">
-                        设为成员
+                        {format('setMember', '设为成员')}
                       </Button>
                     </form>
                   )}
@@ -128,7 +135,7 @@ async function MembersList({
                   {canRemoveMember && (
                     <form action={handleRemoveMember.bind(null, communityId, member.id)}>
                       <Button variant="destructive" size="sm" className="w-full text-xs" type="submit">
-                        移除
+                        {format('remove', '移除')}
                       </Button>
                     </form>
                   )}
@@ -148,6 +155,9 @@ export default async function MembersPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
+  const locale = await getRequestLocale()
+  const format = (key: string, fallback: string, values?: Record<string, string | number>) =>
+    getTranslation(locale, `communityMembers.${key}`, fallback).replace(/\{(\w+)\}/g, (_, name) => String(values?.[name] ?? `{${name}}`))
   const { data: community } = await getCommunityBySlug(slug)
 
   if (!community) {
@@ -185,7 +195,7 @@ export default async function MembersPage({
           className="mb-4 inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-primary"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          返回社区
+          {format('back', '返回社区')}
         </Link>
 
         <div className="mb-6 overflow-hidden rounded-lg border border-border bg-card shadow-sm">
@@ -208,14 +218,14 @@ export default async function MembersPage({
               )}
 
               <div className="pb-1">
-                <h1 className="text-lg font-bold text-foreground">{community.name} - 成员</h1>
-                <p className="mt-0.5 text-xs text-muted-foreground">共 {community.members_count} 名成员</p>
+                <h1 className="text-lg font-bold text-foreground">{community.name} - {format('title', '成员')}</h1>
+                <p className="mt-0.5 text-xs text-muted-foreground">{format('totalMembers', '共 {count} 名成员', { count: community.members_count })}</p>
               </div>
             </div>
           </div>
         </div>
 
-        <Suspense fallback={<div className="text-sm text-muted-foreground">加载中...</div>}>
+        <Suspense fallback={<div className="text-sm text-muted-foreground">{format('loading', '加载中...')}</div>}>
           <MembersList
             communityId={community.id}
             currentUserId={user?.id || null}

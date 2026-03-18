@@ -2,21 +2,22 @@
 
 import { Flame, Clock, Heart } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-
-const tabs = [
-  { id: "hot", label: "热门", icon: Flame, color: "text-warning" },
-  { id: "latest", label: "最新", icon: Clock, color: "text-info" },
-  { id: "following", label: "关注", icon: Heart, color: "text-red-500" },
-];
+import { useTranslations } from "use-intl";
 
 interface FeedTabsProps {
   showFollowing?: boolean;
 }
 
 export function FeedTabs({ showFollowing = true }: FeedTabsProps) {
+  const t = useTranslations('feedTabs');
   const router = useRouter();
   const searchParams = useSearchParams();
   const activeTab = searchParams.get("tab") || "hot";
+  const tabs = [
+    { id: "hot", label: t('hot'), icon: Flame, color: "text-warning" },
+    { id: "latest", label: t('latest'), icon: Clock, color: "text-info" },
+    { id: "following", label: t('following'), icon: Heart, color: "text-red-500" },
+  ];
   const visibleTabs = showFollowing ? tabs : tabs.filter((tab) => tab.id !== "following");
 
   const handleTabClick = (tabId: string) => {

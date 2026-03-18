@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowUpRight, Users } from "lucide-react";
 import type { HomepageCommunityItem } from "@/lib/queries/home";
 import Image from "next/image";
+import { useTranslations } from "use-intl";
 
 interface CategoriesSidebarProps {
   communities: HomepageCommunityItem[];
@@ -14,13 +15,14 @@ export function CategoriesSidebar({
   communities,
   isAuthenticated = false,
 }: CategoriesSidebarProps) {
+  const t = useTranslations('homeSidebar');
   const hasCommunities = communities.length > 0;
-  const sidebarTitle = "已加入社区";
+  const sidebarTitle = t('title');
   const sidebarDescription = hasCommunities
-    ? "这里展示你已经加入的社区，方便快速回到熟悉的讨论区。"
+    ? t('descriptionHasCommunities')
     : isAuthenticated
-      ? "你还没有加入社区，可以先去社区广场看看。"
-      : "登录后，这里会展示你已经加入的社区。";
+      ? t('descriptionAuthenticatedEmpty')
+      : t('descriptionLoggedOut');
 
   return (
     <aside className="hidden lg:block w-56 shrink-0">
@@ -28,7 +30,7 @@ export function CategoriesSidebar({
         <section>
           <div className="mb-3">
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-              社区目录
+              {t('eyebrow')}
             </p>
             <h2 className="mt-1.5 text-lg font-semibold tracking-[-0.03em] text-foreground">
               {sidebarTitle}
@@ -75,7 +77,7 @@ export function CategoriesSidebar({
           ) : (
             <div className="rounded-2xl border border-dashed border-border bg-card/50 px-3 py-3">
               <p className="text-xs leading-5 text-muted-foreground">
-                {isAuthenticated ? "加入社区后，这里会优先显示你的常驻版块。" : "登录并加入社区后，这里会展示你的社区列表。"}
+                {isAuthenticated ? t('emptyAuthenticatedHint') : t('emptyLoggedOutHint')}
               </p>
             </div>
           )}
@@ -84,7 +86,7 @@ export function CategoriesSidebar({
             href="/communities"
             className="mt-3 inline-flex items-center gap-1 text-[11px] font-medium text-foreground transition-colors hover:text-primary"
           >
-            浏览全部社区
+            {t('browseAll')}
             <ArrowUpRight className="h-3.5 w-3.5" />
           </Link>
         </section>

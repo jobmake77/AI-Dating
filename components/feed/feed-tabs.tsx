@@ -3,12 +3,7 @@
 import { Flame, Clock, TrendingUp } from "lucide-react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-
-const tabs = [
-  { id: "new", label: "最新", icon: Clock, color: "text-info" },
-  { id: "hot", label: "热门", icon: Flame, color: "text-warning" },
-  { id: "top", label: "精华", icon: TrendingUp, color: "text-success" },
-]
+import { useTranslations } from "use-intl"
 
 interface FeedTabsProps {
   activeTab?: string
@@ -16,7 +11,13 @@ interface FeedTabsProps {
 }
 
 export function FeedTabs({ activeTab = "new", basePath }: FeedTabsProps) {
+  const t = useTranslations('legacyFeedTabs')
   const searchParams = useSearchParams()
+  const tabs = [
+    { id: "new", label: t('new'), icon: Clock, color: "text-info" },
+    { id: "hot", label: t('hot'), icon: Flame, color: "text-warning" },
+    { id: "top", label: t('top'), icon: TrendingUp, color: "text-success" },
+  ]
 
   const createTabUrl = (tabId: string) => {
     const params = new URLSearchParams(searchParams.toString())

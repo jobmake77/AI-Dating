@@ -9,6 +9,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Separator } from '@/components/ui/separator'
 import { Menu, Home, Search, Bell, User, Settings, LogOut, PenSquare, MessageCircle, Users } from 'lucide-react'
 import { useHydrated } from '@/lib/hooks/use-hydrated'
+import { useTranslations } from 'use-intl'
 
 interface MobileNavProps {
   isAuthenticated: boolean
@@ -23,21 +24,22 @@ interface MobileNavProps {
 }
 
 export function MobileNav({ isAuthenticated, username, onSignOut, userCommunities = [] }: MobileNavProps) {
+  const t = useTranslations()
   const [open, setOpen] = useState(false)
   const mounted = useHydrated()
   const pathname = usePathname()
 
   const navItems = [
-    { href: '/', label: '首页', icon: Home },
-    { href: '/search', label: '搜索', icon: Search },
+    { href: '/', label: t('nav.home'), icon: Home },
+    { href: '/search', label: t('common.search'), icon: Search },
     ...(isAuthenticated
       ? [
-          { href: '/messages', label: '消息', icon: MessageCircle },
-          { href: '/communities', label: '社区', icon: Users },
-          { href: '/notifications', label: '通知', icon: Bell },
-          { href: '/create', label: '发布', icon: PenSquare },
-          { href: username ? `/u/${username}` : '/settings', label: '我的', icon: User },
-          { href: '/settings', label: '设置', icon: Settings },
+          { href: '/messages', label: t('nav.messages'), icon: MessageCircle },
+          { href: '/communities', label: t('nav.communities'), icon: Users },
+          { href: '/notifications', label: t('nav.notifications'), icon: Bell },
+          { href: '/create', label: t('nav.create'), icon: PenSquare },
+          { href: username ? `/u/${username}` : '/settings', label: t('nav.me'), icon: User },
+          { href: '/settings', label: t('nav.settings'), icon: Settings },
         ]
       : []),
   ]
@@ -47,7 +49,7 @@ export function MobileNav({ isAuthenticated, username, onSignOut, userCommunitie
     return (
       <Button variant="ghost" size="icon" className="md:hidden" disabled>
         <Menu className="h-5 w-5" />
-        <span className="sr-only">打开菜单</span>
+        <span className="sr-only">{t('mobileNav.openMenu')}</span>
       </Button>
     )
   }
@@ -55,13 +57,13 @@ export function MobileNav({ isAuthenticated, username, onSignOut, userCommunitie
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="md:hidden" aria-label="打开导航菜单">
+        <Button variant="ghost" size="icon" className="md:hidden" aria-label={t('mobileNav.openNavigationMenu')}>
           <Menu className="h-5 w-5" aria-hidden="true" />
-          <span className="sr-only">打开菜单</span>
+          <span className="sr-only">{t('mobileNav.openMenu')}</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-[280px] sm:w-[320px]" aria-label="移动端导航菜单">
-        <nav className="flex flex-col gap-4 mt-8" aria-label="主要功能">
+      <SheetContent side="left" className="w-[280px] sm:w-[320px]" aria-label={t('mobileNav.sheetLabel')}>
+        <nav className="flex flex-col gap-4 mt-8" aria-label={t('mobileNav.primaryNav')}>
           {navItems.map((item) => {
             const Icon = item.icon
             const isActive = pathname === item.href
@@ -89,7 +91,7 @@ export function MobileNav({ isAuthenticated, username, onSignOut, userCommunitie
             <>
               <Separator className="my-2" role="separator" />
               <div className="px-4 py-2 text-xs font-semibold text-muted-foreground" role="heading" aria-level={2}>
-                我的社区
+                {t('mobileNav.myCommunities')}
               </div>
               {userCommunities.map((community) => (
                 <Link
@@ -134,10 +136,10 @@ export function MobileNav({ isAuthenticated, username, onSignOut, userCommunitie
                   setOpen(false)
                 }}
                 className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-destructive/10 hover:text-destructive transition-colors text-left"
-                aria-label="退出登录"
+                aria-label={t('auth.logout')}
               >
                 <LogOut className="h-5 w-5" aria-hidden="true" />
-                <span className="font-medium">退出登录</span>
+                <span className="font-medium">{t('nav.logout')}</span>
               </button>
             </>
           )}
@@ -149,9 +151,9 @@ export function MobileNav({ isAuthenticated, username, onSignOut, userCommunitie
                 href="/login"
                 onClick={() => setOpen(false)}
                 className="flex items-center justify-center px-4 py-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-medium"
-                aria-label="登录账号"
+                aria-label={t('mobileNav.loginAccount')}
               >
-                登录
+                {t('auth.login')}
               </Link>
             </>
           )}
