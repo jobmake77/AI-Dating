@@ -26,6 +26,7 @@ import { useToast } from '@/hooks/use-toast'
 import { VideoExtension } from './video-extension'
 import { useVideoUpload } from './video-upload'
 import { common, createLowlight } from 'lowlight'
+import { useTranslations } from 'use-intl'
 
 interface TiptapEditorProps {
   content: string
@@ -43,6 +44,7 @@ export interface TiptapEditorRef {
 
 export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
   ({ content, onChange, placeholder = '分享你的想法...', onEmojiClick, showEmojiPicker, emojiPickerElement }, ref) => {
+    const t = useTranslations('editorToolbar')
     const { toast } = useToast()
     const fileInputRef = useRef<HTMLInputElement>(null)
     const lowlight = createLowlight(common)
@@ -123,10 +125,10 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
     const { fileInputRef: videoInputRef, uploading: videoUploading, progress: videoProgress, handleFileChange: handleVideoFileChange } = useVideoUpload({
       onUploadSuccess: (url) => {
         editor?.chain().focus().setVideo({ src: url }).run()
-        toast({ title: '上传成功', description: '视频已插入到内容中' })
+        toast({ title: t('uploadSuccess'), description: t('videoInserted') })
       },
       onError: (message) => {
-        toast({ variant: 'destructive', title: '上传失败', description: message })
+        toast({ variant: 'destructive', title: t('uploadFailed'), description: message })
       },
     })
 
@@ -142,8 +144,8 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
       if (!editor) return
 
       toast({
-        title: '上传中...',
-        description: '正在上传图片，请稍候',
+        title: t('uploading'),
+        description: t('uploadingImage'),
       })
 
       try {
@@ -155,7 +157,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
         if (result.error) {
           toast({
             variant: 'destructive',
-            title: '上传失败',
+            title: t('uploadFailed'),
             description: result.error,
           })
           return
@@ -171,18 +173,18 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
         }
 
         toast({
-          title: '上传成功',
-          description: '图片已插入到内容中',
+          title: t('uploadSuccess'),
+          description: t('imageInserted'),
         })
       } catch (error) {
         console.error('Image upload error:', error)
         toast({
           variant: 'destructive',
-          title: '上传失败',
-          description: '图片上传失败，请重试',
+          title: t('uploadFailed'),
+          description: t('imageUploadFailed'),
         })
       }
-    }, [editor, toast])
+    }, [editor, t, toast])
 
     const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0]
@@ -200,7 +202,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
       if (!editor) return
 
       const previousUrl = editor.getAttributes('link').href
-      const url = window.prompt('输入链接地址:', previousUrl)
+      const url = window.prompt(t('linkPrompt'), previousUrl)
 
       // cancelled
       if (url === null) {
@@ -215,7 +217,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
 
       // update link
       editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
-    }, [editor])
+    }, [editor, t])
 
     if (!editor) {
       return <div className="border rounded-lg p-4 min-h-[200px] animate-pulse bg-muted/20" />
@@ -224,15 +226,15 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
     return (
       <div className="border rounded-lg bg-background">
         {/* Simplified Toolbar - Only Essential Icons */}
-        <div className="border-b p-1.5 flex gap-0.5 bg-muted/20" role="toolbar" aria-label="文本编辑工具栏">
+        <div className="border-b p-1.5 flex gap-0.5 bg-muted/20" role="toolbar" aria-label={t('toolbarLabel')}>
           <Button
             type="button"
             variant="ghost"
             size="sm"
             onClick={() => editor.chain().focus().toggleBold().run()}
             className={editor.isActive('bold') ? 'bg-accent' : ''}
-            title="加粗"
-            aria-label="加粗 (Ctrl+B)"
+            title={t('bold')}
+            aria-label={t('boldAria')}
             aria-pressed={editor.isActive('bold')}
           >
             <Bold className="h-4 w-4" aria-hidden="true" />
@@ -243,8 +245,8 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
             size="sm"
             onClick={() => editor.chain().focus().toggleItalic().run()}
             className={editor.isActive('italic') ? 'bg-accent' : ''}
-            title="斜体"
-            aria-label="斜体 (Ctrl+I)"
+            title={t('italic')}
+            aria-label={t('italicAria')}
             aria-pressed={editor.isActive('italic')}
           >
             <Italic className="h-4 w-4" aria-hidden="true" />
@@ -255,8 +257,8 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
             size="sm"
             onClick={() => editor.chain().focus().toggleBulletList().run()}
             className={editor.isActive('bulletList') ? 'bg-accent' : ''}
-            title="列表"
-            aria-label="无序列表"
+            title={t('bulletList')}
+            aria-label={t('bulletListAria')}
             aria-pressed={editor.isActive('bulletList')}
           >
             <List className="h-4 w-4" aria-hidden="true" />
@@ -267,8 +269,8 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
             size="sm"
             onClick={() => editor.chain().focus().toggleTaskList().run()}
             className={editor.isActive('taskList') ? 'bg-accent' : ''}
-            title="清单"
-            aria-label="任务清单"
+            title={t('taskList')}
+            aria-label={t('taskListAria')}
             aria-pressed={editor.isActive('taskList')}
           >
             <CheckSquare className="h-4 w-4" aria-hidden="true" />
@@ -279,8 +281,8 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
             size="sm"
             onClick={() => editor.chain().focus().toggleCodeBlock().run()}
             className={editor.isActive('codeBlock') ? 'bg-accent' : ''}
-            title="代码块"
-            aria-label="代码块"
+            title={t('codeBlock')}
+            aria-label={t('codeBlock')}
             aria-pressed={editor.isActive('codeBlock')}
           >
             <Code className="h-4 w-4" aria-hidden="true" />
@@ -295,8 +297,8 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
             size="sm"
             onClick={setLink}
             className={editor.isActive('link') ? 'bg-accent' : ''}
-            title="插入链接"
-            aria-label="插入链接"
+            title={t('insertLink')}
+            aria-label={t('insertLink')}
             aria-pressed={editor.isActive('link')}
           >
             <LinkIcon className="h-4 w-4" aria-hidden="true" />
@@ -308,8 +310,8 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
             variant="ghost"
             size="sm"
             onClick={() => fileInputRef.current?.click()}
-            title="插入图片"
-            aria-label="插入图片"
+            title={t('insertImage')}
+            aria-label={t('insertImage')}
           >
             <ImageIcon className="h-4 w-4" aria-hidden="true" />
           </Button>
@@ -319,7 +321,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
             accept="image/*"
             onChange={handleImageUpload}
             className="hidden"
-            aria-label="选择图片文件"
+            aria-label={t('chooseImage')}
           />
 
           {/* Video Upload */}
@@ -329,8 +331,8 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
             size="sm"
             onClick={() => videoInputRef.current?.click()}
             disabled={videoUploading}
-            title="插入视频"
-            aria-label={videoUploading ? `上传中 ${videoProgress}%` : "插入视频"}
+            title={t('insertVideo')}
+            aria-label={videoUploading ? t('uploadingProgress', { progress: videoProgress }) : t('insertVideo')}
           >
             {videoUploading ? (
               <span className="text-xs tabular-nums" aria-live="polite">{videoProgress}%</span>
@@ -344,7 +346,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
             accept="video/mp4,video/quicktime,video/webm,video/x-msvideo"
             onChange={handleVideoFileChange}
             className="hidden"
-            aria-label="选择视频文件"
+            aria-label={t('chooseVideo')}
           />
 
           {/* Emoji Picker */}
@@ -356,8 +358,8 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
                 size="sm"
                 onClick={onEmojiClick}
                 className={showEmojiPicker ? 'bg-accent' : ''}
-                title="插入表情"
-                aria-label="插入表情"
+                title={t('insertEmoji')}
+                aria-label={t('insertEmoji')}
                 aria-expanded={showEmojiPicker}
                 aria-haspopup="dialog"
               >

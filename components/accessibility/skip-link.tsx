@@ -7,15 +7,18 @@
  */
 
 import React from 'react'
+import { useTranslations } from 'use-intl'
 
 export function SkipLink() {
+  const t = useTranslations('accessibility')
+
   return (
     <a
       href="#main-content"
       className="skip-link"
-      aria-label="跳转到主要内容"
+      aria-label={t('skipToContent')}
     >
-      跳转到主要内容
+      {t('skipToContent')}
     </a>
   )
 }

@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { usePathname } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
+import { useOptionalTranslation } from '@/components/i18n/locale-provider'
 
 interface Community {
   id: string
@@ -29,6 +30,7 @@ interface CommunityMembership {
 }
 
 export function LeftSidebar() {
+  const t = useOptionalTranslation()
   const [user, setUser] = useState<User | null>(null)
   const [userData, setUserData] = useState<UserData | null>(null)
   const [userCommunities, setUserCommunities] = useState<Community[]>([])
@@ -114,29 +116,29 @@ export function LeftSidebar() {
                       user?.user_metadata?.user_name ||
                       username ||
                       user?.email?.split('@')[0] ||
-                      '用户'
+                      t('leftSidebar.defaultUser', 'User')
   const profileLink = username ? `/u/${username}` : '/settings'
 
   return (
     <aside
       className="hidden lg:flex w-[240px] flex-col border-r border-border bg-background h-[calc(100vh-56px)] sticky top-[56px] overflow-y-auto flex-shrink-0"
-      aria-label="主导航"
+      aria-label={t('leftSidebar.primaryNavAria', 'Primary navigation')}
     >
       <div className="px-3 pt-4 pb-3">
-        <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">导航</p>
+        <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">{t('leftSidebar.navigationTitle', 'Navigation')}</p>
       </div>
 
       {/* 主导航 */}
-      <nav className="flex-1 px-3 space-y-2" aria-label="主要功能">
+      <nav className="flex-1 px-3 space-y-2" aria-label={t('leftSidebar.mainFunctionsAria', 'Main features')}>
         <div className="space-y-1.5" data-tour="home-link">
-          <NavLink href="/" icon={Home}>首页</NavLink>
-          <NavLink href="/messages" icon={MessageCircle} badge={unreadMessages}>消息</NavLink>
-          <NavLink href="/communities" icon={Users}>社区</NavLink>
-          <NavLink href="/notifications" icon={Bell} badge={visibleUnreadNotifications}>通知</NavLink>
-          <NavLink href="/events" icon={Calendar}>活动</NavLink>
+          <NavLink href="/" icon={Home}>{t('nav.home', 'Home')}</NavLink>
+          <NavLink href="/messages" icon={MessageCircle} badge={unreadMessages}>{t('nav.messages', 'Messages')}</NavLink>
+          <NavLink href="/communities" icon={Users}>{t('nav.communities', 'Communities')}</NavLink>
+          <NavLink href="/notifications" icon={Bell} badge={visibleUnreadNotifications}>{t('nav.notifications', 'Notifications')}</NavLink>
+          <NavLink href="/events" icon={Calendar}>{t('nav.events', 'Events')}</NavLink>
 
           {userData?.role === 'admin' && (
-            <NavLink href="/admin" icon={ShieldCheck}>管理后台</NavLink>
+            <NavLink href="/admin" icon={ShieldCheck}>{t('nav.admin', 'Admin')}</NavLink>
           )}
         </div>
 
@@ -145,10 +147,10 @@ export function LeftSidebar() {
             <Link
               href="/create"
               className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
-              aria-label="发布新内容"
+              aria-label={t('leftSidebar.createAria', 'Create new content')}
             >
               <PenSquare className="h-4 w-4" aria-hidden="true" />
-              发布内容
+              {t('content.publish', 'Publish')}
             </Link>
           </div>
         )}
@@ -161,9 +163,9 @@ export function LeftSidebar() {
               className="flex items-center justify-between w-full px-2 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors rounded-md hover:bg-accent"
               aria-expanded={communitiesOpen}
               aria-controls="my-communities-list"
-              aria-label={communitiesOpen ? "收起我的社区列表" : "展开我的社区列表"}
+              aria-label={communitiesOpen ? t('leftSidebar.collapseCommunities', 'Collapse my communities') : t('leftSidebar.expandCommunities', 'Expand my communities')}
             >
-              <span>我的社区</span>
+              <span>{t('mobileNav.myCommunities', 'My communities')}</span>
               {communitiesOpen
                 ? <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
                 : <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
@@ -180,18 +182,18 @@ export function LeftSidebar() {
                     <Link
                       href="/communities"
                       className="block px-3 py-1.5 text-xs text-primary hover:underline"
-                      aria-label="浏览更多社区"
+                      aria-label={t('leftSidebar.browseMoreAria', 'Browse more communities')}
                     >
-                      浏览更多 →
+                      {t('leftSidebar.browseMore', 'Browse more')} →
                     </Link>
                   </>
                 ) : (
                   <Link
                     href="/communities"
                     className="block px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                    aria-label="加入或创建社区"
+                    aria-label={t('leftSidebar.joinOrCreateAria', 'Join or create a community')}
                   >
-                    + 加入或创建社区
+                    + {t('leftSidebar.joinOrCreate', 'Join or create a community')}
                   </Link>
                 )}
               </div>
@@ -206,7 +208,7 @@ export function LeftSidebar() {
           <Link
             href={profileLink}
             className="flex items-center gap-3 bg-background p-3 hover:bg-accent/40 transition-colors"
-            aria-label={`查看 ${displayName} 的个人资料`}
+            aria-label={t('leftSidebar.viewProfile', 'View {name} profile', { name: displayName })}
           >
             {avatarUrl ? (
               <Image

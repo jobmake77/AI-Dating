@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { TagBadge } from './tag-badge'
+import { useTranslations } from 'use-intl'
 
 interface TagInputProps {
   value: string
@@ -12,6 +13,7 @@ interface TagInputProps {
 }
 
 export function TagInput({ value, onChange, placeholder }: TagInputProps) {
+  const t = useTranslations('tagInput')
   const [inputValue, setInputValue] = useState(value)
 
   // Parse current tags
@@ -37,16 +39,16 @@ export function TagInput({ value, onChange, placeholder }: TagInputProps) {
   return (
     <div className="space-y-3">
       <div className="space-y-2">
-        <Label htmlFor="tags">标签</Label>
+        <Label htmlFor="tags">{t('label')}</Label>
         <Input
           id="tags"
           name="tags"
           value={inputValue}
           onChange={(e) => handleInputChange(e.target.value)}
-          placeholder={placeholder || '输入标签，如：#GPT-4 #LangChain 或用逗号分隔'}
+          placeholder={placeholder || t('placeholder')}
         />
         <p className="text-sm text-muted-foreground">
-          支持 #标签 格式或逗号分隔，例如：#AI #机器学习 或 GPT-4, Claude
+          {t('hint')}
         </p>
       </div>
 

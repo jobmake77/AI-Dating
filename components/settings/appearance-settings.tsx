@@ -2,22 +2,23 @@
 
 import { useState } from 'react'
 import { Sun, Moon, Monitor } from 'lucide-react'
-
-const themes = [
-  { id: 'light', label: '浅色', icon: Sun },
-  { id: 'dark', label: '深色', icon: Moon },
-  { id: 'system', label: '跟随系统', icon: Monitor },
-]
+import { useTranslations } from 'use-intl'
 
 export function AppearanceSettings() {
+  const t = useTranslations('theme')
   const [activeTheme, setActiveTheme] = useState('light')
+  const themes = [
+    { id: 'light', label: t('light'), icon: Sun },
+    { id: 'dark', label: t('dark'), icon: Moon },
+    { id: 'system', label: t('system'), icon: Monitor },
+  ]
 
   return (
     <div className="rounded-lg border border-border bg-card p-6 shadow-sm space-y-5">
-      <h2 className="text-sm font-bold text-foreground">外观设置</h2>
+      <h2 className="text-sm font-bold text-foreground">{t('title')}</h2>
       <div className="space-y-4">
         <div>
-          <p className="text-xs font-medium text-foreground mb-3">主题</p>
+          <p className="text-xs font-medium text-foreground mb-3">{t('mode')}</p>
           <div className="grid grid-cols-3 gap-3">
             {themes.map((theme) => (
               <button

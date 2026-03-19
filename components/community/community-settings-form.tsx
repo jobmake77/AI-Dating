@@ -13,6 +13,7 @@ import { CommunityIconUpload } from '@/components/community/community-icon-uploa
 import { CommunityCoverUpload } from '@/components/community/community-cover-upload'
 import { Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { useTranslations } from 'use-intl'
 
 interface CommunitySettingsFormProps {
   community: {
@@ -27,6 +28,7 @@ interface CommunitySettingsFormProps {
 }
 
 export function CommunitySettingsForm({ community }: CommunitySettingsFormProps) {
+  const t = useTranslations('communitiesPage')
   const router = useRouter()
   const [iconUrl, setIconUrl] = useState<string>(community.icon_url || '')
   const [coverUrl, setCoverUrl] = useState<string>(community.cover_url || '')
@@ -43,15 +45,15 @@ export function CommunitySettingsForm({ community }: CommunitySettingsFormProps)
     setIsSubmitting(false)
 
     if (result.success) {
-      toast.success('保存成功', { description: '社区信息已更新' })
+      toast.success(t('saveSuccess'), { description: t('saveSuccessDescription') })
       window.location.href = `/communities/${community.slug}`
     } else {
-      toast.error('保存失败', { description: result.error || '请稍后重试' })
+      toast.error(t('saveFailed'), { description: result.error || t('actionFailed') })
     }
   }
 
   async function handleDelete() {
-    if (!confirm('确定要删除这个社区吗？此操作无法撤销，所有帖子和成员关系都将被删除。')) {
+    if (!confirm(t('deleteConfirm'))) {
       return
     }
 
@@ -60,11 +62,11 @@ export function CommunitySettingsForm({ community }: CommunitySettingsFormProps)
     setIsDeleting(false)
 
     if (result.success) {
-      toast.success('删除成功', { description: '社区已删除' })
+      toast.success(t('deleteSuccess'), { description: t('deleteSuccessDescription') })
       router.push('/communities')
       router.refresh()
     } else {
-      toast.error('删除失败', { description: result.error || '请稍后重试' })
+      toast.error(t('deleteFailed'), { description: result.error || t('actionFailed') })
     }
   }
 
@@ -72,13 +74,13 @@ export function CommunitySettingsForm({ community }: CommunitySettingsFormProps)
     <div className="space-y-6">
       {/* 基本信息 */}
       <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">基本信息</h2>
+        <h2 className="text-xl font-semibold mb-4">{t('settingsBasic')}</h2>
         <form onSubmit={handleUpdate} className="space-y-6">
           <input type="hidden" name="icon_url" value={iconUrl} readOnly />
           <input type="hidden" name="cover_url" value={coverUrl} readOnly />
 
           <div className="space-y-2">
-            <Label htmlFor="name">社区名称</Label>
+            <Label htmlFor="name">{t('name')}</Label>
             <Input
               id="name"
               name="name"
@@ -89,7 +91,7 @@ export function CommunitySettingsForm({ community }: CommunitySettingsFormProps)
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">社区描述</Label>
+            <Label htmlFor="description">{t('descriptionLabel')}</Label>
             <Textarea
               id="description"
               name="description"
@@ -99,25 +101,25 @@ export function CommunitySettingsForm({ community }: CommunitySettingsFormProps)
           </div>
 
           <div className="space-y-2">
-            <Label>社区类型</Label>
+            <Label>{t('typeLabel')}</Label>
             <RadioGroup name="type" defaultValue={community.type}>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="public" id="public" />
                 <Label htmlFor="public" className="font-normal cursor-pointer">
-                  公开社区 - 任何人都可以查看和加入
+                  {t('public')} - {t('publicDescription')}
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="private" id="private" />
                 <Label htmlFor="private" className="font-normal cursor-pointer">
-                  私密社区 - 需要邀请才能加入
+                  {t('private')} - {t('privateDescription')}
                 </Label>
               </div>
             </RadioGroup>
           </div>
 
           <div className="space-y-2">
-            <Label>社区图标</Label>
+            <Label>{t('icon')}</Label>
             <CommunityIconUpload
               currentIcon={iconUrl || null}
               onUploadSuccess={setIconUrl}
@@ -125,7 +127,7 @@ export function CommunitySettingsForm({ community }: CommunitySettingsFormProps)
           </div>
 
           <div className="space-y-2">
-            <Label>社区封面</Label>
+            <Label>{t('cover')}</Label>
             <CommunityCoverUpload
               currentCover={coverUrl || null}
               onUploadSuccess={setCoverUrl}
@@ -134,16 +136,16 @@ export function CommunitySettingsForm({ community }: CommunitySettingsFormProps)
           </div>
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? '保存中...' : '保存更改'}
+            {isSubmitting ? t('saving') : t('save')}
           </Button>
         </form>
       </Card>
 
       {/* 危险操作 */}
       <Card className="p-6 border-destructive">
-        <h2 className="text-xl font-semibold mb-4 text-destructive">危险操作</h2>
+        <h2 className="text-xl font-semibold mb-4 text-destructive">{t('settingsDanger')}</h2>
         <p className="text-sm text-muted-foreground mb-4">
-          删除社区将永久删除所有帖子、评论和成员关系。此操作无法撤销。
+          {t('dangerHint')}
         </p>
         <Button
           type="button"
@@ -153,7 +155,7 @@ export function CommunitySettingsForm({ community }: CommunitySettingsFormProps)
           disabled={isDeleting}
         >
           <Trash2 className="w-4 h-4 mr-2" />
-          {isDeleting ? '删除中...' : '删除社区'}
+          {isDeleting ? t('deleting') : t('deleteCommunity')}
         </Button>
       </Card>
     </div>

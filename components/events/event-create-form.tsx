@@ -9,12 +9,14 @@ import { Label } from '@/components/ui/label'
 import { EventCoverUpload } from './event-cover-upload'
 import { createEvent } from '@/lib/actions/events'
 import { toast } from 'sonner'
+import { useTranslations } from 'use-intl'
 
 interface EventCreateFormProps {
   isAdmin?: boolean
 }
 
 export function EventCreateForm({ isAdmin = false }: EventCreateFormProps) {
+  const t = useTranslations('eventCreate')
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [coverUrl, setCoverUrl] = useState('')
@@ -32,11 +34,11 @@ export function EventCreateForm({ isAdmin = false }: EventCreateFormProps) {
     setIsSubmitting(false)
 
     if (!result.success) {
-      toast.error('创建失败', { description: result.error })
+      toast.error(t('createFailed'), { description: result.error })
       return
     }
 
-    toast.success('活动创建成功')
+    toast.success(t('createSuccess'))
     router.push(`/events/${result.data.id}`)
   }
 
@@ -45,7 +47,7 @@ export function EventCreateForm({ isAdmin = false }: EventCreateFormProps) {
       {/* 管理员：活动类型选择 */}
       {isAdmin && (
         <div className="space-y-2">
-          <Label className="text-xs font-medium">活动类型</Label>
+          <Label className="text-xs font-medium">{t('typeLabel')}</Label>
           <div className="flex gap-2">
             <button
               type="button"
@@ -56,7 +58,7 @@ export function EventCreateForm({ isAdmin = false }: EventCreateFormProps) {
                   : 'border-border hover:bg-accent text-foreground'
               }`}
             >
-              线下活动
+              {t('typeOffline')}
             </button>
             <button
               type="button"
@@ -67,18 +69,18 @@ export function EventCreateForm({ isAdmin = false }: EventCreateFormProps) {
                   : 'border-border hover:bg-accent text-foreground'
               }`}
             >
-              官方活动
+              {t('typeOfficial')}
             </button>
           </div>
         </div>
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="title" className="text-xs font-medium">活动标题 *</Label>
+        <Label htmlFor="title" className="text-xs font-medium">{t('titleLabel')}</Label>
         <Input
           id="title"
           name="title"
-          placeholder="给活动起个吸引人的名字"
+          placeholder={t('titlePlaceholder')}
           required
           minLength={2}
           maxLength={100}
@@ -87,11 +89,11 @@ export function EventCreateForm({ isAdmin = false }: EventCreateFormProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="location" className="text-xs font-medium">活动地点 *</Label>
+        <Label htmlFor="location" className="text-xs font-medium">{t('locationLabel')}</Label>
         <Input
           id="location"
           name="location"
-          placeholder="填写详细地址或线上链接"
+          placeholder={t('locationPlaceholder')}
           required
           minLength={2}
           maxLength={200}
@@ -101,28 +103,28 @@ export function EventCreateForm({ isAdmin = false }: EventCreateFormProps) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label htmlFor="start_time" className="text-xs font-medium">开始时间 *</Label>
+          <Label htmlFor="start_time" className="text-xs font-medium">{t('startLabel')}</Label>
           <Input id="start_time" name="start_time" type="datetime-local" required className="h-9 text-xs" />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="end_time" className="text-xs font-medium">结束时间（可选）</Label>
+          <Label htmlFor="end_time" className="text-xs font-medium">{t('endLabel')}</Label>
           <Input id="end_time" name="end_time" type="datetime-local" className="h-9 text-xs" />
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="description" className="text-xs font-medium">活动介绍</Label>
+        <Label htmlFor="description" className="text-xs font-medium">{t('descriptionLabel')}</Label>
         <Textarea
           id="description"
           name="description"
-          placeholder="介绍一下活动内容、注意事项等..."
+          placeholder={t('descriptionPlaceholder')}
           rows={4}
           className="text-xs resize-none"
         />
       </div>
 
       <div className="space-y-2">
-        <Label className="text-xs font-medium">封面图</Label>
+        <Label className="text-xs font-medium">{t('coverLabel')}</Label>
         <EventCoverUpload
           onUploadSuccess={(url) => setCoverUrl(url)}
           onRemove={() => setCoverUrl('')}
@@ -138,7 +140,7 @@ export function EventCreateForm({ isAdmin = false }: EventCreateFormProps) {
           onClick={() => router.back()}
           disabled={isSubmitting}
         >
-          取消
+          {t('cancel')}
         </Button>
         <Button
           type="submit"
@@ -146,7 +148,7 @@ export function EventCreateForm({ isAdmin = false }: EventCreateFormProps) {
           className="flex-1 h-9 text-xs gradient-primary text-white hover:opacity-90 shadow-primary"
           disabled={isSubmitting}
         >
-          {isSubmitting ? '创建中...' : '发起活动'}
+          {isSubmitting ? t('creating') : t('submit')}
         </Button>
       </div>
     </form>

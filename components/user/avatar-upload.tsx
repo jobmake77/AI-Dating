@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Upload, User } from 'lucide-react'
 import { toast } from 'sonner'
 import { ImageCropper } from '@/components/ui/image-cropper'
+import { useTranslations } from 'use-intl'
 
 interface AvatarUploadProps {
   currentAvatar?: string | null
@@ -14,6 +15,7 @@ interface AvatarUploadProps {
 }
 
 export function AvatarUpload({ currentAvatar, onUploadSuccess }: AvatarUploadProps) {
+  const t = useTranslations('avatarUpload')
   const [isUploading, setIsUploading] = useState(false)
   const [previewUrl, setPreviewUrl] = useState(currentAvatar)
   const [imageToCrop, setImageToCrop] = useState<string | null>(null)
@@ -46,12 +48,12 @@ export function AvatarUpload({ currentAvatar, onUploadSuccess }: AvatarUploadPro
     setIsUploading(false)
 
     if (result.error) {
-      toast.error('上传失败', { description: result.error })
+      toast.error(t('uploadFailed'), { description: result.error })
       setPreviewUrl(currentAvatar)
       return
     }
 
-    toast.success('上传成功', { description: '头像已更新' })
+    toast.success(t('uploadSuccess'), { description: t('uploadSuccessDescription') })
     onUploadSuccess(result.url!)
   }
 
@@ -80,12 +82,12 @@ export function AvatarUpload({ currentAvatar, onUploadSuccess }: AvatarUploadPro
           >
             <span>
               <Upload className="w-4 h-4 mr-2" />
-              {isUploading ? '上传中...' : '上传头像'}
+              {isUploading ? t('uploading') : t('upload')}
             </span>
           </Button>
         </label>
         <p className="text-xs text-muted-foreground mt-2">
-          支持 JPG、PNG、GIF、WebP，最大 10MB
+          {t('hint')}
         </p>
       </div>
 

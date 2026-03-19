@@ -3,14 +3,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import { Clock, Eye } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
-import { zhCN } from 'date-fns/locale'
+import { enUS, zhCN } from 'date-fns/locale'
 import type { RelatedContentItem } from '@/lib/types/content'
+import { getRequestLocale } from '@/i18n/request'
+import { getTranslation } from '@/i18n/dictionaries'
 
 interface RelatedContentsProps {
   contentId: string
 }
 
 export async function RelatedContents({ contentId }: RelatedContentsProps) {
+  const locale = await getRequestLocale()
+  const t = (key: string, fallback: string) => getTranslation(locale, `contentUi.${key}`, fallback)
   const relatedContents: RelatedContentItem[] = await getRelatedContents(contentId, 5)
 
   if (relatedContents.length === 0) {
@@ -20,7 +24,7 @@ export async function RelatedContents({ contentId }: RelatedContentsProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">相关推荐</CardTitle>
+        <CardTitle className="text-lg">{t('relatedTitle', '相关推荐')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {relatedContents.map((content) => (
@@ -46,7 +50,7 @@ export async function RelatedContents({ contentId }: RelatedContentsProps) {
                   <span>
                     {formatDistanceToNow(new Date(content.created_at), {
                       addSuffix: true,
-                      locale: zhCN,
+                      locale: locale === 'en' ? enUS : zhCN,
                     })}
                   </span>
                 </div>

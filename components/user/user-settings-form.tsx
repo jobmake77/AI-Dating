@@ -10,6 +10,7 @@ import { updateUserProfile } from '@/lib/actions/user'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { AvatarUpload } from './avatar-upload'
+import { useTranslations } from 'use-intl'
 
 interface UserSettingsFormProps {
   user: {
@@ -23,6 +24,7 @@ interface UserSettingsFormProps {
 }
 
 export function UserSettingsForm({ user }: UserSettingsFormProps) {
+  const t = useTranslations('userSettings')
   const [fullName, setFullName] = useState(user.full_name || '')
   const [bio, setBio] = useState(user.bio || '')
   const [githubUsername, setGithubUsername] = useState(user.github_username || '')
@@ -42,12 +44,12 @@ export function UserSettingsForm({ user }: UserSettingsFormProps) {
         avatar,
       })
 
-      toast.success('资料已更新')
+      toast.success(t('updated'))
       router.push(`/u/${user.username}`)
       router.refresh()
     } catch (error) {
       console.error('Failed to update profile:', error)
-      toast.error('更新失败')
+      toast.error(t('updateFailed'))
     } finally {
       setIsSubmitting(false)
     }
@@ -56,12 +58,12 @@ export function UserSettingsForm({ user }: UserSettingsFormProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>个人资料</CardTitle>
+        <CardTitle>{t('title')}</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label>头像</Label>
+            <Label>{t('avatar')}</Label>
             <AvatarUpload
               currentAvatar={avatar}
               onUploadSuccess={(url) => setAvatar(url)}
@@ -69,7 +71,7 @@ export function UserSettingsForm({ user }: UserSettingsFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="username">用户名</Label>
+            <Label htmlFor="username">{t('username')}</Label>
             <Input
               id="username"
               value={user.username}
@@ -77,28 +79,28 @@ export function UserSettingsForm({ user }: UserSettingsFormProps) {
               className="bg-muted"
             />
             <p className="text-sm text-muted-foreground">
-              用户名不可修改
+              {t('usernameHint')}
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="fullName">显示名称</Label>
+            <Label htmlFor="fullName">{t('fullName')}</Label>
             <Input
               id="fullName"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              placeholder="你的名字"
+              placeholder={t('fullNamePlaceholder')}
               maxLength={50}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="bio">个人简介</Label>
+            <Label htmlFor="bio">{t('bio')}</Label>
             <Textarea
               id="bio"
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              placeholder="介绍一下你自己..."
+              placeholder={t('bioPlaceholder')}
               maxLength={200}
               rows={4}
             />
@@ -108,7 +110,7 @@ export function UserSettingsForm({ user }: UserSettingsFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="githubUsername">GitHub 用户名</Label>
+            <Label htmlFor="githubUsername">{t('githubUsername')}</Label>
             <Input
               id="githubUsername"
               value={githubUsername}
@@ -120,14 +122,14 @@ export function UserSettingsForm({ user }: UserSettingsFormProps) {
 
           <div className="flex gap-4">
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? '保存中...' : '保存更改'}
+              {isSubmitting ? t('saving') : t('save')}
             </Button>
             <Button
               type="button"
               variant="outline"
               onClick={() => router.push(`/u/${user.username}`)}
             >
-              取消
+              {t('cancel')}
             </Button>
           </div>
         </form>

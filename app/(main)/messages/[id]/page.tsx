@@ -7,6 +7,8 @@ import { ConversationList } from '@/components/chat/conversation-list'
 import { Button } from '@/components/ui/button'
 import { Phone, Video } from 'lucide-react'
 import Link from 'next/link'
+import { getRequestLocale } from '@/i18n/request'
+import { getTranslation } from '@/i18n/dictionaries'
 
 interface ChatPageProps {
   params: Promise<{ id: string }>
@@ -14,6 +16,8 @@ interface ChatPageProps {
 
 export default async function ChatPage({ params }: ChatPageProps) {
   const { id } = await params
+  const locale = await getRequestLocale()
+  const t = (key: string, fallback: string) => getTranslation(locale, `messagesPage.${key}`, fallback)
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -45,7 +49,7 @@ export default async function ChatPage({ params }: ChatPageProps) {
           {/* 左侧：会话列表 */}
           <div className="w-72 shrink-0 border-r border-border flex flex-col">
             <div className="p-3 border-b border-border">
-              <h2 className="text-sm font-bold text-foreground mb-2">消息</h2>
+              <h2 className="text-sm font-bold text-foreground mb-2">{t('title', 'Messages')}</h2>
             </div>
             <div className="flex-1 overflow-y-auto">
               <ConversationList conversations={conversations} activeConversationId={id} />
@@ -70,7 +74,7 @@ export default async function ChatPage({ params }: ChatPageProps) {
                     {otherUser?.full_name || otherUser?.username}
                   </Link>
                   <span className="flex items-center gap-1 text-[10px] text-success">
-                    <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" /> 在线
+                    <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" /> {t('online', 'Online')}
                   </span>
                 </div>
               </div>

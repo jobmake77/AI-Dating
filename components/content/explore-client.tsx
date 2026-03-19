@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { ExploreSidebar } from "@/components/content/explore-sidebar";
 import { CompactContentCard } from "@/components/content/compact-content-card";
 import type { ContentListItem } from "@/lib/types/content";
+import { useTranslations } from "use-intl";
 
 interface ExploreCategory {
   id: string;
@@ -40,6 +41,7 @@ export function ExploreClient({
   activeCategory,
   activeTag,
 }: ExploreClientProps) {
+  const t = useTranslations('explorePage');
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [contents] = useState(initialContents);
@@ -110,7 +112,7 @@ export function ExploreClient({
             <div className="relative mb-4">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="搜索帖子..."
+                placeholder={t('searchPlaceholder')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="h-10 pl-10 bg-card border-border text-sm shadow-card focus:ring-2 focus:ring-primary/20"
@@ -152,7 +154,7 @@ export function ExploreClient({
                   onClick={clearFilters}
                   className="text-xs text-destructive hover:underline"
                 >
-                  清除筛选
+                  {t('clearFilters')}
                 </button>
               </motion.div>
             )}
@@ -169,7 +171,7 @@ export function ExploreClient({
                 ))
               ) : (
                 <div className="text-center py-12 text-muted-foreground">
-                  <p>没有找到相关内容</p>
+                  <p>{t('empty')}</p>
                 </div>
               )}
             </div>
@@ -197,7 +199,7 @@ export function ExploreClient({
             >
               <div className="p-4">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold">筛选</h2>
+                  <h2 className="text-lg font-semibold">{t('filters')}</h2>
                   <Button
                     variant="ghost"
                     size="icon"

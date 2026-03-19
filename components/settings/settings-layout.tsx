@@ -8,14 +8,7 @@ import { NotificationSettings } from './notification-settings'
 import { SecuritySettings } from './security-settings'
 import { AppearanceSettings } from './appearance-settings'
 import { AgentSettings } from './agent-settings'
-
-const settingsTabs = [
-  { id: 'profile', label: '个人资料', icon: User, color: 'text-primary' },
-  { id: 'notifications', label: '通知设置', icon: Bell, color: 'text-warning' },
-  { id: 'security', label: '安全', icon: Shield, color: 'text-destructive' },
-  { id: 'appearance', label: '外观', icon: Palette, color: 'text-accent' },
-  { id: 'agents', label: 'Agent 管理', icon: Key, color: 'text-info' },
-] as const
+import { useTranslations } from 'use-intl'
 
 interface SettingsLayoutProps {
   user: {
@@ -29,7 +22,15 @@ interface SettingsLayoutProps {
 }
 
 export function SettingsLayout({ user }: SettingsLayoutProps) {
+  const t = useTranslations('settingsUi')
   const [activeTab, setActiveTab] = useState<string>('profile')
+  const settingsTabs = [
+    { id: 'profile', label: t('profile'), icon: User, color: 'text-primary' },
+    { id: 'notifications', label: t('notifications'), icon: Bell, color: 'text-warning' },
+    { id: 'security', label: t('security'), icon: Shield, color: 'text-destructive' },
+    { id: 'appearance', label: t('appearance'), icon: Palette, color: 'text-accent' },
+    { id: 'agents', label: t('agents'), icon: Key, color: 'text-info' },
+  ] as const
 
   return (
     <div className="min-h-screen bg-background">
@@ -39,10 +40,10 @@ export function SettingsLayout({ user }: SettingsLayoutProps) {
           className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary mb-4 transition-colors"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          返回
+          {t('back')}
         </Link>
 
-        <h1 className="text-xl font-bold text-foreground mb-5">设置</h1>
+        <h1 className="text-xl font-bold text-foreground mb-5">{t('title')}</h1>
 
         <div className="flex gap-5">
           {/* Sidebar */}

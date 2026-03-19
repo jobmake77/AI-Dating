@@ -1,153 +1,126 @@
-import { Metadata } from "next"
-import Link from "next/link"
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import { getTranslation } from '@/i18n/dictionaries'
+import { getRequestLocale } from '@/i18n/request'
 
-export const metadata: Metadata = {
-  title: "Cookie 政策",
-  description: "AI-Dating Cookie 政策 - 了解我们如何使用 Cookie 和类似技术",
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale()
+
+  return {
+    title: getTranslation(locale, 'cookiesPage.metadata.title', 'Cookie Policy'),
+    description: getTranslation(
+      locale,
+      'cookiesPage.metadata.description',
+      'AI-Dating cookie policy explaining how cookies and similar technologies are used on the platform.'
+    ),
+  }
 }
 
-export default function CookiePolicyPage() {
+export default async function CookiePolicyPage() {
+  const locale = await getRequestLocale()
+  const t = (key: string, fallback: string) => getTranslation(locale, `cookiesPage.${key}`, fallback)
+
   return (
     <div className="container max-w-4xl py-12">
-      <article className="prose prose-gray dark:prose-invert max-w-none">
-        <h1>Cookie 政策</h1>
-        <p className="text-muted-foreground">
-          最后更新日期：2026年3月8日
-        </p>
+      <article className="prose prose-gray max-w-none dark:prose-invert">
+        <h1>{t('title', 'Cookie Policy')}</h1>
+        <p className="text-muted-foreground">{t('lastUpdated', 'Last updated: March 8, 2026')}</p>
 
         <section className="mt-8">
-          <h2>1. 什么是 Cookie？</h2>
-          <p>
-            Cookie 是当您访问网站时存储在您设备上的小型文本文件。
-            它们被广泛用于使网站工作或更高效地工作，以及向网站所有者提供信息。
-          </p>
+          <h2>{t('what.title', '1. What Are Cookies?')}</h2>
+          <p>{t('what.text', 'Cookies are small text files stored on your device when you visit a website. They are widely used to make websites work, operate more efficiently, and provide information to site owners.')}</p>
         </section>
 
         <section className="mt-8">
-          <h2>2. 我们如何使用 Cookie</h2>
-          <p>
-            AI-Dating 使用 Cookie 来改善您的浏览体验、提供个性化内容和分析网站流量。
-            我们使用以下类型的 Cookie：
-          </p>
+          <h2>{t('usage.title', '2. How We Use Cookies')}</h2>
+          <p>{t('usage.text', 'AI-Dating uses cookies to improve your browsing experience, provide personalized content where applicable, and analyze site traffic. We currently use the following categories of cookies:')}</p>
         </section>
 
         <section className="mt-8">
-          <h2>3. Cookie 类型</h2>
+          <h2>{t('types.title', '3. Cookie Categories')}</h2>
 
-          <h3>3.1 必要 Cookie</h3>
-          <p>
-            这些 Cookie 对于网站的基本功能是必需的，无法在我们的系统中禁用。
-            它们通常仅在响应您的操作时设置，例如设置隐私偏好、登录或填写表单。
-          </p>
-          <div className="bg-muted p-4 rounded-lg my-4">
-            <h4 className="font-semibold mb-2">必要 Cookie 列表：</h4>
+          <h3>{t('types.essential.title', '3.1 Essential Cookies')}</h3>
+          <p>{t('types.essential.text', 'These cookies are necessary for the core functionality of the site and cannot be disabled in our systems. They are typically set in response to actions you take, such as setting privacy preferences, signing in, or submitting forms.')}</p>
+          <div className="my-4 rounded-lg bg-muted p-4">
+            <h4 className="mb-2 font-semibold">{t('types.essential.listTitle', 'Essential cookie list:')}</h4>
             <ul className="space-y-2">
               <li>
-                <strong>session</strong> - 会话管理和身份验证
+                <strong>session</strong> - {t('types.essential.items.session.purpose', 'session management and authentication')}
                 <br />
-                <span className="text-sm text-muted-foreground">
-                  有效期：会话结束 | 提供商：AI-Dating
-                </span>
+                <span className="text-sm text-muted-foreground">{t('types.essential.items.session.meta', 'Duration: until session ends | Provider: AI-Dating')}</span>
               </li>
               <li>
-                <strong>csrf_token</strong> - 跨站请求伪造保护
+                <strong>csrf_token</strong> - {t('types.essential.items.csrf.purpose', 'cross-site request forgery protection')}
                 <br />
-                <span className="text-sm text-muted-foreground">
-                  有效期：会话结束 | 提供商：AI-Dating
-                </span>
+                <span className="text-sm text-muted-foreground">{t('types.essential.items.csrf.meta', 'Duration: until session ends | Provider: AI-Dating')}</span>
               </li>
               <li>
-                <strong>cookie-consent</strong> - 存储您的 Cookie 偏好
+                <strong>cookie-consent</strong> - {t('types.essential.items.consent.purpose', 'stores your cookie preferences')}
                 <br />
-                <span className="text-sm text-muted-foreground">
-                  有效期：1年 | 提供商：AI-Dating
-                </span>
+                <span className="text-sm text-muted-foreground">{t('types.essential.items.consent.meta', 'Duration: 1 year | Provider: AI-Dating')}</span>
               </li>
             </ul>
           </div>
 
-          <h3>3.2 分析 Cookie</h3>
-          <p>
-            这些 Cookie 帮助我们了解访问者如何使用我们的网站。
-            所有信息都是匿名的，用于改进网站功能和用户体验。
-          </p>
-          <div className="bg-muted p-4 rounded-lg my-4">
-            <h4 className="font-semibold mb-2">分析 Cookie 列表：</h4>
+          <h3>{t('types.analytics.title', '3.2 Analytics Cookies')}</h3>
+          <p>{t('types.analytics.text', 'These cookies help us understand how visitors use our website. The information is aggregated and used to improve site performance and product experience.')}</p>
+          <div className="my-4 rounded-lg bg-muted p-4">
+            <h4 className="mb-2 font-semibold">{t('types.analytics.listTitle', 'Analytics cookie list:')}</h4>
             <ul className="space-y-2">
               <li>
-                <strong>_ga</strong> - Google Analytics 用于区分用户
+                <strong>_ga</strong> - {t('types.analytics.items.ga.purpose', 'Google Analytics cookie used to distinguish users')}
                 <br />
-                <span className="text-sm text-muted-foreground">
-                  有效期：2年 | 提供商：Google
-                </span>
+                <span className="text-sm text-muted-foreground">{t('types.analytics.items.ga.meta', 'Duration: 2 years | Provider: Google')}</span>
               </li>
               <li>
-                <strong>_gid</strong> - Google Analytics 用于区分用户
+                <strong>_gid</strong> - {t('types.analytics.items.gid.purpose', 'Google Analytics cookie used to distinguish users')}
                 <br />
-                <span className="text-sm text-muted-foreground">
-                  有效期：24小时 | 提供商：Google
-                </span>
+                <span className="text-sm text-muted-foreground">{t('types.analytics.items.gid.meta', 'Duration: 24 hours | Provider: Google')}</span>
               </li>
               <li>
-                <strong>_gat</strong> - Google Analytics 用于限制请求率
+                <strong>_gat</strong> - {t('types.analytics.items.gat.purpose', 'Google Analytics cookie used to throttle request rate')}
                 <br />
-                <span className="text-sm text-muted-foreground">
-                  有效期：1分钟 | 提供商：Google
-                </span>
+                <span className="text-sm text-muted-foreground">{t('types.analytics.items.gat.meta', 'Duration: 1 minute | Provider: Google')}</span>
               </li>
             </ul>
           </div>
 
-          <h3>3.3 营销 Cookie</h3>
-          <p>
-            这些 Cookie 用于跟踪访问者并显示相关广告和营销活动。
-            它们可能由我们的广告合作伙伴通过我们的网站设置。
-          </p>
-          <div className="bg-muted p-4 rounded-lg my-4">
-            <h4 className="font-semibold mb-2">营销 Cookie 列表：</h4>
-            <p className="text-sm text-muted-foreground">
-              目前我们不使用营销 Cookie。如果将来使用，我们会更新此列表。
-            </p>
+          <h3>{t('types.marketing.title', '3.3 Marketing Cookies')}</h3>
+          <p>{t('types.marketing.text', 'Marketing cookies are used to track visitors and support relevant advertising or campaign measurement. They may be set through our site by advertising partners.')}</p>
+          <div className="my-4 rounded-lg bg-muted p-4">
+            <h4 className="mb-2 font-semibold">{t('types.marketing.listTitle', 'Marketing cookie list:')}</h4>
+            <p className="text-sm text-muted-foreground">{t('types.marketing.empty', 'We do not currently use marketing cookies. If that changes, this list will be updated.')}</p>
           </div>
         </section>
 
         <section className="mt-8">
-          <h2>4. 第三方 Cookie</h2>
-          <p>
-            除了我们自己的 Cookie，我们还使用第三方服务，这些服务可能会设置自己的 Cookie：
-          </p>
+          <h2>{t('thirdParty.title', '4. Third-Party Cookies')}</h2>
+          <p>{t('thirdParty.intro', 'In addition to our own cookies, we use third-party services that may place cookies on your device:')}</p>
           <ul>
             <li>
-              <strong>Google Analytics</strong> - 用于网站分析和性能监控
+              <strong>Google Analytics</strong> - {t('thirdParty.analytics', 'used for site analytics and performance monitoring')}
               <br />
               <Link
                 href="https://policies.google.com/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-primary hover:underline text-sm"
+                className="text-sm text-primary hover:underline"
               >
-                Google 隐私政策
+                {t('thirdParty.analyticsLink', 'Google privacy policy')}
               </Link>
             </li>
           </ul>
         </section>
 
         <section className="mt-8">
-          <h2>5. 如何管理 Cookie</h2>
-          <p>
-            您可以通过以下方式管理 Cookie 偏好：
-          </p>
+          <h2>{t('manage.title', '5. How to Manage Cookies')}</h2>
+          <p>{t('manage.intro', 'You can manage your cookie preferences in several ways:')}</p>
 
-          <h3>5.1 通过我们的 Cookie 横幅</h3>
-          <p>
-            首次访问我们的网站时，您会看到一个 Cookie 同意横幅。
-            您可以选择接受全部、拒绝全部或自定义您的偏好。
-          </p>
+          <h3>{t('manage.banner.title', '5.1 Through our cookie banner')}</h3>
+          <p>{t('manage.banner.text', 'The first time you visit our site, you will see a cookie consent banner. You can accept all cookies, reject non-essential cookies, or customize your preferences.')}</p>
 
-          <h3>5.2 通过浏览器设置</h3>
-          <p>
-            大多数浏览器允许您通过设置控制 Cookie。以下是常见浏览器的指南：
-          </p>
+          <h3>{t('manage.browser.title', '5.2 Through browser settings')}</h3>
+          <p>{t('manage.browser.text', 'Most browsers allow you to control cookies through their settings. Here are guides for common browsers:')}</p>
           <ul>
             <li>
               <Link
@@ -191,63 +164,58 @@ export default function CookiePolicyPage() {
             </li>
           </ul>
 
-          <h3>5.3 通过隐私设置</h3>
+          <h3>{t('manage.settings.title', '5.3 Through privacy settings')}</h3>
           <p>
-            您可以随时在{" "}
+            {t('manage.settings.prefix', 'You can change your cookie preferences at any time in ')}
             <Link href="/settings/privacy" className="text-primary hover:underline">
-              隐私设置
+              {t('manage.settings.linkLabel', 'privacy settings')}
             </Link>
-            {" "}中更改您的 Cookie 偏好。
+            {t('manage.settings.suffix', '.')}
           </p>
         </section>
 
         <section className="mt-8">
-          <h2>6. 禁用 Cookie 的影响</h2>
-          <p>
-            如果您选择禁用 Cookie，某些网站功能可能无法正常工作：
-          </p>
+          <h2>{t('disable.title', '6. What Happens If You Disable Cookies')}</h2>
+          <p>{t('disable.intro', 'If you disable cookies, some site features may stop working properly:')}</p>
           <ul>
-            <li>您可能无法保持登录状态</li>
-            <li>您的偏好设置可能不会被保存</li>
-            <li>某些功能可能无法使用</li>
-            <li>网站性能可能会受到影响</li>
+            <li>{t('disable.items.login', 'you may not stay signed in')}</li>
+            <li>{t('disable.items.preferences', 'your preferences may not be saved')}</li>
+            <li>{t('disable.items.features', 'some features may become unavailable')}</li>
+            <li>{t('disable.items.performance', 'site performance may be affected')}</li>
           </ul>
         </section>
 
         <section className="mt-8">
-          <h2>7. Cookie 政策更新</h2>
-          <p>
-            我们可能会不时更新本 Cookie 政策，以反映我们使用 Cookie 的变化。
-            我们会在此页面上发布新的政策，并更新 &ldquo;最后更新日期&rdquo;。
-          </p>
+          <h2>{t('updates.title', '7. Updates to This Cookie Policy')}</h2>
+          <p>{t('updates.text', 'We may update this cookie policy from time to time to reflect changes in how we use cookies. We will post the revised policy on this page and update the "last updated" date.')}</p>
         </section>
 
         <section className="mt-8">
-          <h2>8. 联系我们</h2>
-          <p>
-            如果您对我们的 Cookie 使用有任何疑问，请通过以下方式联系我们：
-          </p>
+          <h2>{t('contact.title', '8. Contact Us')}</h2>
+          <p>{t('contact.intro', 'If you have any questions about our use of cookies, please contact us:')}</p>
           <ul>
-            <li><strong>邮箱</strong>：privacy@ai-dating.com</li>
+            <li>
+              <strong>{t('contact.emailLabel', 'Email')}</strong>: privacy@ai-dating.com
+            </li>
           </ul>
         </section>
 
-        <div className="mt-12 p-6 bg-muted rounded-lg">
-          <h3 className="text-lg font-semibold mb-2">相关链接</h3>
+        <div className="mt-12 rounded-lg bg-muted p-6">
+          <h3 className="mb-2 text-lg font-semibold">{t('related.title', 'Related links')}</h3>
           <ul className="space-y-2">
             <li>
               <Link href="/privacy" className="text-primary hover:underline">
-                隐私政策
+                {t('related.privacy', 'Privacy Policy')}
               </Link>
             </li>
             <li>
               <Link href="/terms" className="text-primary hover:underline">
-                服务条款
+                {t('related.terms', 'Terms of Service')}
               </Link>
             </li>
             <li>
               <Link href="/settings/privacy" className="text-primary hover:underline">
-                隐私设置
+                {t('related.settings', 'Privacy settings')}
               </Link>
             </li>
           </ul>

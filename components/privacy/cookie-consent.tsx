@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Cookie, Settings } from "lucide-react"
 import Link from "next/link"
+import { useTranslations } from "use-intl"
 
 interface CookiePreferences {
   necessary: boolean
@@ -49,6 +50,7 @@ function getStoredPreferences(): CookiePreferences {
 }
 
 export function CookieConsent() {
+  const t = useTranslations('cookieConsent')
   const [showBanner, setShowBanner] = useState(() =>
     typeof window === "undefined" ? false : !localStorage.getItem(COOKIE_CONSENT_KEY)
   )
@@ -110,17 +112,16 @@ export function CookieConsent() {
               <div className="flex items-start gap-3 flex-1">
                 <Cookie className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
                 <div className="space-y-1">
-                  <h3 className="font-semibold text-lg">我们使用 Cookie</h3>
+                  <h3 className="font-semibold text-lg">{t('title')}</h3>
                   <p className="text-sm text-muted-foreground">
-                    我们使用 Cookie 来改善您的浏览体验、提供个性化内容和分析网站流量。
-                    通过点击 &ldquo;接受全部&rdquo;，您同意我们使用 Cookie。
+                    {t('bannerDescription')}
                     {" "}
                     <Link href="/privacy" className="underline hover:text-primary">
-                      隐私政策
+                      {t('privacyPolicy')}
                     </Link>
                     {" | "}
                     <Link href="/cookies" className="underline hover:text-primary">
-                      Cookie 政策
+                      {t('cookiePolicy')}
                     </Link>
                   </p>
                 </div>
@@ -131,7 +132,7 @@ export function CookieConsent() {
                   onClick={rejectAll}
                   className="w-full sm:w-auto"
                 >
-                  拒绝全部
+                  {t('rejectAll')}
                 </Button>
                 <Button
                   variant="outline"
@@ -139,13 +140,13 @@ export function CookieConsent() {
                   className="w-full sm:w-auto"
                 >
                   <Settings className="h-4 w-4 mr-2" />
-                  自定义
+                  {t('customize')}
                 </Button>
                 <Button
                   onClick={acceptAll}
                   className="w-full sm:w-auto"
                 >
-                  接受全部
+                  {t('acceptAll')}
                 </Button>
               </div>
             </div>
@@ -157,9 +158,9 @@ export function CookieConsent() {
       <Dialog open={showSettings} onOpenChange={setShowSettings}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Cookie 偏好设置</DialogTitle>
+            <DialogTitle>{t('settingsTitle')}</DialogTitle>
             <DialogDescription>
-              管理您的 Cookie 偏好。您可以随时更改这些设置。
+              {t('settingsDescription')}
             </DialogDescription>
           </DialogHeader>
 
@@ -168,17 +169,17 @@ export function CookieConsent() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <Label className="text-base font-semibold">必要 Cookie</Label>
+                  <Label className="text-base font-semibold">{t('necessaryTitle')}</Label>
                   <p className="text-sm text-muted-foreground">
-                    这些 Cookie 对于网站的基本功能是必需的，无法禁用。
+                    {t('necessaryDescription')}
                   </p>
                 </div>
                 <div className="flex items-center">
-                  <span className="text-sm text-muted-foreground">总是启用</span>
+                  <span className="text-sm text-muted-foreground">{t('alwaysOn')}</span>
                 </div>
               </div>
               <p className="text-xs text-muted-foreground">
-                用于：身份验证、安全性、会话管理
+                {t('necessaryUsage')}
               </p>
             </div>
 
@@ -188,9 +189,9 @@ export function CookieConsent() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <div className="space-y-1 flex-1">
-                  <Label className="text-base font-semibold">分析 Cookie</Label>
+                  <Label className="text-base font-semibold">{t('analyticsTitle')}</Label>
                   <p className="text-sm text-muted-foreground">
-                    帮助我们了解访问者如何使用我们的网站，以便改进用户体验。
+                    {t('analyticsDescription')}
                   </p>
                 </div>
                 <div className="flex items-center">
@@ -205,7 +206,7 @@ export function CookieConsent() {
                 </div>
               </div>
               <p className="text-xs text-muted-foreground">
-                用于：Google Analytics、页面浏览统计、用户行为分析
+                {t('analyticsUsage')}
               </p>
             </div>
 
@@ -215,9 +216,9 @@ export function CookieConsent() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <div className="space-y-1 flex-1">
-                  <Label className="text-base font-semibold">营销 Cookie</Label>
+                  <Label className="text-base font-semibold">{t('marketingTitle')}</Label>
                   <p className="text-sm text-muted-foreground">
-                    用于跟踪访问者并显示相关广告和营销活动。
+                    {t('marketingDescription')}
                   </p>
                 </div>
                 <div className="flex items-center">
@@ -232,17 +233,17 @@ export function CookieConsent() {
                 </div>
               </div>
               <p className="text-xs text-muted-foreground">
-                用于：广告投放、转化跟踪、再营销
+                {t('marketingUsage')}
               </p>
             </div>
           </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowSettings(false)}>
-              取消
+              {t('cancel')}
             </Button>
             <Button onClick={saveCustomPreferences}>
-              保存偏好
+              {t('savePreferences')}
             </Button>
           </DialogFooter>
         </DialogContent>

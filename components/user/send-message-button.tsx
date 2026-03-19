@@ -6,6 +6,7 @@ import { MessageCircle } from 'lucide-react'
 import { createConversationWithUser } from '@/lib/actions/chat'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/hooks/use-toast'
+import { useTranslations } from 'use-intl'
 
 interface SendMessageButtonProps {
   userId: string
@@ -13,6 +14,7 @@ interface SendMessageButtonProps {
 }
 
 export function SendMessageButton({ userId, isAuthenticated }: SendMessageButtonProps) {
+  const t = useTranslations('userActions')
   const [isCreating, setIsCreating] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
@@ -29,7 +31,7 @@ export function SendMessageButton({ userId, isAuthenticated }: SendMessageButton
     if (result.error) {
       toast({
         variant: 'destructive',
-        title: '操作失败',
+        title: t('actionFailed'),
         description: result.error,
       })
       setIsCreating(false)
@@ -49,7 +51,7 @@ export function SendMessageButton({ userId, isAuthenticated }: SendMessageButton
       className="shadow-sm hover:shadow-md transition-shadow"
     >
       <MessageCircle className="h-4 w-4 mr-2" />
-      {isCreating ? '创建中...' : '发消息'}
+      {isCreating ? t('creatingConversation') : t('sendMessage')}
     </Button>
   )
 }

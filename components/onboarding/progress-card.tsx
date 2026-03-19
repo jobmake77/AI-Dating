@@ -8,6 +8,7 @@ import { restartOnboarding } from '@/lib/actions/onboarding'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useTranslations } from 'use-intl'
 
 interface ProgressCardProps {
   progress: OnboardingProgress
@@ -22,6 +23,7 @@ interface Step {
 }
 
 export function ProgressCard({ progress }: ProgressCardProps) {
+  const t = useTranslations('onboardingProgress')
   const [isRestarting, setIsRestarting] = useState(false)
   const router = useRouter()
 
@@ -33,22 +35,22 @@ export function ProgressCard({ progress }: ProgressCardProps) {
   const steps: Step[] = [
     {
       id: 'profile',
-      title: '完善个人资料',
-      description: '让其他开发者了解你',
+      title: t('steps.profile.title'),
+      description: t('steps.profile.description'),
       completed: progress.completed_profile,
       href: '/settings',
     },
     {
       id: 'post',
-      title: '发布第一篇内容',
-      description: '分享你的技术见解',
+      title: t('steps.post.title'),
+      description: t('steps.post.description'),
       completed: progress.first_post_published,
       href: '/create',
     },
     {
       id: 'explore',
-      title: '探索社区内容',
-      description: '发现优质技术文章',
+      title: t('steps.explore.title'),
+      description: t('steps.explore.description'),
       completed: progress.explored_content,
       href: '/',
     },
@@ -75,9 +77,9 @@ export function ProgressCard({ progress }: ProgressCardProps) {
       <CardHeader>
         <div className="flex items-start justify-between">
           <div>
-            <CardTitle className="text-lg">欢迎来到 AI-Dating 开发者社区</CardTitle>
+            <CardTitle className="text-lg">{t('title')}</CardTitle>
             <CardDescription className="mt-1">
-              完成以下步骤，快速上手社区功能
+              {t('description')}
             </CardDescription>
           </div>
           <Button
@@ -88,7 +90,7 @@ export function ProgressCard({ progress }: ProgressCardProps) {
             className="text-xs"
           >
             <RotateCcw className="h-3 w-3 mr-1" />
-            重新引导
+            {t('restart')}
           </Button>
         </div>
       </CardHeader>
@@ -96,7 +98,7 @@ export function ProgressCard({ progress }: ProgressCardProps) {
         {/* 进度条 */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">完成进度</span>
+            <span className="text-muted-foreground">{t('progress')}</span>
             <span className="font-medium">
               {completedCount} / {totalCount}
             </span>
@@ -134,7 +136,7 @@ export function ProgressCard({ progress }: ProgressCardProps) {
                   </h4>
                   {!step.completed && step.href && (
                     <Button variant="ghost" size="sm" asChild className="h-7 text-xs">
-                      <Link href={step.href}>前往</Link>
+                      <Link href={step.href}>{t('go')}</Link>
                     </Button>
                   )}
                 </div>

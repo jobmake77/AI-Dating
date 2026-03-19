@@ -7,6 +7,7 @@ import { Upload, X, Image as ImageIcon, ChevronDown, ChevronUp } from 'lucide-re
 import { toast } from 'sonner'
 import Image from 'next/image'
 import { ImageCropper } from '@/components/ui/image-cropper'
+import { useTranslations } from 'use-intl'
 
 interface CoverImageUploadProps {
   currentCover?: string | null
@@ -15,6 +16,7 @@ interface CoverImageUploadProps {
 }
 
 export function CoverImageUpload({ currentCover, onUploadSuccess, onRemove }: CoverImageUploadProps) {
+  const t = useTranslations('coverUpload')
   const [isUploading, setIsUploading] = useState(false)
   const [previewUrl, setPreviewUrl] = useState(currentCover)
   const [isExpanded, setIsExpanded] = useState(false)
@@ -48,12 +50,12 @@ export function CoverImageUpload({ currentCover, onUploadSuccess, onRemove }: Co
     setIsUploading(false)
 
     if (result.error) {
-      toast.error('上传失败', { description: result.error })
+      toast.error(t('uploadFailed'), { description: result.error })
       setPreviewUrl(currentCover)
       return
     }
 
-    toast.success('上传成功', { description: '封面图已更新' })
+    toast.success(t('uploadSuccess'), { description: t('updated') })
     onUploadSuccess(result.url!)
   }
 
@@ -74,7 +76,7 @@ export function CoverImageUpload({ currentCover, onUploadSuccess, onRemove }: Co
         >
           <span className="flex items-center gap-2">
             <ImageIcon className="h-4 w-4" />
-            {previewUrl ? '已设置封面图' : '添加封面图（可选）'}
+            {previewUrl ? t('set') : t('addOptional')}
           </span>
           <ChevronDown className="h-4 w-4" />
         </Button>
@@ -84,7 +86,7 @@ export function CoverImageUpload({ currentCover, onUploadSuccess, onRemove }: Co
       {isExpanded && (
         <div className="space-y-3 border rounded-lg p-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">封面图设置</span>
+            <span className="text-sm font-medium">{t('settings')}</span>
             <Button
               type="button"
               variant="ghost"
@@ -99,7 +101,7 @@ export function CoverImageUpload({ currentCover, onUploadSuccess, onRemove }: Co
             <div className="relative w-full aspect-video rounded-lg overflow-hidden border bg-muted">
               <Image
                 src={previewUrl}
-                alt="封面图预览"
+                alt={t('previewAlt')}
                 fill
                 className="object-cover"
               />
@@ -116,7 +118,7 @@ export function CoverImageUpload({ currentCover, onUploadSuccess, onRemove }: Co
           ) : (
             <div className="w-full aspect-video rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/50 flex flex-col items-center justify-center gap-2 hover:bg-muted/80 transition-colors">
               <ImageIcon className="h-12 w-12 text-muted-foreground/50" />
-              <p className="text-sm text-muted-foreground">暂无封面图</p>
+              <p className="text-sm text-muted-foreground">{t('empty')}</p>
             </div>
           )}
 
@@ -139,14 +141,14 @@ export function CoverImageUpload({ currentCover, onUploadSuccess, onRemove }: Co
               >
                 <span>
                   <Upload className="w-4 h-4 mr-2" />
-                  {isUploading ? '上传中...' : previewUrl ? '更换封面图' : '上传封面图'}
+                  {isUploading ? t('uploading') : previewUrl ? t('replace') : t('upload')}
                 </span>
               </Button>
             </label>
           </div>
 
           <p className="text-xs text-muted-foreground">
-            建议尺寸 1200x630，支持 JPG、PNG、GIF、WebP，最大 10MB
+            {t('hint')}
           </p>
         </div>
       )}

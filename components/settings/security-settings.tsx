@@ -5,8 +5,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
+import { useTranslations } from 'use-intl'
 
 export function SecuritySettings() {
+  const t = useTranslations('settingsSecurity')
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -16,12 +18,12 @@ export function SecuritySettings() {
     e.preventDefault()
 
     if (newPassword !== confirmPassword) {
-      toast.error('新密码和确认密码不匹配')
+      toast.error(t('passwordMismatch'))
       return
     }
 
     if (newPassword.length < 6) {
-      toast.error('密码至少需要 6 个字符')
+      toast.error(t('passwordTooShort'))
       return
     }
 
@@ -35,13 +37,13 @@ export function SecuritySettings() {
 
       if (error) throw error
 
-      toast.success('密码已更新')
+      toast.success(t('updated'))
       setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
     } catch (error) {
       console.error('Failed to update password:', error)
-      toast.error('更新密码失败')
+      toast.error(t('updateFailed'))
     } finally {
       setIsSubmitting(false)
     }
@@ -49,11 +51,11 @@ export function SecuritySettings() {
 
   return (
     <div className="rounded-lg border border-border bg-card p-6 shadow-sm space-y-5">
-      <h2 className="text-sm font-bold text-foreground">安全设置</h2>
+      <h2 className="text-sm font-bold text-foreground">{t('title')}</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-            当前密码
+            {t('currentPassword')}
           </label>
           <Input
             type="password"
@@ -64,7 +66,7 @@ export function SecuritySettings() {
         </div>
         <div>
           <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-            新密码
+            {t('newPassword')}
           </label>
           <Input
             type="password"
@@ -75,7 +77,7 @@ export function SecuritySettings() {
         </div>
         <div>
           <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-            确认新密码
+            {t('confirmPassword')}
           </label>
           <Input
             type="password"
@@ -91,7 +93,7 @@ export function SecuritySettings() {
             size="sm"
             className="h-9 bg-destructive text-destructive-foreground hover:bg-destructive/90 text-xs"
           >
-            {isSubmitting ? '更新中...' : '更新密码'}
+            {isSubmitting ? t('updating') : t('updatePassword')}
           </Button>
         </div>
       </form>

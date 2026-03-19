@@ -12,6 +12,7 @@ import { Heart, Repeat2, Share2, Link2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { useTranslations } from 'use-intl'
 
 interface PostActionsProps {
   contentId: string
@@ -32,6 +33,7 @@ export function PostActions({
   initialIsReposted,
   isAuthenticated,
 }: PostActionsProps) {
+  const t = useTranslations('contentUi')
   const [likesCount, setLikesCount] = useState(initialLikesCount)
   const [repostsCount, setRepostsCount] = useState(initialRepostsCount)
   const [isLiked, setIsLiked] = useState(initialIsLiked)
@@ -86,13 +88,13 @@ export function PostActions({
       } else {
         await supabase.from('reposts').delete().eq('content_id', contentId).eq('user_id', user.id)
       }
-      toast.success(newIsReposted ? '已转发' : '已取消转发')
+      toast.success(newIsReposted ? t('reposted') : t('repostCancelled'))
       router.refresh()
     } catch (error) {
       setIsReposted(!newIsReposted)
       setRepostsCount(initialRepostsCount)
       console.error('Failed to toggle repost:', error)
-      toast.error('操作失败')
+      toast.error(t('actionFailed'))
     } finally {
       setIsRepostLoading(false)
     }
@@ -102,9 +104,9 @@ export function PostActions({
     const url = `${window.location.origin}/post/${contentId}`
     try {
       await navigator.clipboard.writeText(url)
-      toast.success('链接已复制到剪贴板')
+      toast.success(t('linkCopied'))
     } catch {
-      toast.error('复制失败')
+      toast.error(t('copyFailed'))
     }
   }
 
@@ -162,12 +164,12 @@ export function PostActions({
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={handleCopyLink}>
             <Link2 className="h-4 w-4 mr-2" />
-            复制链接
+            {t('copyLink')}
           </DropdownMenuItem>
           {typeof navigator !== 'undefined' && 'share' in navigator && (
             <DropdownMenuItem onClick={handleShare}>
               <Share2 className="h-4 w-4 mr-2" />
-              分享
+              {t('share')}
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>

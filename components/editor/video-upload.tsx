@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react'
 import { getVideoUploadUrl } from '@/lib/actions/upload-video'
+import { useTranslations } from 'use-intl'
 
 const MAX_SIZE = 500 * 1024 * 1024 // 500MB
 const ALLOWED_TYPES = ['video/mp4', 'video/quicktime', 'video/webm', 'video/x-msvideo']
@@ -12,6 +13,7 @@ interface VideoUploadProps {
 }
 
 export function useVideoUpload({ onUploadSuccess, onError }: VideoUploadProps) {
+  const t = useTranslations('editorToolbar')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -21,11 +23,11 @@ export function useVideoUpload({ onUploadSuccess, onError }: VideoUploadProps) {
     if (!file) return
 
     if (!ALLOWED_TYPES.includes(file.type)) {
-      onError('只支持 MP4、MOV、WebM、AVI 格式的视频')
+      onError(t('videoTypeError'))
       return
     }
     if (file.size > MAX_SIZE) {
-      onError('视频大小不能超过 500MB')
+      onError(t('videoSizeError'))
       return
     }
 
@@ -56,7 +58,7 @@ export function useVideoUpload({ onUploadSuccess, onError }: VideoUploadProps) {
       onUploadSuccess(result.publicUrl!)
     } catch (err) {
       console.error('Video upload error:', err)
-      onError('视频上传失败，请重试')
+      onError(t('videoUploadFailed'))
     } finally {
       setUploading(false)
       setProgress(0)

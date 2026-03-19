@@ -9,6 +9,8 @@ import { UserContentTabsCompact } from '@/components/user/user-content-tabs-comp
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import { getPersonSchema, getBreadcrumbSchema } from '@/lib/seo/structured-data'
+import { getRequestLocale } from '@/i18n/request'
+import { getTranslation } from '@/i18n/dictionaries'
 
 type ContentsResult = Awaited<ReturnType<typeof getContents>>
 type UserLikedContentsResult = Awaited<ReturnType<typeof getUserLikedContents>>
@@ -20,6 +22,9 @@ interface UserPageProps {
 }
 
 export async function generateMetadata({ params }: UserPageProps): Promise<Metadata> {
+  const locale = await getRequestLocale()
+  const format = (key: string, fallback: string, values?: Record<string, string | number>) =>
+    getTranslation(locale, `userPage.${key}`, fallback).replace(/\{(\w+)\}/g, (_, name) => String(values?.[name] ?? `{${name}}`))
   const { username } = await params
   const user = await getUserByUsername(username)
   if (!user) {
@@ -30,7 +35,11 @@ export async function generateMetadata({ params }: UserPageProps): Promise<Metad
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
   const displayName = user.full_name || user.username
-  const description = user.bio || `${displayName} 在 AI-Dating 的个人主页。已发布 ${stats.contents_count} 篇内容，获得 ${stats.total_likes} 个赞。`
+  const description = user.bio || format(
+    'metadata.description',
+    '{name} profile on AI-Dating. Published {contents} posts and received {likes} likes.',
+    { name: displayName, contents: stats.contents_count, likes: stats.total_likes }
+  )
 
   const ogImageUrl = `${baseUrl}/api/og?type=user&name=${encodeURIComponent(displayName)}&username=${encodeURIComponent(user.username)}&bio=${encodeURIComponent(user.bio || '')}&contents=${stats.contents_count}&followers=${user.followers_count || 0}`
 
@@ -39,7 +48,7 @@ export async function generateMetadata({ params }: UserPageProps): Promise<Metad
     description,
     openGraph: {
       type: 'profile',
-      locale: 'zh_CN',
+      locale: locale === 'en' ? 'en_US' : 'zh_CN',
       url: `${baseUrl}/u/${user.username}`,
       title: `${displayName} (@${user.username})`,
       description,
@@ -64,6 +73,8 @@ export async function generateMetadata({ params }: UserPageProps): Promise<Metad
 }
 
 export default async function UserPage({ params, searchParams }: UserPageProps) {
+  const locale = await getRequestLocale()
+  const t = (key: string, fallback: string) => getTranslation(locale, `userPage.${key}`, fallback)
   const { username } = await params
   const { page: pageParam, tab = 'published' } = await searchParams
   const page = Number(pageParam) || 1
@@ -118,8 +129,8 @@ export default async function UserPage({ params, searchParams }: UserPageProps) 
   })
 
   const breadcrumbSchema = getBreadcrumbSchema([
-    { name: '首页', url: '/' },
-    { name: '用户', url: '/u' },
+    { name: t('breadcrumbHome', 'Home'), url: '/' },
+    { name: t('breadcrumbUsers', 'Users'), url: '/u' },
     { name: user.full_name || user.username, url: `/u/${user.username}` },
   ])
 

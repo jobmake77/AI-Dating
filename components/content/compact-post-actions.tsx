@@ -5,6 +5,7 @@ import { Heart, Repeat2, Share2, Bookmark } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useTranslations } from "use-intl";
 
 interface CompactPostActionsProps {
   contentId: string;
@@ -25,6 +26,7 @@ export function CompactPostActions({
   initialIsBookmarked,
   isAuthenticated,
 }: CompactPostActionsProps) {
+  const t = useTranslations('contentUi');
   const [likesCount, setLikesCount] = useState(initialLikesCount);
   const [repostsCount, setRepostsCount] = useState(initialRepostsCount);
   const [isLiked, setIsLiked] = useState(initialIsLiked);
@@ -97,13 +99,13 @@ export function CompactPostActions({
       } else {
         await supabase.from("reposts").delete().eq("content_id", contentId).eq("user_id", user.id);
       }
-      toast.success(newIsReposted ? "已转发" : "已取消转发");
+      toast.success(newIsReposted ? t('reposted') : t('repostCancelled'));
       router.refresh();
     } catch (error) {
       setIsReposted(!newIsReposted);
       setRepostsCount(initialRepostsCount);
       console.error("Failed to toggle repost:", error);
-      toast.error("操作失败");
+      toast.error(t('actionFailed'));
     } finally {
       setIsRepostLoading(false);
     }
@@ -113,9 +115,9 @@ export function CompactPostActions({
     const url = `${window.location.origin}/post/${contentId}`;
     try {
       await navigator.clipboard.writeText(url);
-      toast.success("链接已复制到剪贴板");
+      toast.success(t('linkCopied'));
     } catch {
-      toast.error("复制失败");
+      toast.error(t('copyFailed'));
     }
   };
 
@@ -141,16 +143,16 @@ export function CompactPostActions({
 
       if (newIsBookmarked) {
         await supabase.from("bookmarks").insert({ content_id: contentId, user_id: user.id });
-        toast.success("已收藏");
+        toast.success(t('bookmarked'));
       } else {
         await supabase.from("bookmarks").delete().eq("content_id", contentId).eq("user_id", user.id);
-        toast.success("已取消收藏");
+        toast.success(t('bookmarkCancelled'));
       }
       router.refresh();
     } catch (error) {
       setIsBookmarked(!newIsBookmarked);
       console.error("Failed to toggle bookmark:", error);
-      toast.error("操作失败");
+      toast.error(t('actionFailed'));
     } finally {
       setIsBookmarkLoading(false);
     }
@@ -189,7 +191,7 @@ export function CompactPostActions({
         className="flex items-center gap-1.5 hover:text-info transition-colors rounded-full bg-secondary/60 px-3 py-1.5"
       >
         <Share2 className="h-3.5 w-3.5" />
-        分享
+        {t('share')}
       </button>
 
       <button
@@ -200,11 +202,10 @@ export function CompactPostActions({
             ? "bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20"
             : "bg-secondary/60 hover:text-yellow-500"
         }`}
-      >
+        >
         <Bookmark className={`h-3.5 w-3.5 ${isBookmarked ? "fill-current" : ""}`} />
-        收藏
+        {t('bookmark')}
       </button>
     </div>
   );
 }
-

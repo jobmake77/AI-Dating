@@ -1,5 +1,8 @@
+'use client'
+
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { useOptionalTranslation } from '@/components/i18n/locale-provider'
 
 interface PaginationProps {
   currentPage: number
@@ -8,6 +11,7 @@ interface PaginationProps {
 }
 
 export function Pagination({ currentPage, totalPages, basePath }: PaginationProps) {
+  const t = useOptionalTranslation()
   if (totalPages <= 1) return null
 
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1)
@@ -27,7 +31,7 @@ export function Pagination({ currentPage, totalPages, basePath }: PaginationProp
     <div className="flex items-center justify-center gap-1.5 mt-6">
       {currentPage > 1 && (
         <Button variant="outline" size="sm" asChild className="cursor-pointer">
-          <Link href={buildPageUrl(currentPage - 1)}>上一页</Link>
+          <Link href={buildPageUrl(currentPage - 1)}>{t('common.previous', 'Previous')}</Link>
         </Button>
       )}
 
@@ -56,7 +60,7 @@ export function Pagination({ currentPage, totalPages, basePath }: PaginationProp
 
       {currentPage < totalPages && (
         <Button variant="outline" size="sm" asChild className="cursor-pointer">
-          <Link href={buildPageUrl(currentPage + 1)}>下一页</Link>
+          <Link href={buildPageUrl(currentPage + 1)}>{t('common.next', 'Next')}</Link>
         </Button>
       )}
     </div>

@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { getContentVersions, restoreContentVersion } from '@/lib/actions/content-versions'
 import { formatDistanceToNow } from 'date-fns'
-import { zhCN } from 'date-fns/locale'
+import { enUS, zhCN } from 'date-fns/locale'
 import { History, RotateCcw, Eye } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import {
@@ -16,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { useLocale, useTranslations } from 'use-intl'
 
 interface ContentVersion {
   id: string
@@ -36,6 +37,8 @@ interface VersionHistoryProps {
 }
 
 export function VersionHistory({ contentId, isAuthor }: VersionHistoryProps) {
+  const t = useTranslations('versionHistory')
+  const locale = useLocale()
   const [versions, setVersions] = useState<ContentVersion[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedVersion, setSelectedVersion] = useState<ContentVersion | null>(null)
@@ -53,7 +56,7 @@ export function VersionHistory({ contentId, isAuthor }: VersionHistoryProps) {
       if (result.error) {
         toast({
           variant: 'destructive',
-          title: '加载失败',
+          title: t('loadFailed'),
           description: result.error,
         })
       } else if (result.data) {
@@ -66,10 +69,10 @@ export function VersionHistory({ contentId, isAuthor }: VersionHistoryProps) {
     return () => {
       active = false
     }
-  }, [contentId, toast])
+  }, [contentId, t, toast])
 
   const handleRestore = async (versionId: string) => {
-    if (!confirm('确定要恢复到这个版本吗？当前内容将被替换。')) {
+    if (!confirm(t('restoreConfirm'))) {
       return
     }
 
@@ -78,13 +81,13 @@ export function VersionHistory({ contentId, isAuthor }: VersionHistoryProps) {
     if (result.error) {
       toast({
         variant: 'destructive',
-        title: '恢复失败',
+        title: t('restoreFailed'),
         description: result.error,
       })
     } else {
       toast({
-        title: '恢复成功',
-        description: '内容已恢复到选定版本',
+        title: t('restoreSuccess'),
+        description: t('restoreSuccessDescription'),
       })
       // Reload page to show updated content
       window.location.reload()
@@ -101,7 +104,7 @@ export function VersionHistory({ contentId, isAuthor }: VersionHistoryProps) {
       <Card className="p-6">
         <div className="flex items-center gap-2 mb-4">
           <History className="h-5 w-5" />
-          <h3 className="text-lg font-semibold">版本历史</h3>
+          <h3 className="text-lg font-semibold">{t('title')}</h3>
         </div>
         <div className="space-y-2">
           {[1, 2, 3].map((i) => (
@@ -117,9 +120,9 @@ export function VersionHistory({ contentId, isAuthor }: VersionHistoryProps) {
       <Card className="p-6">
         <div className="flex items-center gap-2 mb-4">
           <History className="h-5 w-5" />
-          <h3 className="text-lg font-semibold">版本历史</h3>
+          <h3 className="text-lg font-semibold">{t('title')}</h3>
         </div>
-        <p className="text-sm text-muted-foreground">暂无版本历史</p>
+        <p className="text-sm text-muted-foreground">{t('empty')}</p>
       </Card>
     )
   }
@@ -129,7 +132,7 @@ export function VersionHistory({ contentId, isAuthor }: VersionHistoryProps) {
       <Card className="p-6">
         <div className="flex items-center gap-2 mb-4">
           <History className="h-5 w-5" />
-          <h3 className="text-lg font-semibold">版本历史</h3>
+          <h3 className="text-lg font-semibold">{t('title')}</h3>
         </div>
 
         <div className="space-y-3">
@@ -139,22 +142,22 @@ export function VersionHistory({ contentId, isAuthor }: VersionHistoryProps) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">
-                      版本 {version.version_number}
+                      {t('versionLabel', { version: version.version_number })}
                     </span>
                     {index === 0 && (
                       <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
-                        当前版本
+                        {t('current')}
                       </span>
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">
                     {formatDistanceToNow(new Date(version.created_at), {
                       addSuffix: true,
-                      locale: zhCN,
+                      locale: locale === 'en' ? enUS : zhCN,
                     })}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    由 {version.author.full_name || version.author.username} 编辑
+                    {t('editedBy', { name: version.author.full_name || version.author.username })}
                   </p>
                 </div>
 
@@ -165,7 +168,7 @@ export function VersionHistory({ contentId, isAuthor }: VersionHistoryProps) {
                     onClick={() => handlePreview(version)}
                   >
                     <Eye className="h-4 w-4 mr-1" />
-                    预览
+                    {t('preview')}
                   </Button>
                   {isAuthor && index !== 0 && (
                     <Button
@@ -174,7 +177,7 @@ export function VersionHistory({ contentId, isAuthor }: VersionHistoryProps) {
                       onClick={() => handleRestore(version.id)}
                     >
                       <RotateCcw className="h-4 w-4 mr-1" />
-                      恢复
+                      {t('restore')}
                     </Button>
                   )}
                 </div>
@@ -190,13 +193,13 @@ export function VersionHistory({ contentId, isAuthor }: VersionHistoryProps) {
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              版本 {selectedVersion?.version_number} 预览
+              {t('previewVersion', { version: selectedVersion?.version_number ?? '' })}
             </DialogTitle>
             <DialogDescription>
               {selectedVersion &&
                 formatDistanceToNow(new Date(selectedVersion.created_at), {
                   addSuffix: true,
-                  locale: zhCN,
+                  locale: locale === 'en' ? enUS : zhCN,
                 })}
             </DialogDescription>
           </DialogHeader>

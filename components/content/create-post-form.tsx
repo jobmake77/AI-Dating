@@ -18,12 +18,14 @@ import TiptapImage from '@tiptap/extension-image'
 import Placeholder from '@tiptap/extension-placeholder'
 import { toast } from 'sonner'
 import type { ContentCategory } from '@/lib/types/content-category'
+import { useTranslations } from 'use-intl'
 
 interface CreatePostFormProps {
   categories: ContentCategory[]
 }
 
 export function CreatePostForm({ categories }: CreatePostFormProps) {
+  const t = useTranslations('editorUi')
   const router = useRouter()
   const [title, setTitle] = useState('')
   const [selectedCategory, setSelectedCategory] = useState(categories[0]?.slug || '')
@@ -45,7 +47,7 @@ export function CreatePostForm({ categories }: CreatePostFormProps) {
         },
       }),
       Placeholder.configure({
-        placeholder: '写下你的想法...',
+        placeholder: t('writeSomething'),
       }),
     ],
     content: '',
@@ -59,7 +61,7 @@ export function CreatePostForm({ categories }: CreatePostFormProps) {
 
   const handleSubmit = async () => {
     if (!title.trim() || !editor?.getHTML()) {
-      setError('请输入标题和内容')
+      setError(t('titleAndContentRequired'))
       return
     }
 
@@ -81,7 +83,7 @@ export function CreatePostForm({ categories }: CreatePostFormProps) {
 
       await createContent(formData)
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '发布失败，请重试'
+      const errorMessage = err instanceof Error ? err.message : t('publishFailed')
       setError(errorMessage)
       setIsSubmitting(false)
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -105,10 +107,10 @@ export function CreatePostForm({ categories }: CreatePostFormProps) {
 
       if (result.url && editor) {
         editor.chain().focus().setImage({ src: result.url }).run()
-        toast.success('图片上传成功')
+        toast.success(t('imageUploaded'))
       }
     } catch {
-      toast.error('图片上传失败，请重试')
+      toast.error(t('imageUploadFailed'))
     } finally {
       setIsUploadingImage(false)
     }
@@ -137,17 +139,17 @@ export function CreatePostForm({ categories }: CreatePostFormProps) {
         })
 
         if (!uploadResponse.ok) {
-          throw new Error('上传失败')
+          throw new Error(t('uploadFailed'))
         }
 
         // Insert video into editor
         if (editor) {
           editor.chain().focus().insertContent(`<video src="${result.publicUrl}" controls class="rounded-lg max-w-full"></video>`).run()
-          toast.success('视频上传成功')
+          toast.success(t('videoUploaded'))
         }
       }
     } catch {
-      toast.error('视频上传失败，请重试')
+      toast.error(t('videoUploadFailed'))
     } finally {
       setIsUploadingVideo(false)
     }
@@ -178,10 +180,10 @@ export function CreatePostForm({ categories }: CreatePostFormProps) {
 
       if (result.url) {
         setCoverImage(result.url)
-        toast.success('封面上传成功')
+        toast.success(t('coverUploaded'))
       }
     } catch {
-      toast.error('封面上传失败，请重试')
+      toast.error(t('coverUploadFailed'))
     } finally {
       setIsUploadingImage(false)
     }
@@ -198,7 +200,7 @@ export function CreatePostForm({ categories }: CreatePostFormProps) {
           className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary mb-4 transition-colors"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          返回首页
+          {t('backHome')}
         </Link>
 
         {error && (
@@ -214,15 +216,15 @@ export function CreatePostForm({ categories }: CreatePostFormProps) {
             className="flex-1 min-w-0"
           >
             <div className="rounded-lg border border-border bg-card p-6 shadow-card">
-              <h1 className="text-lg font-bold text-foreground mb-6">创建新帖子</h1>
+              <h1 className="text-lg font-bold text-foreground mb-6">{t('createPostTitle')}</h1>
 
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm font-medium text-foreground">标题</label>
+                  <label className="text-sm font-medium text-foreground">{t('title')}</label>
                   <span className="text-xs text-muted-foreground">{titleCount}/100</span>
                 </div>
                 <Input
-                  placeholder="输入一个吸引人的标题..."
+                  placeholder={t('titlePlaceholder')}
                   value={title}
                   onChange={(e) => setTitle(e.target.value.slice(0, 100))}
                   className="h-12 text-base bg-background border-border focus:ring-2 focus:ring-primary/20"
@@ -230,7 +232,7 @@ export function CreatePostForm({ categories }: CreatePostFormProps) {
               </div>
 
               <div className="mb-6">
-                <label className="text-sm font-medium text-foreground mb-2 block">封面图片（可选）</label>
+                <label className="text-sm font-medium text-foreground mb-2 block">{t('coverOptional')}</label>
                 {coverImage ? (
                   <div className="relative rounded-lg overflow-hidden border border-border">
                     <Image src={coverImage} alt="Cover" fill unoptimized sizes="768px" className="h-48 object-cover" />
@@ -248,8 +250,8 @@ export function CreatePostForm({ categories }: CreatePostFormProps) {
                     className="w-full border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer"
                   >
                     <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">点击上传封面图片</p>
-                    <p className="text-xs text-muted-foreground mt-1">支持 JPG, PNG, GIF (最大 5MB)</p>
+                    <p className="text-sm text-muted-foreground">{t('clickUploadCover')}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{t('coverSupport')}</p>
                   </button>
                 )}
                 <input
@@ -266,8 +268,8 @@ export function CreatePostForm({ categories }: CreatePostFormProps) {
 
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm font-medium text-foreground">内容</label>
-                  <span className="text-xs text-muted-foreground">{wordCount} 字</span>
+                  <label className="text-sm font-medium text-foreground">{t('content')}</label>
+                  <span className="text-xs text-muted-foreground">{t('wordCount', { count: wordCount })}</span>
                 </div>
 
                 {/* Hidden file inputs */}
@@ -356,7 +358,7 @@ export function CreatePostForm({ categories }: CreatePostFormProps) {
           >
             <div className="sticky top-4 space-y-4">
               <div className="rounded-lg border border-border bg-card p-4 shadow-card">
-                <label className="text-sm font-medium text-foreground mb-3 block">选择分类</label>
+                <label className="text-sm font-medium text-foreground mb-3 block">{t('selectCategory')}</label>
                 <div className="flex flex-wrap gap-2">
                   {categories.map((cat) => {
                     const hsl = cat.color
@@ -395,7 +397,7 @@ export function CreatePostForm({ categories }: CreatePostFormProps) {
                   disabled={!title.trim() || !editor?.getText().trim() || !selectedCategory || isSubmitting}
                 >
                   <Send className="h-4 w-4" />
-                  {isSubmitting ? '发布中...' : '发布帖子'}
+                  {isSubmitting ? t('publishing') : t('publishPost')}
                 </Button>
 
                 <Button
@@ -404,7 +406,7 @@ export function CreatePostForm({ categories }: CreatePostFormProps) {
                   className="w-full"
                   disabled={isSubmitting}
                 >
-                  保存草稿
+                  {t('saveDraft')}
                 </Button>
 
                 <Button
@@ -414,7 +416,7 @@ export function CreatePostForm({ categories }: CreatePostFormProps) {
                   onClick={() => router.push('/')}
                   disabled={isSubmitting}
                 >
-                  取消
+                  {t('cancel')}
                 </Button>
               </div>
             </div>

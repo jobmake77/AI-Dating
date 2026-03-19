@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { toggleFollow } from '@/lib/actions/follows'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { useTranslations } from 'use-intl'
 
 interface FollowButtonProps {
   userId: string
@@ -19,6 +20,7 @@ export function FollowButton({
   isCurrentUser,
   isAuthenticated,
 }: FollowButtonProps) {
+  const t = useTranslations('userActions')
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
@@ -41,13 +43,13 @@ export function FollowButton({
 
     try {
       await toggleFollow(userId)
-      toast.success(newIsFollowing ? '已关注' : '已取消关注')
+      toast.success(newIsFollowing ? t('followed') : t('unfollowed'))
       router.refresh()
     } catch (error) {
       // Revert on error
       setIsFollowing(!newIsFollowing)
       console.error('Failed to toggle follow:', error)
-      toast.error('操作失败')
+      toast.error(t('actionFailed'))
     } finally {
       setIsLoading(false)
     }
@@ -64,7 +66,7 @@ export function FollowButton({
         : 'w-full h-8 text-xs gradient-primary text-white hover:opacity-90 shadow-primary'
       }
     >
-      {isFollowing ? '已关注' : '关注'}
+      {isFollowing ? t('following') : t('follow')}
     </Button>
   )
 }

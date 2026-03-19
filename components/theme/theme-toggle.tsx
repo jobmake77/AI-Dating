@@ -16,8 +16,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
+import { useTranslations } from 'use-intl'
 
 export function ThemeToggle() {
+  const t = useTranslations('theme')
   const { preferences, setMode } = useTheme()
 
   const icons = {
@@ -27,9 +29,9 @@ export function ThemeToggle() {
   }
 
   const labels = {
-    light: '浅色',
-    dark: '深色',
-    system: '跟随系统',
+    light: t('light'),
+    dark: t('dark'),
+    system: t('system'),
   }
 
   return (
@@ -38,11 +40,11 @@ export function ThemeToggle() {
         <Button
           variant="ghost"
           size="icon"
-          aria-label="切换主题"
+          aria-label={t('toggle')}
           className="relative"
         >
           {icons[preferences.mode]}
-          <span className="sr-only">切换主题</span>
+          <span className="sr-only">{t('toggle')}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

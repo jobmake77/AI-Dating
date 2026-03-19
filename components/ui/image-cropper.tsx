@@ -12,6 +12,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { ZoomIn, ZoomOut } from 'lucide-react'
+import { useTranslations } from 'use-intl'
 
 interface ImageCropperProps {
   image: string
@@ -28,6 +29,7 @@ export function ImageCropper({
   aspect = 1,
   shape = 'rect',
 }: ImageCropperProps) {
+  const t = useTranslations('imageCropper')
   const [crop, setCrop] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null)
@@ -67,7 +69,7 @@ export function ImageCropper({
     <Dialog open={true} onOpenChange={onCancel}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>裁剪图片</DialogTitle>
+          <DialogTitle>{t('title')}</DialogTitle>
         </DialogHeader>
 
         <div className="relative w-full h-96 bg-muted">
@@ -98,16 +100,16 @@ export function ImageCropper({
             <ZoomIn className="w-4 h-4 text-muted-foreground" />
           </div>
           <p className="text-xs text-muted-foreground text-center">
-            拖动图片调整位置，滑动缩放图片
+            {t('hint')}
           </p>
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={onCancel} disabled={isProcessing}>
-            取消
+            {t('cancel')}
           </Button>
           <Button onClick={createCroppedImage} disabled={isProcessing}>
-            {isProcessing ? '处理中...' : '确认裁剪'}
+            {isProcessing ? t('processing') : t('confirm')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -24,6 +24,11 @@
     "close": "关闭",
     "viewAll": "查看全部"
   },
+  "rootMetadata": {
+    "title": "AI-Dating - AI 开发者社区",
+    "description": "A Date with AI: 连接 AI 开发者与创作者的技术社区。分享源码解析、实战工坊、架构设计、AI 前沿和面试经验。",
+    "imageAlt": "AI-Dating - AI 开发者社区"
+  },
   "nav": {
     "home": "首页",
     "feed": "话题",
@@ -47,12 +52,16 @@
     "light": "浅色",
     "dark": "深色",
     "system": "跟随系统",
+    "toggle": "切换主题",
     "color": "主题颜色",
     "fontSize": "字体大小",
     "fontSizeSmall": "小",
     "fontSizeMedium": "中",
     "fontSizeLarge": "大",
+    "selectColor": "选择{name}主题",
+    "setFontSize": "设置字体大小为{label}",
     "highContrast": "高对比度模式",
+    "toggleHighContrast": "切换高对比度模式",
     "highContrastDescription": "增强颜色对比度，提高可读性（WCAG AAA 标准）",
     "colorDescription": "选择你喜欢的主题颜色",
     "fontSizeDescription": "调整全局字体大小以提高可读性"
@@ -61,12 +70,44 @@
     "skipToContent": "跳转到主要内容",
     "keyboardShortcuts": "键盘快捷键",
     "keyboardShortcutsDescription": "使用这些快捷键可以更高效地浏览和操作",
-    "keyboardShortcutsTip": "按 ? 可随时打开此帮助面板",
+    "keyboardShortcutsTip": "按 {key} 可随时打开此帮助面板",
+    "tipLabel": "提示：",
     "categories": {
       "navigation": "导航",
       "actions": "操作",
       "ui": "界面"
     }
+  },
+  "offlineIndicator": {
+    "offline": "网络连接已断开，请检查您的网络设置",
+    "reconnected": "网络已恢复连接"
+  },
+  "onboardingProgress": {
+    "title": "欢迎来到 AI-Dating 开发者社区",
+    "description": "完成以下步骤，快速上手社区功能",
+    "restart": "重新引导",
+    "progress": "完成进度",
+    "go": "前往",
+    "steps": {
+      "profile": {
+        "title": "完善个人资料",
+        "description": "让其他开发者了解你"
+      },
+      "post": {
+        "title": "发布第一篇内容",
+        "description": "分享你的技术见解"
+      },
+      "explore": {
+        "title": "探索社区内容",
+        "description": "发现优质技术文章"
+      }
+    }
+  },
+  "onboardingTour": {
+    "skip": "跳过引导",
+    "back": "上一步",
+    "next": "下一步",
+    "finish": "完成"
   },
   "settings": {
     "title": "设置",
@@ -76,6 +117,90 @@
     "notifications": "通知",
     "privacy": "隐私",
     "security": "安全"
+  },
+  "settingsUi": {
+    "title": "设置",
+    "back": "返回",
+    "profile": "个人资料",
+    "notifications": "通知设置",
+    "security": "安全",
+    "appearance": "外观",
+    "agents": "Agent 管理"
+  },
+  "settingsNotifications": {
+    "title": "通知设置",
+    "likesLabel": "有人赞了你的帖子",
+    "likesDesc": "包括帖子和评论的点赞",
+    "commentsLabel": "有人评论了你的帖子",
+    "commentsDesc": "包括回复你的评论",
+    "followsLabel": "有人关注了你",
+    "followsDesc": "新粉丝通知",
+    "messagesLabel": "私信通知",
+    "messagesDesc": "收到新的私信时通知",
+    "communityLabel": "社区动态",
+    "communityDesc": "你加入的社区有新活动"
+  },
+  "settingsSecurity": {
+    "title": "安全设置",
+    "passwordMismatch": "新密码和确认密码不匹配",
+    "passwordTooShort": "密码至少需要 6 个字符",
+    "updated": "密码已更新",
+    "updateFailed": "更新密码失败",
+    "currentPassword": "当前密码",
+    "newPassword": "新密码",
+    "confirmPassword": "确认新密码",
+    "updating": "更新中...",
+    "updatePassword": "更新密码"
+  },
+  "settingsAgents": {
+    "title": "Agent 管理",
+    "create": "创建 Agent",
+    "description": "每个用户最多可创建 2 个 Agent。Agent 可通过 API Key 以你的身份发布内容。",
+    "empty": "你还没有创建任何 Agent"
+  },
+  "commentUi": {
+    "loginRequired": "登录后才能发表评论",
+    "login": "登录",
+    "emptyError": "评论内容不能为空",
+    "tooLongError": "评论内容不能超过 1000 字符",
+    "submitFailed": "发表评论失败",
+    "title": "发表评论",
+    "placeholder": "写下你的想法...",
+    "submit": "发表评论",
+    "comments": "评论",
+    "empty": "还没有评论，来发表第一条吧！",
+    "replyFailed": "回复失败",
+    "deleteTitle": "确认删除",
+    "deleteDescription": "此操作无法撤销。",
+    "cancel": "取消",
+    "deleting": "删除中...",
+    "confirmDelete": "确认删除",
+    "collapse": "收起",
+    "reply": "回复",
+    "replyPlaceholder": "回复 @{username}...",
+    "replying": "回复中...",
+    "anonymous": "匿名"
+  },
+  "imageCropper": {
+    "title": "裁剪图片",
+    "hint": "拖动图片调整位置，滑动缩放图片",
+    "cancel": "取消",
+    "processing": "处理中...",
+    "confirm": "确认裁剪"
+  },
+  "communityCoverUpload": {
+    "uploadFailed": "上传失败",
+    "uploadSuccess": "上传成功",
+    "uploadSuccessDescription": "社区封面已更新",
+    "configured": "已设置封面图",
+    "addOptional": "添加封面图（可选）",
+    "settings": "封面图设置",
+    "previewAlt": "封面图预览",
+    "empty": "暂无封面图",
+    "uploading": "上传中...",
+    "replace": "更换封面图",
+    "upload": "上传封面图",
+    "hint": "建议尺寸 1200x630，支持 JPG、PNG、GIF、WebP，最大 10MB"
   },
   "auth": {
     "login": "登录",
@@ -238,7 +363,18 @@
     "retry": "重试",
     "home": "返回首页"
   },
+  "errorPage": {
+    "title": "页面出错了",
+    "details": "查看错误详情（仅开发环境）",
+    "retry": "重试",
+    "home": "返回首页"
+  },
   "communitiesPage": {
+    "metadata": {
+      "title": "社区 - AI-Dating",
+      "description": "发现并加入与你兴趣匹配的 AI 社区。",
+      "imageAlt": "社区"
+    },
     "title": "社区",
     "subtitle": "发现并加入感兴趣的技术社区",
     "create": "创建社区",
@@ -302,6 +438,11 @@
     "deleteCommunity": "删除社区"
   },
   "eventsPage": {
+    "metadata": {
+      "title": "活动 - AI-Dating",
+      "description": "发现和参与 AI 开发者线下活动。",
+      "imageAlt": "活动"
+    },
     "title": "活动",
     "subtitle": "参与社区活动，提升技能、拓展人脉",
     "create": "创建活动",
@@ -346,9 +487,24 @@
     "startConversationHint": "访问其他用户的主页开始对话",
     "justNow": "刚刚",
     "imageMessage": "[图片]",
-    "startConversation": "开始对话..."
+    "startConversation": "开始对话...",
+    "online": "在线",
+    "imageAlt": "聊天图片"
+  },
+  "contentsPage": {
+    "metadata": {
+      "title": "全部内容 - AI-Dating",
+      "description": "浏览 AI-Dating 上的技术文章、实战教程、深度解析与公开社区帖子。"
+    },
+    "title": "全部内容",
+    "subtitle": "浏览技术文章、实战教程、深度解析，以及公开社区中的热门帖子。"
   },
   "trendingPage": {
+    "metadata": {
+      "title": "热门内容 - AI-Dating",
+      "description": "发现 AI-Dating 社区最热门的内容、项目和讨论。",
+      "imageAlt": "热门内容"
+    },
     "title": "热门内容",
     "subtitle": "社区中最受欢迎的内容",
     "today": "今日",
@@ -375,6 +531,134 @@
     "emptyLoggedOutHint": "登录并加入社区后，这里会展示你的社区列表。",
     "browseAll": "浏览全部社区"
   },
+  "homeWelcome": {
+    "eyebrow": "社区编辑部",
+    "tabHot": "热门讨论",
+    "tabLatest": "最新发布",
+    "tabFollowing": "关注动态",
+    "title": "把今天值得读、值得聊的 AI 开发内容排在最前面。",
+    "description": "更像一份持续更新的社区版面，而不是无尽信息流。先看重点，再决定参与哪场讨论。",
+    "create": "发布一篇内容",
+    "explore": "去发现更多话题",
+    "featuredTitle": "今日导读",
+    "authorPrefix": "作者 · {author}",
+    "featuredEmpty": "你的社区正在等待今天的第一篇优质内容。",
+    "developersLabel": "开发者",
+    "developersHint": "活跃创作者",
+    "contentsLabel": "已发布内容",
+    "contentsHint": "进入内容流",
+    "communitiesLabel": "社区索引",
+    "communitiesHint": "主题聚合"
+  },
+  "homeCommunitySidebar": {
+    "activeTitle": "活跃社区",
+    "activeHint": "按成员与内容活跃度排序",
+    "membersLabel": "开发者",
+    "contentsLabel": "已发布内容",
+    "communityMeta": "{posts} 篇内容 · {members} 位成员",
+    "browseCommunities": "进入社区广场",
+    "trendingTags": "热门标签"
+  },
+  "leftSidebar": {
+    "defaultUser": "用户",
+    "primaryNavAria": "主导航",
+    "navigationTitle": "导航",
+    "mainFunctionsAria": "主要功能",
+    "createAria": "发布新内容",
+    "collapseCommunities": "收起我的社区列表",
+    "expandCommunities": "展开我的社区列表",
+    "browseMoreAria": "浏览更多社区",
+    "browseMore": "浏览更多",
+    "joinOrCreateAria": "加入或创建社区",
+    "joinOrCreate": "加入或创建社区",
+    "viewProfile": "查看 {name} 的个人资料"
+  },
+  "userProfile": {
+    "karma": "Karma",
+    "contents": "内容",
+    "likes": "获赞",
+    "followers": "粉丝",
+    "followingCount": "关注",
+    "edit": "编辑",
+    "joined": "加入于",
+    "agoSuffix": "前",
+    "following": "关注中"
+  },
+  "userActions": {
+    "follow": "关注",
+    "following": "已关注",
+    "followed": "已关注",
+    "unfollowed": "已取消关注",
+    "actionFailed": "操作失败",
+    "sendMessage": "发消息",
+    "creatingConversation": "创建中..."
+  },
+  "userContentTabs": {
+    "heading": "发布的内容",
+    "published": "内容",
+    "liked": "点赞",
+    "reposted": "转发",
+    "agents": "Agent",
+    "emptyPublished": "该用户还没有发过内容",
+    "emptyLiked": "暂无点赞内容",
+    "emptyReposted": "暂无转发内容"
+  },
+  "userPage": {
+    "metadata": {
+      "description": "{name} 在 AI-Dating 的个人主页。已发布 {contents} 篇内容，获得 {likes} 个赞。"
+    },
+    "breadcrumbHome": "首页",
+    "breadcrumbUsers": "用户"
+  },
+  "userSettings": {
+    "title": "个人资料",
+    "updated": "资料已更新",
+    "updateFailed": "更新失败",
+    "avatar": "头像",
+    "username": "用户名",
+    "usernameHint": "用户名不可修改",
+    "fullName": "显示名称",
+    "fullNamePlaceholder": "你的名字",
+    "bio": "个人简介",
+    "bioPlaceholder": "介绍一下你自己...",
+    "githubUsername": "GitHub 用户名",
+    "saving": "保存中...",
+    "save": "保存更改",
+    "cancel": "取消"
+  },
+  "avatarUpload": {
+    "uploadFailed": "上传失败",
+    "uploadSuccess": "上传成功",
+    "uploadSuccessDescription": "头像已更新",
+    "uploading": "上传中...",
+    "upload": "上传头像",
+    "hint": "支持 JPG、PNG、GIF、WebP，最大 10MB"
+  },
+  "userRelations": {
+    "backProfile": "返回个人主页",
+    "followers": "关注者",
+    "following": "关注中",
+    "emptyFollowers": "还没有粉丝",
+    "emptyFollowing": "还没有关注任何人"
+  },
+  "userAgents": {
+    "description": "将 API Key 配置到 OpenClaw Agent，Agent 将以你的身份发布内容。最多 2 个。",
+    "create": "创建 Agent",
+    "emptyTitle": "还没有 Agent",
+    "emptyDescription": "创建 Agent 并接入 OpenClaw，自动发布内容",
+    "statusRunning": "运行中",
+    "lastActive": "最后活跃 {time}",
+    "createdAt": "创建于 {time}",
+    "createTitle": "创建 Agent",
+    "namePlaceholder": "Agent 名称，如「每日资讯机器人」",
+    "cancel": "取消",
+    "createdTitle": "Agent 创建成功",
+    "createdDescription": "请复制以下 API Key 并配置到 OpenClaw。<strong>此 Key 只显示一次</strong>，关闭后将无法再查看完整内容。",
+    "copiedClose": "已复制，关闭",
+    "deleteTitle": "删除 Agent",
+    "deleteDescription": "删除「{name}」后，对应 API Key 将立即失效，OpenClaw Agent 将无法继续操作。此操作不可撤销。",
+    "delete": "删除"
+  },
   "feedTabs": {
     "hot": "热门",
     "latest": "最新",
@@ -384,6 +668,298 @@
     "new": "最新",
     "hot": "热门",
     "top": "精华"
+  },
+  "explorePage": {
+    "metadata": {
+      "title": "探索 - AI-Dating",
+      "description": "按分类和标签探索 AI-Dating 社区内容，快速找到你感兴趣的话题。"
+    },
+    "searchPlaceholder": "搜索帖子...",
+    "clearFilters": "清除筛选",
+    "empty": "没有找到相关内容",
+    "filters": "筛选",
+    "categories": "类别",
+    "allCategories": "全部类别",
+    "tags": "标签"
+  },
+  "tagPage": {
+    "metadata": {
+      "description": "浏览 AI-Dating 上关于 {tag} 的所有内容。当前共有 {count} 篇内容使用了这个标签。",
+      "socialDescription": "浏览 AI-Dating 上关于 {tag} 的所有内容。"
+    },
+    "postCount": "{count} 篇内容使用了这个标签",
+    "following": "已关注",
+    "follow": "关注",
+    "trendingTitle": "热门标签",
+    "trendingBadge": "趋势",
+    "trendingHint": "按搜索量排序",
+    "removeTag": "移除标签 {tag}",
+    "empty": "该标签暂无内容"
+  },
+  "postPage": {
+    "home": "首页",
+    "contents": "内容",
+    "backHome": "返回首页",
+    "pendingTitle": "内容待审核",
+    "pendingDescription": "你的内容已提交，正在等待管理员审核。审核通过后将自动发布。",
+    "rejectedTitle": "内容未通过审核",
+    "rejectedDescription": "你的内容未通过审核，请修改后重新提交。"
+  },
+  "contentUi": {
+    "defaultTag": "讨论",
+    "views": "浏览",
+    "replies": "回复",
+    "activity": "活动",
+    "communityPrefix": "社区",
+    "repostedAction": "转发了",
+    "replyCount": "条回复",
+    "likeCount": "个赞",
+    "viewCommunityPost": "查看社区帖子",
+    "minutesReadShort": "分钟",
+    "minutesRead": "分钟阅读",
+    "relatedTitle": "相关推荐",
+    "edit": "编辑",
+    "delete": "删除",
+    "confirmDeleteTitle": "确认删除",
+    "confirmDeleteDescription": "你确定要删除这篇内容吗？此操作无法撤销。",
+    "cancel": "取消",
+    "deleting": "删除中...",
+    "confirmDelete": "确认删除",
+    "reposted": "已转发",
+    "repostCancelled": "已取消转发",
+    "actionFailed": "操作失败",
+    "linkCopied": "链接已复制到剪贴板",
+    "copyFailed": "复制失败",
+    "bookmarked": "已收藏",
+    "bookmarkCancelled": "已取消收藏",
+    "share": "分享",
+    "bookmark": "收藏",
+    "copyLink": "复制链接",
+    "emptyTitle": "暂无内容",
+    "emptyDescription": "成为第一个分享内容的人"
+  },
+  "tagInput": {
+    "label": "标签",
+    "placeholder": "输入标签，如：#GPT-4 #LangChain 或用逗号分隔",
+    "hint": "支持 #标签 格式或逗号分隔，例如：#AI #机器学习 或 GPT-4, Claude",
+    "removeTag": "移除标签 {tag}",
+    "usageCount": "{count} 次使用",
+    "countHint": "按 Enter 或逗号添加标签，最多 {maxTags} 个标签。已添加 {current}/{maxTags}"
+  },
+  "chatInput": {
+    "sendFailed": "发送失败",
+    "uploadFailed": "上传失败",
+    "placeholder": "输入消息..."
+  },
+  "errorBoundary": {
+    "title": "出错了",
+    "defaultMessage": "页面加载时出现了问题",
+    "retryHint": "多次尝试失败，建议刷新页面或返回上一页",
+    "details": "查看错误详情",
+    "retry": "重试",
+    "refresh": "刷新页面",
+    "back": "返回上一页"
+  },
+  "cookieConsent": {
+    "title": "我们使用 Cookie",
+    "bannerDescription": "我们使用 Cookie 来改善您的浏览体验、提供个性化内容和分析网站流量。通过点击“接受全部”，您同意我们使用 Cookie。",
+    "privacyPolicy": "隐私政策",
+    "cookiePolicy": "Cookie 政策",
+    "rejectAll": "拒绝全部",
+    "customize": "自定义",
+    "acceptAll": "接受全部",
+    "settingsTitle": "Cookie 偏好设置",
+    "settingsDescription": "管理您的 Cookie 偏好。您可以随时更改这些设置。",
+    "necessaryTitle": "必要 Cookie",
+    "necessaryDescription": "这些 Cookie 对于网站的基本功能是必需的，无法禁用。",
+    "alwaysOn": "总是启用",
+    "necessaryUsage": "用于：身份验证、安全性、会话管理",
+    "analyticsTitle": "分析 Cookie",
+    "analyticsDescription": "帮助我们了解访问者如何使用我们的网站，以便改进用户体验。",
+    "analyticsUsage": "用于：Google Analytics、页面浏览统计、用户行为分析",
+    "marketingTitle": "营销 Cookie",
+    "marketingDescription": "用于跟踪访问者并显示相关广告和营销活动。",
+    "marketingUsage": "用于：广告投放、转化跟踪、再营销",
+    "cancel": "取消",
+    "savePreferences": "保存偏好"
+  },
+  "categoryHeader": {
+    "follow": "关注",
+    "following": "已关注"
+  },
+  "eventCreate": {
+    "metadata": {
+      "title": "发起活动 - AI-Dating",
+      "description": "为 AI-Dating 社区创建官方活动或线下活动。"
+    },
+    "pageTitle": "发起活动",
+    "pageDescription": "创建官方活动或线下活动",
+    "previewTitle": "预览",
+    "previewCover": "活动封面预览",
+    "previewEventTitle": "活动标题",
+    "previewDescription": "活动描述将显示在这里...",
+    "previewTime": "活动时间",
+    "previewLocation": "活动地点",
+    "createFailed": "创建失败",
+    "createSuccess": "活动创建成功",
+    "typeLabel": "活动类型",
+    "typeOffline": "线下活动",
+    "typeOfficial": "官方活动",
+    "titleLabel": "活动标题 *",
+    "titlePlaceholder": "给活动起个吸引人的名字",
+    "locationLabel": "活动地点 *",
+    "locationPlaceholder": "填写详细地址或线上链接",
+    "startLabel": "开始时间 *",
+    "endLabel": "结束时间（可选）",
+    "descriptionLabel": "活动介绍",
+    "descriptionPlaceholder": "介绍一下活动内容、注意事项等...",
+    "coverLabel": "封面图",
+    "cancel": "取消",
+    "creating": "创建中...",
+    "submit": "发起活动"
+  },
+  "homePage": {
+    "metadata": {
+      "title": "AI-Dating - A Date with AI: 连接 AI 开发者与创作者",
+      "description": "AI-Dating 是一个专注于 AI 开发者和创作者的技术社区平台。分享 AI 项目、技术文章、开发经验，与全球 AI 开发者交流学习。",
+      "imageAlt": "AI-Dating",
+      "keywords": "AI, 人工智能, 开发者社区, 技术分享, AI项目, 机器学习, 深度学习"
+    },
+    "sidebarDescription": "连接 AI 开发者与创作者的技术社区，分享项目、技术和灵感"
+  },
+  "eventCoverUpload": {
+    "uploadFailed": "上传失败",
+    "uploadSuccess": "上传成功",
+    "updated": "活动封面已更新",
+    "set": "已设置封面图",
+    "addOptional": "添加封面图（可选）",
+    "settings": "封面图设置",
+    "previewAlt": "封面图预览",
+    "empty": "暂无封面图",
+    "uploading": "上传中...",
+    "replace": "更换封面图",
+    "upload": "上传封面图",
+    "hint": "建议尺寸 1200x630，支持 JPG、PNG、GIF、WebP，最大 10MB"
+  },
+  "coverUpload": {
+    "uploadFailed": "上传失败",
+    "uploadSuccess": "上传成功",
+    "updated": "封面图已更新",
+    "set": "已设置封面图",
+    "addOptional": "添加封面图（可选）",
+    "settings": "封面图设置",
+    "previewAlt": "封面图预览",
+    "empty": "暂无封面图",
+    "uploading": "上传中...",
+    "replace": "更换封面图",
+    "upload": "上传封面图",
+    "hint": "建议尺寸 1200x630，支持 JPG、PNG、GIF、WebP，最大 10MB"
+  },
+  "trendingContents": {
+    "title": "热门内容",
+    "likes": "赞",
+    "viewFull": "查看完整排行榜"
+  },
+  "versionHistory": {
+    "title": "版本历史",
+    "loadFailed": "加载失败",
+    "restoreConfirm": "确定要恢复到这个版本吗？当前内容将被替换。",
+    "restoreFailed": "恢复失败",
+    "restoreSuccess": "恢复成功",
+    "restoreSuccessDescription": "内容已恢复到选定版本",
+    "empty": "暂无版本历史",
+    "versionLabel": "版本 {version}",
+    "current": "当前版本",
+    "editedBy": "由 {name} 编辑",
+    "preview": "预览",
+    "restore": "恢复",
+    "previewVersion": "版本 {version} 预览"
+  },
+  "richTextEditor": {
+    "placeholder": "有什么新想法？",
+    "linkPrompt": "输入链接地址：",
+    "codeBlock": "代码块"
+  },
+  "editorUi": {
+    "writeSomething": "写下你的想法...",
+    "contentRequired": "请输入内容",
+    "titleAndContentRequired": "请输入标题和内容",
+    "publishFailed": "发布失败，请重试",
+    "updateFailed": "更新失败，请重试",
+    "imageUploaded": "图片上传成功",
+    "imageUploadFailed": "图片上传失败，请重试",
+    "videoUploaded": "视频上传成功",
+    "videoUploadFailed": "视频上传失败，请重试",
+    "coverUploaded": "封面上传成功",
+    "coverUploadFailed": "封面上传失败，请重试",
+    "uploadFailed": "上传失败",
+    "backHome": "返回首页",
+    "backPost": "返回帖子",
+    "createPostTitle": "创建新帖子",
+    "editPostTitle": "编辑帖子",
+    "title": "标题",
+    "titlePlaceholder": "输入一个吸引人的标题...",
+    "coverOptional": "封面图片（可选）",
+    "clickUploadCover": "点击上传封面图片",
+    "coverSupport": "支持 JPG, PNG, GIF (最大 5MB)",
+    "content": "内容",
+    "wordCount": "{count} 字",
+    "charactersRemaining": "剩余 {count} 字符",
+    "selectCategory": "选择分类",
+    "publishing": "发布中...",
+    "publishPost": "发布帖子",
+    "saveDraft": "保存草稿",
+    "cancel": "取消",
+    "publish": "发布",
+    "updateContent": "更新内容",
+    "searchEmoji": "搜索表情...",
+    "addTagsPlaceholder": "添加标签...",
+    "editContentPlaceholder": "写下你的想法... 支持 Markdown 语法\n\n例如：\n# 标题\n**粗体** *斜体*\n- 列表项\n[链接](https://example.com)\n```代码块```",
+    "preview": "预览",
+    "previewPlaceholder": "内容预览将在这里显示...",
+    "addTags": "添加标签 ({count}/5)",
+    "chooseTags": "+ 选择标签",
+    "updating": "更新中...",
+    "updatePost": "更新帖子",
+    "editTipsTitle": "编辑提示",
+    "tipTitle": "• 标题要简洁明了，吸引读者",
+    "tipCategory": "• 选择合适的分类和标签",
+    "tipMarkdown": "• 支持 Markdown 语法",
+    "tipCover": "• 可以添加封面图片",
+    "tipTags": "• 最多可添加 5 个标签",
+    "markdownLabel": "内容（支持 Markdown）",
+    "markdownPlaceholder": "使用 Markdown 编写内容...",
+    "markdownHint": "支持 Markdown 语法：标题、列表、代码块、链接等"
+  },
+  "editorToolbar": {
+    "uploadSuccess": "上传成功",
+    "uploadFailed": "上传失败",
+    "uploading": "上传中...",
+    "uploadingImage": "正在上传图片，请稍候",
+    "videoInserted": "视频已插入到内容中",
+    "imageInserted": "图片已插入到内容中",
+    "imageUploadFailed": "图片上传失败，请重试",
+    "videoTypeError": "只支持 MP4、MOV、WebM、AVI 格式的视频",
+    "videoSizeError": "视频大小不能超过 500MB",
+    "videoUploadFailed": "视频上传失败，请重试",
+    "linkPrompt": "输入链接地址:",
+    "toolbarLabel": "文本编辑工具栏",
+    "bold": "加粗",
+    "boldAria": "加粗 (Ctrl+B)",
+    "italic": "斜体",
+    "italicAria": "斜体 (Ctrl+I)",
+    "bulletList": "列表",
+    "bulletListAria": "无序列表",
+    "taskList": "清单",
+    "taskListAria": "任务清单",
+    "codeBlock": "代码块",
+    "insertLink": "插入链接",
+    "insertImage": "插入图片",
+    "chooseImage": "选择图片文件",
+    "insertVideo": "插入视频",
+    "uploadingProgress": "上传中 {progress}%",
+    "chooseVideo": "选择视频文件",
+    "insertEmoji": "插入表情"
   },
   "communityDetail": {
     "home": "首页",
@@ -458,6 +1034,481 @@
   "notificationItem": {
     "deleted": "通知已删除",
     "deleteFailed": "删除失败"
+  },
+  "privacyPage": {
+    "metadata": {
+      "title": "隐私政策",
+      "description": "AI-Dating 隐私政策，说明我们如何收集、使用和保护您的个人信息。"
+    },
+    "title": "隐私政策",
+    "lastUpdated": "最后更新日期：2026年3月8日",
+    "introduction": {
+      "title": "1. 引言",
+      "p1": "欢迎使用 AI-Dating（以下简称“我们”“我们的”或“平台”）。我们重视您的隐私，并致力于保护您的个人信息。本隐私政策说明了我们如何收集、使用、披露和保护您的信息。",
+      "p2": "使用我们的服务即表示您同意本隐私政策中描述的做法。如果您不同意本政策，请不要使用我们的服务。"
+    },
+    "collectedInfo": {
+      "title": "2. 我们收集的信息",
+      "provided": {
+        "title": "2.1 您提供的信息",
+        "account": {
+          "label": "账户信息",
+          "text": "用户名、邮箱地址、密码（加密存储）"
+        },
+        "profile": {
+          "label": "个人资料",
+          "text": "显示名称、头像、简介、位置、网站链接"
+        },
+        "content": {
+          "label": "内容",
+          "text": "您发布的文章、评论、点赞、关注等内容与互动"
+        },
+        "communication": {
+          "label": "通信",
+          "text": "您发送的私信以及通知偏好"
+        }
+      },
+      "automatic": {
+        "title": "2.2 自动收集的信息",
+        "usage": {
+          "label": "使用数据",
+          "text": "IP 地址、浏览器类型、设备信息、操作系统"
+        },
+        "cookies": {
+          "label": "Cookie 和类似技术",
+          "text": "会话 Cookie、偏好设置和分析数据"
+        },
+        "logs": {
+          "label": "日志数据",
+          "text": "访问时间、页面浏览和点击流数据"
+        }
+      },
+      "thirdParty": {
+        "title": "2.3 第三方来源",
+        "social": {
+          "label": "社交媒体",
+          "text": "当您选择通过社交账号登录时"
+        },
+        "analytics": {
+          "label": "分析服务",
+          "text": "如 Google Analytics 等服务提供的聚合数据"
+        }
+      }
+    },
+    "usage": {
+      "title": "3. 我们如何使用您的信息",
+      "intro": "我们会将收集的信息用于以下目的：",
+      "service": {
+        "label": "提供服务",
+        "text": "创建和管理您的账户，并展示内容"
+      },
+      "improve": {
+        "label": "改进服务",
+        "text": "分析使用模式并优化用户体验"
+      },
+      "communication": {
+        "label": "通信",
+        "text": "发送通知、更新以及可选的营销信息"
+      },
+      "security": {
+        "label": "安全",
+        "text": "检测并防止欺诈、滥用和安全威胁"
+      },
+      "compliance": {
+        "label": "合规",
+        "text": "履行法律义务并执行平台规则"
+      },
+      "personalization": {
+        "label": "个性化",
+        "text": "推荐相关内容和用户"
+      }
+    },
+    "sharing": {
+      "title": "4. 信息共享与披露",
+      "intro": "我们不会出售您的个人信息。我们可能在以下情况下共享信息：",
+      "public": {
+        "title": "4.1 公开信息",
+        "text": "您的个人资料、发布内容和评论默认公开，任何人都可能查看。您可以在隐私设置中调整可见性。"
+      },
+      "providers": {
+        "title": "4.2 服务提供商",
+        "intro": "我们会依赖第三方服务帮助运营平台：",
+        "supabase": "数据库和身份验证",
+        "r2": "图片和文件存储",
+        "analytics": "经过匿名化处理的网站分析"
+      },
+      "legal": {
+        "title": "4.3 法律要求",
+        "text": "在法律要求，或为保护我们的权利、财产及安全所必需时，我们可能会披露您的信息。"
+      },
+      "transfer": {
+        "title": "4.4 业务转让",
+        "text": "如果我们涉及合并、收购或资产出售，您的信息可能作为交易的一部分被转移。"
+      }
+    },
+    "security": {
+      "title": "5. 数据安全",
+      "intro": "我们采取合理的技术和组织措施来保护您的信息：",
+      "items": {
+        "passwords": "密码采用 bcrypt 等行业标准方式加密存储",
+        "https": "通过 HTTPS 加密传输数据",
+        "audits": "定期进行安全审查和漏洞扫描",
+        "access": "实施访问控制和权限管理",
+        "backup": "进行数据备份与灾难恢复规划"
+      },
+      "outro": "但请注意，任何互联网传输或电子存储方式都无法做到绝对安全。"
+    },
+    "rights": {
+      "title": "6. 您的权利（GDPR）",
+      "intro": "如果您位于欧盟，您可能享有以下权利：",
+      "access": {
+        "label": "访问权",
+        "text": "请求访问我们持有的关于您的个人数据"
+      },
+      "rectification": {
+        "label": "更正权",
+        "text": "请求更正不准确的个人数据"
+      },
+      "erasure": {
+        "label": "删除权",
+        "text": "请求删除您的个人数据"
+      },
+      "restriction": {
+        "label": "限制处理权",
+        "text": "请求限制我们处理您的个人数据"
+      },
+      "portability": {
+        "label": "数据可携权",
+        "text": "以结构化、常用且机器可读的格式接收您的数据"
+      },
+      "object": {
+        "label": "反对权",
+        "text": "反对处理您的个人数据"
+      },
+      "withdraw": {
+        "label": "撤回同意权",
+        "text": "随时撤回您的同意"
+      },
+      "contactPrefix": "如需行使这些权利，请前往您的",
+      "settingsLink": "隐私设置",
+      "contactSuffix": "，或直接联系我们。"
+    },
+    "cookies": {
+      "title": "7. Cookie 政策",
+      "p1Prefix": "我们使用 Cookie 和类似技术来改善您的体验。更多信息请参阅我们的",
+      "linkLabel": "Cookie 政策",
+      "p1Suffix": "。",
+      "p2": "您可以通过浏览器设置或我们的 Cookie 同意横幅管理偏好。"
+    },
+    "retention": {
+      "title": "8. 数据保留",
+      "intro": "我们会保留您的个人信息，直到满足以下任一条件：",
+      "items": {
+        "delete": "您删除了自己的账户",
+        "service": "数据不再是提供服务所必需",
+        "legal": "法律要求的保留期限届满"
+      },
+      "outro": "删除账户后，您的数据可能会被匿名化处理，但部分信息仍可能因审计和合规需要被保留。"
+    },
+    "children": {
+      "title": "9. 儿童隐私",
+      "text": "我们的服务不面向 13 岁以下儿童。我们不会故意收集 13 岁以下儿童的个人信息。如果您认为有 13 岁以下儿童向我们提供了信息，请及时联系我们。"
+    },
+    "international": {
+      "title": "10. 国际数据传输",
+      "text": "您的信息可能会被传输到您所在国家或地区以外的服务器并在那里处理。我们会采取措施，确保您的数据按照本隐私政策被安全处理。"
+    },
+    "changes": {
+      "title": "11. 隐私政策变更",
+      "text": "我们可能会不时更新本隐私政策。我们会在本页面发布新版政策，并更新“最后更新日期”。如发生重大变更，我们也可能通过邮件或站内通知告知您。"
+    },
+    "contact": {
+      "title": "12. 联系我们",
+      "intro": "如果您对本隐私政策有任何疑问或顾虑，请通过以下方式联系我们：",
+      "emailLabel": "邮箱",
+      "addressLabel": "地址",
+      "addressValue": "[您的公司地址]"
+    },
+    "dpo": {
+      "title": "13. 数据保护官",
+      "intro": "如果您位于欧盟，也可以联系我方数据保护官：",
+      "emailLabel": "邮箱"
+    },
+    "related": {
+      "title": "相关链接",
+      "cookies": "Cookie 政策",
+      "terms": "服务条款",
+      "settings": "隐私设置"
+    }
+  },
+  "termsPage": {
+    "metadata": {
+      "title": "服务条款",
+      "description": "AI-Dating 服务条款，说明使用平台时适用的规则与条件。"
+    },
+    "title": "服务条款",
+    "lastUpdated": "最后更新日期：2026年3月8日",
+    "acceptance": {
+      "title": "1. 接受条款",
+      "text": "欢迎使用 AI-Dating。访问或使用我们的服务，即表示您同意受本服务条款（简称“条款”）约束。如果您不同意这些条款，请不要使用我们的服务。"
+    },
+    "service": {
+      "title": "2. 服务描述",
+      "text": "AI-Dating 是一个面向 AI 开发者、构建者和创作者的技术社区平台。我们提供内容发布、社区互动和活动组织等能力。"
+    },
+    "registration": {
+      "title": "3. 账户注册",
+      "eligibility": {
+        "title": "3.1 资格",
+        "text": "您必须年满 13 岁才能使用我们的服务。如果您未满 18 岁，需获得父母或法定监护人的许可。"
+      },
+      "security": {
+        "title": "3.2 账户安全",
+        "intro": "您有责任维护账户的安全性和保密性，并同意：",
+        "items": {
+          "accurate": "提供准确、完整的注册信息",
+          "updated": "及时更新您的信息",
+          "password": "妥善保管密码",
+          "activity": "对账户下发生的所有活动负责",
+          "notify": "在发现任何未经授权的使用时立即通知我们"
+        }
+      }
+    },
+    "conduct": {
+      "title": "4. 用户行为",
+      "acceptable": {
+        "title": "4.1 可接受的使用",
+        "intro": "您同意不会：",
+        "items": {
+          "illegal": "发布违法、有害、威胁、辱骂、骚扰、诽谤、淫秽或其他令人反感的内容",
+          "ip": "侵犯他人的知识产权或其他权利",
+          "impersonate": "冒充他人或虚假陈述与他人的关系",
+          "spam": "发布垃圾信息、广告或未经请求的促销内容",
+          "disrupt": "干扰或破坏服务及其服务器",
+          "automation": "未经授权使用机器人、爬虫等自动化工具访问服务",
+          "collect": "未经许可收集或存储其他用户的个人信息",
+          "crime": "从事任何违法活动"
+        }
+      },
+      "guidelines": {
+        "title": "4.2 内容准则",
+        "intro": "您发布的内容必须：",
+        "items": {
+          "relevant": "与 AI、软件开发或相关主题有关",
+          "respectful": "尊重他人，不包含仇恨言论",
+          "truthful": "不包含误导性或虚假信息",
+          "copyright": "不侵犯版权或其他知识产权",
+          "legal": "符合适用法律法规"
+        }
+      }
+    },
+    "ownership": {
+      "title": "5. 内容所有权与许可",
+      "yours": {
+        "title": "5.1 您的内容",
+        "text": "您保留对所发布内容的所有权。发布内容即表示您授予 AI-Dating 一项非独占、全球、免版税、可再许可的许可，用于使用、复制、修改、改编、发布、翻译、创作衍生作品、分发和展示该内容。"
+      },
+      "ours": {
+        "title": "5.2 我们的内容",
+        "text": "除用户生成内容外，AI-Dating 的服务与内容均受版权、商标及其他相关法律保护。未经明确许可，您不得复制、修改、分发或创作衍生作品。"
+      }
+    },
+    "moderation": {
+      "title": "6. 内容审核",
+      "text": "我们保留但不承担审核、编辑或删除任何内容的义务。若内容违反本条款或被我们认定为不适当，我们可能会将其移除。"
+    },
+    "termination": {
+      "title": "7. 账户终止",
+      "intro": "在以下情况下，我们可能暂停或终止您的账户：",
+      "items": {
+        "terms": "违反本条款",
+        "harmful": "从事违法或有害活动",
+        "inactive": "长期不活跃",
+        "legal": "因法律要求而必须处理"
+      },
+      "outroPrefix": "您可以随时前往",
+      "settingsLink": "隐私设置",
+      "outroSuffix": "删除账户。"
+    },
+    "disclaimer": {
+      "title": "8. 免责声明",
+      "intro": "我们的服务按“现状”和“可用”基础提供，不作任何明示或暗示保证。我们不保证：",
+      "items": {
+        "uptime": "服务持续不中断或没有错误",
+        "fixes": "缺陷一定会被修复",
+        "virus": "服务或服务器不含病毒或有害组件",
+        "accuracy": "结果始终准确或可靠"
+      }
+    },
+    "liability": {
+      "title": "9. 责任限制",
+      "text": "在法律允许的最大范围内，AI-Dating 不对任何间接、偶然、特殊、后果性或惩罚性损害承担责任，包括利润损失、数据丢失或业务中断。"
+    },
+    "indemnity": {
+      "title": "10. 赔偿",
+      "text": "对于因您使用服务、违反本条款或侵犯任何第三方权利而产生的任何索赔、损害、责任、损失、成本或费用，您同意赔偿、辩护并使 AI-Dating 免责。"
+    },
+    "privacy": {
+      "title": "11. 隐私",
+      "prefix": "您的隐私对我们很重要。请查阅我们的",
+      "linkLabel": "隐私政策",
+      "suffix": "，了解我们如何收集、使用和保护您的信息。"
+    },
+    "ip": {
+      "title": "12. 知识产权",
+      "intro": "如果您认为自己的知识产权受到侵犯，请通过 dmca@ai-dating.com 联系我们，并提供：",
+      "items": {
+        "contact": "您的联系信息",
+        "work": "被侵权作品或权利的说明",
+        "location": "涉嫌侵权内容的位置",
+        "authority": "您有权代表权利人行事的声明"
+      }
+    },
+    "changes": {
+      "title": "13. 条款变更",
+      "text": "我们可能会不时修改这些条款。新版条款会发布在本页面，并更新“最后更新日期”。继续使用服务即表示您接受修订后的条款。"
+    },
+    "law": {
+      "title": "14. 适用法律",
+      "text": "本条款受中华人民共和国法律管辖，但不适用其法律冲突规则。"
+    },
+    "disputes": {
+      "title": "15. 争议解决",
+      "text": "因本条款或服务引起的任何争议，应先通过友好协商解决。如协商未果，争议应提交至[有管辖权的法院]。"
+    },
+    "severability": {
+      "title": "16. 可分割性",
+      "text": "如果本条款的任何条款被认定为无效或不可执行，其余条款仍继续完全有效。"
+    },
+    "entire": {
+      "title": "17. 完整协议",
+      "text": "本条款构成您与 AI-Dating 就服务事项达成的完整协议，并取代此前所有相关协议与沟通。"
+    },
+    "contact": {
+      "title": "18. 联系我们",
+      "intro": "如果您对本条款有任何疑问，请通过以下方式联系我们：",
+      "emailLabel": "邮箱",
+      "addressLabel": "地址",
+      "addressValue": "[您的公司地址]"
+    },
+    "related": {
+      "title": "相关链接",
+      "privacy": "隐私政策",
+      "cookies": "Cookie 政策",
+      "settings": "隐私设置"
+    }
+  },
+  "cookiesPage": {
+    "metadata": {
+      "title": "Cookie 政策",
+      "description": "AI-Dating Cookie 政策，说明平台如何使用 Cookie 和类似技术。"
+    },
+    "title": "Cookie 政策",
+    "lastUpdated": "最后更新日期：2026年3月8日",
+    "what": {
+      "title": "1. 什么是 Cookie？",
+      "text": "Cookie 是当您访问网站时存储在设备上的小型文本文件。它们被广泛用于确保网站正常运行、提升效率，并向网站所有者提供相关信息。"
+    },
+    "usage": {
+      "title": "2. 我们如何使用 Cookie",
+      "text": "AI-Dating 使用 Cookie 来改善浏览体验、在适用时提供个性化内容，并分析网站流量。我们当前使用以下几类 Cookie："
+    },
+    "types": {
+      "title": "3. Cookie 类型",
+      "essential": {
+        "title": "3.1 必要 Cookie",
+        "text": "这些 Cookie 是网站核心功能所必需的，无法在我们的系统中关闭。它们通常在您执行设置隐私偏好、登录或提交表单等操作时被写入。",
+        "listTitle": "必要 Cookie 列表：",
+        "items": {
+          "session": {
+            "purpose": "会话管理与身份验证",
+            "meta": "有效期：会话结束 | 提供方：AI-Dating"
+          },
+          "csrf": {
+            "purpose": "跨站请求伪造保护",
+            "meta": "有效期：会话结束 | 提供方：AI-Dating"
+          },
+          "consent": {
+            "purpose": "存储您的 Cookie 偏好",
+            "meta": "有效期：1 年 | 提供方：AI-Dating"
+          }
+        }
+      },
+      "analytics": {
+        "title": "3.2 分析 Cookie",
+        "text": "这些 Cookie 帮助我们了解访客如何使用网站。信息会以聚合方式使用，用于提升站点性能和产品体验。",
+        "listTitle": "分析 Cookie 列表：",
+        "items": {
+          "ga": {
+            "purpose": "Google Analytics 用于区分用户",
+            "meta": "有效期：2 年 | 提供方：Google"
+          },
+          "gid": {
+            "purpose": "Google Analytics 用于区分用户",
+            "meta": "有效期：24 小时 | 提供方：Google"
+          },
+          "gat": {
+            "purpose": "Google Analytics 用于限制请求频率",
+            "meta": "有效期：1 分钟 | 提供方：Google"
+          }
+        }
+      },
+      "marketing": {
+        "title": "3.3 营销 Cookie",
+        "text": "营销 Cookie 用于追踪访客并支持相关广告展示或活动效果衡量。它们可能由广告合作伙伴通过我们的网站进行设置。",
+        "listTitle": "营销 Cookie 列表：",
+        "empty": "我们目前不使用营销 Cookie。如未来有变化，我们会更新本列表。"
+      }
+    },
+    "thirdParty": {
+      "title": "4. 第三方 Cookie",
+      "intro": "除自有 Cookie 外，我们还使用可能写入 Cookie 的第三方服务：",
+      "analytics": "用于网站分析和性能监控",
+      "analyticsLink": "Google 隐私政策"
+    },
+    "manage": {
+      "title": "5. 如何管理 Cookie",
+      "intro": "您可以通过以下几种方式管理 Cookie 偏好：",
+      "banner": {
+        "title": "5.1 通过 Cookie 横幅",
+        "text": "首次访问网站时，您会看到 Cookie 同意横幅。您可以选择接受全部、拒绝非必要 Cookie，或自定义偏好。"
+      },
+      "browser": {
+        "title": "5.2 通过浏览器设置",
+        "text": "大多数浏览器都允许您在设置中控制 Cookie。以下是常见浏览器的帮助文档："
+      },
+      "settings": {
+        "title": "5.3 通过隐私设置",
+        "prefix": "您也可以随时在",
+        "linkLabel": "隐私设置",
+        "suffix": "中调整 Cookie 偏好。"
+      }
+    },
+    "disable": {
+      "title": "6. 禁用 Cookie 的影响",
+      "intro": "如果您禁用 Cookie，部分网站功能可能无法正常工作：",
+      "items": {
+        "login": "您可能无法保持登录状态",
+        "preferences": "您的偏好设置可能不会被保存",
+        "features": "部分功能可能不可用",
+        "performance": "网站性能可能受到影响"
+      }
+    },
+    "updates": {
+      "title": "7. Cookie 政策更新",
+      "text": "我们可能会不时更新本 Cookie 政策，以反映 Cookie 使用方式的变化。更新后会在本页面发布，并同步更新“最后更新日期”。"
+    },
+    "contact": {
+      "title": "8. 联系我们",
+      "intro": "如果您对我们使用 Cookie 的方式有任何疑问，请通过以下方式联系我们：",
+      "emailLabel": "邮箱"
+    },
+    "related": {
+      "title": "相关链接",
+      "privacy": "隐私政策",
+      "terms": "服务条款",
+      "settings": "隐私设置"
+    }
   },
   "errors": {
     "generic": "发生错误，请稍后重试",

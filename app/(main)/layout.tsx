@@ -2,12 +2,15 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
 import { OnboardingProvider } from "@/components/onboarding";
 import { createClient } from "@/lib/supabase/server";
+import { getRequestLocale } from "@/i18n/request";
+import { getTranslation } from "@/i18n/dictionaries";
 
 export default async function MainLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const locale = await getRequestLocale()
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -32,7 +35,7 @@ export default async function MainLayout({
   return (
     <OnboardingProvider userId={userData?.id}>
       <a href="#main-content" className="skip-link">
-        跳到主内容
+        {getTranslation(locale, 'accessibility.skipToContent', 'Skip to main content')}
       </a>
       <SiteHeader serverUser={userData} />
 

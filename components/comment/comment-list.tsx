@@ -19,12 +19,13 @@ import { Trash2, MessageCircle } from 'lucide-react'
 import { deleteComment, createComment } from '@/lib/actions/comments'
 import { useRouter } from 'next/navigation'
 import type { Comment } from '@/lib/queries/comments'
+import { useLocale, useTranslations } from 'use-intl'
 
-function formatTime(dateStr: string): string {
+function formatTime(dateStr: string, locale: string): string {
   const diff = (Date.now() - new Date(dateStr).getTime()) / 3600000
-  if (diff < 24) return `${Math.max(1, Math.floor(diff))}h前`
+  if (diff < 24) return `${Math.max(1, Math.floor(diff))}h${locale === 'en' ? ' ago' : '前'}`
   const d = new Date(dateStr)
-  return `${d.getMonth() + 1}月${d.getDate()}日`
+  return locale === 'en' ? `${d.getMonth() + 1}/${d.getDate()}` : `${d.getMonth() + 1}月${d.getDate()}日`
 }
 
 interface CommentListProps {
@@ -35,10 +36,11 @@ interface CommentListProps {
 }
 
 export function CommentList({ comments, currentUserId, contentId, isAuthenticated }: CommentListProps) {
+  const t = useTranslations('commentUi')
   if (comments.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground text-sm">
-        还没有评论，来发表第一条吧！
+        {t('empty')}
       </div>
     )
   }
@@ -70,6 +72,8 @@ interface CommentItemProps {
 }
 
 function CommentItem({ comment, isOwner, contentId, currentUserId, isAuthenticated, depth }: CommentItemProps) {
+  const t = useTranslations('commentUi')
+  const locale = useLocale()
   const router = useRouter()
   const [isDeleting, setIsDeleting] = useState(false)
   const [showReply, setShowReply] = useState(false)
@@ -97,7 +101,7 @@ function CommentItem({ comment, isOwner, contentId, currentUserId, isAuthenticat
       setShowReply(false)
       router.refresh()
     } catch (error) {
-      setReplyError(error instanceof Error ? error.message : '回复失败')
+      setReplyError(error instanceof Error ? error.message : t('replyFailed'))
     } finally {
       setIsReplying(false)
     }
@@ -116,7 +120,7 @@ function CommentItem({ comment, isOwner, contentId, currentUserId, isAuthenticat
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <span className="text-sm font-semibold">{comment.user?.username}</span>
-            <span className="text-xs text-muted-foreground">{formatTime(comment.created_at)}</span>
+            <span className="text-xs text-muted-foreground">{formatTime(comment.created_at, locale)}</span>
             {isOwner && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
@@ -126,13 +130,13 @@ function CommentItem({ comment, isOwner, contentId, currentUserId, isAuthenticat
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>确认删除</AlertDialogTitle>
-                    <AlertDialogDescription>此操作无法撤销。</AlertDialogDescription>
+                    <AlertDialogTitle>{t('deleteTitle')}</AlertDialogTitle>
+                    <AlertDialogDescription>{t('deleteDescription')}</AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>取消</AlertDialogCancel>
+                    <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                     <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
-                      {isDeleting ? '删除中...' : '确认删除'}
+                      {isDeleting ? t('deleting') : t('confirmDelete')}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -148,7 +152,7 @@ function CommentItem({ comment, isOwner, contentId, currentUserId, isAuthenticat
               className="flex items-center gap-1 mt-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
               <MessageCircle className="h-3.5 w-3.5" />
-              {showReply ? '收起' : `回复${comment.replies && comment.replies.length > 0 ? ` (${comment.replies.length})` : ''}`}
+              {showReply ? t('collapse') : `${t('reply')}${comment.replies && comment.replies.length > 0 ? ` (${comment.replies.length})` : ''}`}
             </button>
           )}
 
@@ -157,17 +161,17 @@ function CommentItem({ comment, isOwner, contentId, currentUserId, isAuthenticat
               <Textarea
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
-                placeholder={`回复 @${comment.user?.username}...`}
+                placeholder={t('replyPlaceholder', { username: comment.user?.username || '' })}
                 className="min-h-[72px] text-sm"
                 disabled={isReplying}
               />
               {replyError && <p className="text-xs text-destructive">{replyError}</p>}
               <div className="flex gap-2 justify-end">
                 <Button variant="ghost" size="sm" onClick={() => { setShowReply(false); setReplyText('') }}>
-                  取消
+                  {t('cancel')}
                 </Button>
                 <Button size="sm" onClick={handleReply} disabled={isReplying || !replyText.trim()}>
-                  {isReplying ? '回复中...' : '回复'}
+                  {isReplying ? t('replying') : t('reply')}
                 </Button>
               </div>
             </div>

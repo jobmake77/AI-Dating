@@ -10,33 +10,47 @@ import { CategoriesSidebar } from "@/components/home/categories-sidebar";
 import { CommunitySidebar } from "@/components/home/community-sidebar";
 import { getHomepageData } from "@/lib/queries/home";
 import { Metadata } from "next";
+import { getRequestLocale } from "@/i18n/request";
+import { getTranslation } from "@/i18n/dictionaries";
 
-export const metadata: Metadata = {
-  title: "AI-Dating - A Date with AI: 连接 AI 开发者与创作者",
-  description: "AI-Dating 是一个专注于 AI 开发者和创作者的技术社区平台。分享 AI 项目、技术文章、开发经验，与全球 AI 开发者交流学习。",
-  keywords: ["AI", "人工智能", "开发者社区", "技术分享", "AI项目", "机器学习", "深度学习"],
-  openGraph: {
-    type: "website",
-    locale: "zh_CN",
-    url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
-    title: "AI-Dating - A Date with AI",
-    description: "连接 AI 开发者与创作者的技术社区平台",
-    siteName: "AI-Dating",
-    images: [
-      {
-        url: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/og?type=home`,
-        width: 1200,
-        height: 630,
-        alt: "AI-Dating",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "AI-Dating - A Date with AI",
-    description: "连接 AI 开发者与创作者的技术社区平台",
-    images: [`${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/og?type=home`],
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale()
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+  const title = getTranslation(locale, 'homePage.metadata.title', 'AI-Dating - A Date with AI')
+  const description = getTranslation(locale, 'homePage.metadata.description', 'The AI developer community for sharing projects, articles, and ideas.')
+  const imageAlt = getTranslation(locale, 'homePage.metadata.imageAlt', 'AI-Dating')
+  const keywords = getTranslation(locale, 'homePage.metadata.keywords', 'AI, developer community, technical sharing')
+    .split(',')
+    .map((keyword) => keyword.trim())
+    .filter(Boolean)
+
+  return {
+    title,
+    description,
+    keywords,
+    openGraph: {
+      type: "website",
+      locale: locale === 'en' ? 'en_US' : 'zh_CN',
+      url: baseUrl,
+      title,
+      description,
+      siteName: "AI-Dating",
+      images: [
+        {
+          url: `${baseUrl}/api/og?type=home`,
+          width: 1200,
+          height: 630,
+          alt: imageAlt,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [`${baseUrl}/api/og?type=home`],
+    },
+  }
 }
 
 interface HomeProps {
@@ -45,6 +59,7 @@ interface HomeProps {
 
 export default async function Home({ searchParams }: HomeProps) {
   const params = await searchParams
+  const locale = await getRequestLocale()
   const page = Number(params.page) || 1
   const requestedTab = params.tab || 'hot'
 
@@ -101,7 +116,7 @@ export default async function Home({ searchParams }: HomeProps) {
             communityInfo={{
               name: "AI-Dating",
               icon: "💻",
-              description: "连接 AI 开发者与创作者的技术社区，分享项目、技术和灵感",
+              description: getTranslation(locale, 'homePage.sidebarDescription', 'A technical community for AI developers and creators to share projects, techniques, and ideas.'),
               members: homepageData.stats.totalUsers,
               contents: homepageData.stats.totalContents,
             }}

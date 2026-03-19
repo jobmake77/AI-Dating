@@ -9,6 +9,7 @@ import { uploadImage } from '@/lib/actions/upload'
 import { useToast } from '@/hooks/use-toast'
 import dynamic from 'next/dynamic'
 import type { EmojiClickData } from 'emoji-picker-react'
+import { useTranslations } from 'use-intl'
 
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false })
 
@@ -17,6 +18,7 @@ interface ChatInputProps {
 }
 
 export function ChatInput({ conversationId }: ChatInputProps) {
+  const t = useTranslations('chatInput')
   const [content, setContent] = useState('')
   const [isSending, setIsSending] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
@@ -37,7 +39,7 @@ export function ChatInput({ conversationId }: ChatInputProps) {
     if (result.error) {
       toast({
         variant: 'destructive',
-        title: '发送失败',
+        title: t('sendFailed'),
         description: result.error,
       })
       setContent(messageContent) // 恢复消息内容
@@ -71,7 +73,7 @@ export function ChatInput({ conversationId }: ChatInputProps) {
     if (result.error) {
       toast({
         variant: 'destructive',
-        title: '上传失败',
+        title: t('uploadFailed'),
         description: result.error,
       })
       return
@@ -86,7 +88,7 @@ export function ChatInput({ conversationId }: ChatInputProps) {
       if (sendResult.error) {
         toast({
           variant: 'destructive',
-          title: '发送失败',
+          title: t('sendFailed'),
           description: sendResult.error,
         })
       }
@@ -147,7 +149,7 @@ export function ChatInput({ conversationId }: ChatInputProps) {
           value={content}
           onChange={(e) => setContent(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="输入消息..."
+          placeholder={t('placeholder')}
           className="min-h-[36px] max-h-[100px] text-xs bg-secondary/60 border-none resize-none flex-1"
           rows={1}
           disabled={isSending}

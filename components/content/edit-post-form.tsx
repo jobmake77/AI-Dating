@@ -13,6 +13,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { updateContent } from '@/lib/actions/content'
 import { getCategoryColor } from '@/lib/utils/categories'
 import type { ContentCategory } from '@/lib/types/content-category'
+import { useTranslations } from 'use-intl'
 
 const allTags = [
   { name: 'AI/ML', color: 'hsl(262 83% 58%)' },
@@ -55,6 +56,7 @@ function extractTitle(html: string): string {
 }
 
 export function EditPostForm({ content: initialContent, categories }: EditPostFormProps) {
+  const t = useTranslations('editorUi')
   const router = useRouter()
   const [title, setTitle] = useState(extractTitle(initialContent.content) || initialContent.title)
   const [content, setContent] = useState(extractPlainContent(initialContent.content))
@@ -67,7 +69,7 @@ export function EditPostForm({ content: initialContent, categories }: EditPostFo
 
   const handleSubmit = async () => {
     if (!title.trim() || !content.trim()) {
-      setError('请输入标题和内容')
+      setError(t('titleAndContentRequired'))
       return
     }
 
@@ -93,7 +95,7 @@ export function EditPostForm({ content: initialContent, categories }: EditPostFo
 
       await updateContent(initialContent.id, formData)
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '更新失败，请重试'
+      const errorMessage = err instanceof Error ? err.message : t('updateFailed')
       setError(errorMessage)
       setIsSubmitting(false)
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -122,7 +124,7 @@ export function EditPostForm({ content: initialContent, categories }: EditPostFo
           className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary mb-4 transition-colors"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          返回帖子
+          {t('backPost')}
         </Link>
 
         {error && (
@@ -138,15 +140,15 @@ export function EditPostForm({ content: initialContent, categories }: EditPostFo
             className="flex-1 min-w-0"
           >
             <div className="rounded-lg border border-border bg-card p-6 shadow-card">
-              <h1 className="text-lg font-bold text-foreground mb-6">编辑帖子</h1>
+              <h1 className="text-lg font-bold text-foreground mb-6">{t('editPostTitle')}</h1>
 
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm font-medium text-foreground">标题</label>
+                  <label className="text-sm font-medium text-foreground">{t('title')}</label>
                   <span className="text-xs text-muted-foreground">{titleCount}/100</span>
                 </div>
                 <Input
-                  placeholder="输入一个吸引人的标题..."
+                  placeholder={t('titlePlaceholder')}
                   value={title}
                   onChange={(e) => setTitle(e.target.value.slice(0, 100))}
                   className="h-12 text-base bg-background border-border focus:ring-2 focus:ring-primary/20"
@@ -154,7 +156,7 @@ export function EditPostForm({ content: initialContent, categories }: EditPostFo
               </div>
 
               <div className="mb-6">
-                <label className="text-sm font-medium text-foreground mb-2 block">封面图片（可选）</label>
+                <label className="text-sm font-medium text-foreground mb-2 block">{t('coverOptional')}</label>
                 {coverImage ? (
                   <div className="relative rounded-lg overflow-hidden border border-border">
                     <Image src={coverImage} alt="Cover" fill unoptimized sizes="768px" className="h-48 object-cover" />
@@ -168,19 +170,19 @@ export function EditPostForm({ content: initialContent, categories }: EditPostFo
                 ) : (
                   <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer">
                     <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">点击上传封面图片</p>
-                    <p className="text-xs text-muted-foreground mt-1">支持 JPG, PNG, GIF (最大 5MB)</p>
+                    <p className="text-sm text-muted-foreground">{t('clickUploadCover')}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{t('coverSupport')}</p>
                   </div>
                 )}
               </div>
 
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm font-medium text-foreground">内容</label>
-                  <span className="text-xs text-muted-foreground">{wordCount} 字</span>
+                  <label className="text-sm font-medium text-foreground">{t('content')}</label>
+                  <span className="text-xs text-muted-foreground">{t('wordCount', { count: wordCount })}</span>
                 </div>
                 <Textarea
-                  placeholder="写下你的想法... 支持 Markdown 语法&#10;&#10;例如：&#10;# 标题&#10;**粗体** *斜体*&#10;- 列表项&#10;[链接](https://example.com)&#10;```代码块```"
+                  placeholder={t('editContentPlaceholder')}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   className="min-h-[400px] text-sm bg-background border-border font-mono resize-none focus:ring-2 focus:ring-primary/20"
@@ -188,14 +190,14 @@ export function EditPostForm({ content: initialContent, categories }: EditPostFo
               </div>
 
               <div className="mb-6">
-                <label className="text-sm font-medium text-foreground mb-2 block">预览</label>
+                <label className="text-sm font-medium text-foreground mb-2 block">{t('preview')}</label>
                 <div className="rounded-lg border border-border bg-secondary/30 p-6 min-h-[200px]">
                   {content ? (
                     <div className="prose prose-sm max-w-none text-foreground whitespace-pre-line">
                       {content}
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground">内容预览将在这里显示...</p>
+                    <p className="text-sm text-muted-foreground">{t('previewPlaceholder')}</p>
                   )}
                 </div>
               </div>
@@ -209,7 +211,7 @@ export function EditPostForm({ content: initialContent, categories }: EditPostFo
           >
             <div className="sticky top-4 space-y-4">
               <div className="rounded-lg border border-border bg-card p-4 shadow-card">
-                <label className="text-sm font-medium text-foreground mb-3 block">选择分类</label>
+                <label className="text-sm font-medium text-foreground mb-3 block">{t('selectCategory')}</label>
                 <div className="flex flex-wrap gap-2">
                   {categories.map((cat) => {
                     const hsl = getCategoryColor(cat.slug)
@@ -242,7 +244,7 @@ export function EditPostForm({ content: initialContent, categories }: EditPostFo
 
               <div className="rounded-lg border border-border bg-card p-4 shadow-card">
                 <label className="text-sm font-medium text-foreground mb-3 block">
-                  添加标签 ({selectedTags.length}/5)
+                  {t('addTags', { count: selectedTags.length })}
                 </label>
 
                 {selectedTags.length > 0 && (
@@ -279,7 +281,7 @@ export function EditPostForm({ content: initialContent, categories }: EditPostFo
                     onClick={() => setShowTagPicker(!showTagPicker)}
                     disabled={selectedTags.length >= 5}
                   >
-                    + 选择标签
+                    {t('chooseTags')}
                   </Button>
 
                   {showTagPicker && (
@@ -313,7 +315,7 @@ export function EditPostForm({ content: initialContent, categories }: EditPostFo
                   disabled={!title.trim() || !content.trim() || !selectedCategory || isSubmitting}
                 >
                   <Send className="h-4 w-4" />
-                  {isSubmitting ? '更新中...' : '更新帖子'}
+                  {isSubmitting ? t('updating') : t('updatePost')}
                 </Button>
 
                 <Button
@@ -322,7 +324,7 @@ export function EditPostForm({ content: initialContent, categories }: EditPostFo
                   className="w-full"
                   disabled={isSubmitting}
                 >
-                  保存草稿
+                  {t('saveDraft')}
                 </Button>
 
                 <Button
@@ -332,18 +334,18 @@ export function EditPostForm({ content: initialContent, categories }: EditPostFo
                   onClick={() => router.push(`/post/${initialContent.id}`)}
                   disabled={isSubmitting}
                 >
-                  取消
+                  {t('cancel')}
                 </Button>
               </div>
 
               <div className="rounded-lg border border-border bg-card p-4 shadow-card">
-                <h3 className="text-xs font-medium text-foreground mb-2">编辑提示</h3>
+                <h3 className="text-xs font-medium text-foreground mb-2">{t('editTipsTitle')}</h3>
                 <ul className="text-xs text-muted-foreground space-y-1.5">
-                  <li>• 标题要简洁明了，吸引读者</li>
-                  <li>• 选择合适的分类和标签</li>
-                  <li>• 支持 Markdown 语法</li>
-                  <li>• 可以添加封面图片</li>
-                  <li>• 最多可添加 5 个标签</li>
+                  <li>{t('tipTitle')}</li>
+                  <li>{t('tipCategory')}</li>
+                  <li>{t('tipMarkdown')}</li>
+                  <li>{t('tipCover')}</li>
+                  <li>{t('tipTags')}</li>
                 </ul>
               </div>
             </div>

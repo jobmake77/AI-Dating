@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Keyboard } from 'lucide-react'
+import { useTranslations } from 'use-intl'
 
 interface KeyboardShortcutsHelpProps {
   open?: boolean
@@ -23,6 +24,7 @@ interface KeyboardShortcutsHelpProps {
 }
 
 export function KeyboardShortcutsHelp({ open, onOpenChange }: KeyboardShortcutsHelpProps) {
+  const t = useTranslations('accessibility')
   const [isOpen, setIsOpen] = useState(false)
 
   const handleOpenChange = (value: boolean) => {
@@ -31,9 +33,9 @@ export function KeyboardShortcutsHelp({ open, onOpenChange }: KeyboardShortcutsH
   }
 
   const categories = {
-    navigation: '导航',
-    actions: '操作',
-    ui: '界面',
+    navigation: t('categories.navigation'),
+    actions: t('categories.actions'),
+    ui: t('categories.ui'),
   }
 
   const groupedShortcuts = KEYBOARD_SHORTCUTS.reduce((acc, shortcut) => {
@@ -50,7 +52,7 @@ export function KeyboardShortcutsHelp({ open, onOpenChange }: KeyboardShortcutsH
         variant="ghost"
         size="icon"
         onClick={() => handleOpenChange(true)}
-        aria-label="查看键盘快捷键"
+        aria-label={t('keyboardShortcuts')}
       >
         <Keyboard className="h-5 w-5" />
       </Button>
@@ -58,9 +60,9 @@ export function KeyboardShortcutsHelp({ open, onOpenChange }: KeyboardShortcutsH
       <Dialog open={open ?? isOpen} onOpenChange={handleOpenChange}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>键盘快捷键</DialogTitle>
+            <DialogTitle>{t('keyboardShortcuts')}</DialogTitle>
             <DialogDescription>
-              使用这些快捷键可以更高效地浏览和操作
+              {t('keyboardShortcutsDescription')}
             </DialogDescription>
           </DialogHeader>
 
@@ -89,7 +91,8 @@ export function KeyboardShortcutsHelp({ open, onOpenChange }: KeyboardShortcutsH
 
           <div className="mt-6 p-4 bg-muted/50 rounded-lg">
             <p className="text-sm text-muted-foreground">
-              <strong>提示：</strong>按 <kbd className="px-1.5 py-0.5 text-xs bg-background border border-border rounded">?</kbd> 可随时打开此帮助面板
+              <strong>{t('tipLabel')}</strong>{' '}
+              {t('keyboardShortcutsTip', { key: '?' })}
             </p>
           </div>
         </DialogContent>

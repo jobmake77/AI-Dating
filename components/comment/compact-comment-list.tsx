@@ -3,6 +3,7 @@
 import { MessageSquare } from "lucide-react";
 import { CompactCommentItem } from "./compact-comment-item";
 import type { Comment } from "@/lib/queries/comments";
+import { useTranslations } from "use-intl";
 
 interface CompactCommentListProps {
   comments: Comment[];
@@ -19,16 +20,17 @@ export function CompactCommentList({
   isAuthenticated,
   commentsCount,
 }: CompactCommentListProps) {
+  const t = useTranslations("commentUi");
   if (comments.length === 0) {
     return (
       <div className="rounded-lg border border-border bg-card p-4 shadow-card">
         <h2 className="font-mono text-xs font-bold text-foreground mb-3 flex items-center gap-2">
           <MessageSquare className="h-3.5 w-3.5 text-info" />
-          评论
+          {t("comments")}
           <span className="rounded-full bg-info/10 text-info px-2 py-0.5 text-[10px]">0</span>
         </h2>
         <div className="text-center py-4 text-muted-foreground text-sm">
-          还没有评论，来发表第一条吧！
+          {t("empty")}
         </div>
       </div>
     );
@@ -38,7 +40,7 @@ export function CompactCommentList({
     <div className="rounded-lg border border-border bg-card p-4 shadow-card">
       <h2 className="font-mono text-xs font-bold text-foreground mb-1 flex items-center gap-2">
         <MessageSquare className="h-3.5 w-3.5 text-info" />
-        评论
+        {t("comments")}
         <span className="rounded-full bg-info/10 text-info px-2 py-0.5 text-[10px]">
           {commentsCount}
         </span>

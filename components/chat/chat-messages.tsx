@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { markConversationAsRead } from '@/lib/actions/chat'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
+import { useTranslations } from 'use-intl'
 
 interface Message {
   id: string
@@ -45,6 +46,7 @@ function formatTime(dateString: string): string {
 }
 
 export function ChatMessages({ conversationId, initialMessages, otherUserLastReadAt, currentUserId }: ChatMessagesProps) {
+  const t = useTranslations('messagesPage')
   const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [, setOtherLastReadAt] = useState<string | null>(otherUserLastReadAt)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -183,7 +185,7 @@ export function ChatMessages({ conversationId, initialMessages, otherUserLastRea
   if (messages.length === 0) {
     return (
       <div className="flex items-center justify-center h-full">
-        <p className="text-xs text-muted-foreground">开始对话...</p>
+        <p className="text-xs text-muted-foreground">{t('startConversation')}</p>
       </div>
     )
   }
@@ -211,7 +213,7 @@ export function ChatMessages({ conversationId, initialMessages, otherUserLastRea
                 <div className="relative w-full max-w-sm">
                   <Image
                     src={extractImageUrl(message.content)}
-                    alt="聊天图片"
+                    alt={t('imageAlt')}
                     width={300}
                     height={300}
                     className="rounded-xl object-cover"

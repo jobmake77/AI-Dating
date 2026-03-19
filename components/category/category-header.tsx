@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Bell, BellOff, type LucideIcon } from "lucide-react"
 import { useState } from "react"
+import { useTranslations } from "use-intl"
 
 interface CategoryHeaderProps {
   category: {
@@ -15,6 +16,7 @@ interface CategoryHeaderProps {
 }
 
 export function CategoryHeader({ category }: CategoryHeaderProps) {
+  const t = useTranslations('categoryHeader')
   const [isFollowing, setIsFollowing] = useState(false)
   const IconComponent = category.icon
 
@@ -60,12 +62,12 @@ export function CategoryHeader({ category }: CategoryHeaderProps) {
             {isFollowing ? (
               <>
                 <BellOff className="h-4 w-4 mr-1.5" />
-                <span className="text-xs">已关注</span>
+                <span className="text-xs">{t('following')}</span>
               </>
             ) : (
               <>
                 <Bell className="h-4 w-4 mr-1.5" />
-                <span className="text-xs">关注</span>
+                <span className="text-xs">{t('follow')}</span>
               </>
             )}
           </Button>

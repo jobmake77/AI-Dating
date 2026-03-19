@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { AlertCircle, Home, RefreshCw } from 'lucide-react'
 import { logClientError } from '@/lib/utils/error-logger'
 import { getFriendlyErrorMessage } from '@/lib/utils/error-handler'
+import { useOptionalTranslation } from '@/components/i18n/locale-provider'
 
 /**
  * 根级错误页面
@@ -18,6 +19,7 @@ export default function Error({
   error: Error & { digest?: string }
   reset: () => void
 }) {
+  const t = useOptionalTranslation()
   useEffect(() => {
     logClientError(error, {
       component: 'RootError',
@@ -32,7 +34,7 @@ export default function Error({
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-destructive">
             <AlertCircle className="w-5 h-5" />
-            页面出错了
+            {t('errorPage.title', 'Something went wrong')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -42,7 +44,7 @@ export default function Error({
           {process.env.NODE_ENV === 'development' && error.message && (
             <details className="text-sm">
               <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
-                查看错误详情（仅开发环境）
+                {t('errorPage.details', 'View error details (development only)')}
               </summary>
               <pre className="mt-2 p-4 bg-muted rounded-lg overflow-auto text-xs">
                 {error.message}
@@ -53,7 +55,7 @@ export default function Error({
           <div className="flex gap-2">
             <Button onClick={reset} className="gap-2">
               <RefreshCw className="w-4 h-4" />
-              重试
+              {t('errorPage.retry', 'Try again')}
             </Button>
             <Button
               variant="outline"
@@ -61,7 +63,7 @@ export default function Error({
               className="gap-2"
             >
               <Home className="w-4 h-4" />
-              返回首页
+              {t('errorPage.home', 'Back to home')}
             </Button>
           </div>
         </CardContent>

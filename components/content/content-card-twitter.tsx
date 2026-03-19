@@ -3,19 +3,20 @@ import Image from 'next/image'
 import { TagList } from '@/components/tag/tag-list'
 import { Clock, Eye, User } from 'lucide-react'
 import { ContentCardActions } from './content-card-actions'
+import { useLocale, useTranslations } from 'use-intl'
 
-function formatTime(dateStr: string): string {
+function formatTime(dateStr: string, locale: string): string {
   const now = new Date()
   const date = new Date(dateStr)
   const diffMs = now.getTime() - date.getTime()
   const diffH = diffMs / (1000 * 60 * 60)
   if (diffH < 24) {
     const h = Math.max(1, Math.floor(diffH))
-    return `${h}h前`
+    return locale === 'en' ? `${h}h ago` : `${h}h前`
   }
   const m = date.getMonth() + 1
   const d = date.getDate()
-  return `${m}月${d}日`
+  return locale === 'en' ? `${m}/${d}` : `${m}月${d}日`
 }
 
 interface ContentCardProps {
@@ -41,6 +42,8 @@ interface ContentCardProps {
 }
 
 export function ContentCard({ content, isAuthenticated = false }: ContentCardProps) {
+  const locale = useLocale()
+  const t = useTranslations('contentUi')
   return (
     <article className="px-4 py-3 border-b border-border hover:bg-accent/30 transition-colors duration-150 cursor-pointer">
       <div className="flex gap-3">
@@ -69,10 +72,10 @@ export function ContentCard({ content, isAuthenticated = false }: ContentCardPro
             <Link href={`/u/${content.users.username}`} className="font-bold text-[15px] hover:underline leading-tight">
               {content.users.full_name || content.users.username}
             </Link>
-            <span className="text-muted-foreground text-[14px]">·</span>
-            <time className="text-muted-foreground text-[14px]">
-              {formatTime(content.created_at)}
-            </time>
+              <span className="text-muted-foreground text-[14px]">·</span>
+              <time className="text-muted-foreground text-[14px]">
+              {formatTime(content.created_at, locale)}
+              </time>
           </div>
 
           {/* Title */}
@@ -100,7 +103,7 @@ export function ContentCard({ content, isAuthenticated = false }: ContentCardPro
           <div className="flex items-center gap-3 text-[13px] text-muted-foreground/60 mb-2">
             <div className="flex items-center gap-1">
               <Clock className="w-3 h-3" />
-              <span>{content.reading_time} 分钟</span>
+              <span>{content.reading_time} {t('minutesReadShort')}</span>
             </div>
             <div className="flex items-center gap-1">
               <Eye className="w-3 h-3" />

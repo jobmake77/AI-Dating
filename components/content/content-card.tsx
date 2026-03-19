@@ -3,7 +3,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { TagList } from '@/components/tag/tag-list'
 import { Heart, Repeat2, MessageCircle, Clock } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
-import { zhCN } from 'date-fns/locale'
+import { enUS, zhCN } from 'date-fns/locale'
+import { getRequestLocale } from '@/i18n/request'
+import { getTranslation } from '@/i18n/dictionaries'
 
 interface ContentCardProps {
   content: {
@@ -39,7 +41,9 @@ interface ContentCardProps {
   }
 }
 
-export function ContentCard({ content }: ContentCardProps) {
+export async function ContentCard({ content }: ContentCardProps) {
+  const locale = await getRequestLocale()
+  const t = (key: string, fallback: string) => getTranslation(locale, `contentUi.${key}`, fallback)
   const displayTime = content.is_repost && content.reposted_at
     ? content.reposted_at
     : content.created_at
@@ -49,7 +53,6 @@ export function ContentCard({ content }: ContentCardProps) {
   return (
     <article className="border-b border-border/50 hover:bg-muted/30 transition-colors cursor-pointer">
       <div className="px-4 py-4">
-        {/* 转发信息 */}
         {content.is_repost && content.reposted_by && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3 ml-12">
             <Repeat2 className="h-3.5 w-3.5" />
@@ -59,7 +62,7 @@ export function ContentCard({ content }: ContentCardProps) {
             >
               {content.reposted_by.full_name || content.reposted_by.username}
             </Link>
-            <span>转发了</span>
+            <span>{t('repostedAction', 'reposted')}</span>
           </div>
         )}
 
@@ -95,7 +98,10 @@ export function ContentCard({ content }: ContentCardProps) {
                 href={contentHref}
                 className="text-muted-foreground text-sm hover:underline"
               >
-                {formatDistanceToNow(new Date(displayTime), { addSuffix: true, locale: zhCN })}
+                {formatDistanceToNow(new Date(displayTime), {
+                  addSuffix: true,
+                  locale: locale === 'en' ? enUS : zhCN,
+                })}
               </Link>
               {content.community && (
                 <>
@@ -104,7 +110,7 @@ export function ContentCard({ content }: ContentCardProps) {
                     href={`/communities/${content.community.slug}`}
                     className="rounded-full bg-info/10 px-2 py-0.5 text-xs font-medium text-info hover:bg-info/15"
                   >
-                    社区 · {content.community.name}
+                    {t('communityPrefix', 'Community')} · {content.community.name}
                   </Link>
                 </>
               )}
@@ -136,14 +142,14 @@ export function ContentCard({ content }: ContentCardProps) {
               <div className="flex items-center justify-between max-w-md text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <MessageCircle className="h-4 w-4" />
-                  <span className="text-sm font-medium">{content.comments_count} 条回复</span>
+                  <span className="text-sm font-medium">{content.comments_count} {t('replyCount', 'replies')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Heart className="h-4 w-4" />
-                  <span className="text-sm font-medium">{content.likes_count} 个赞</span>
+                  <span className="text-sm font-medium">{content.likes_count} {t('likeCount', 'likes')}</span>
                 </div>
                 <Link href={contentHref} className="text-sm font-medium text-primary hover:underline">
-                  查看社区帖子
+                  {t('viewCommunityPost', 'View community post')}
                 </Link>
               </div>
             ) : (
@@ -171,7 +177,7 @@ export function ContentCard({ content }: ContentCardProps) {
 
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Clock className="h-4 w-4" />
-                  <span className="text-sm">{content.reading_time}分钟</span>
+                  <span className="text-sm">{content.reading_time}{t('minutesReadShort', ' min')}</span>
                 </div>
               </div>
             )}

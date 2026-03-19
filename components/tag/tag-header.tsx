@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Bell, BellOff, Hash } from "lucide-react"
 import { useState } from "react"
+import { useTranslations } from "use-intl"
 
 interface TagHeaderProps {
   tagName: string
@@ -10,6 +11,7 @@ interface TagHeaderProps {
 }
 
 export function TagHeader({ tagName, postCount }: TagHeaderProps) {
+  const t = useTranslations('tagPage')
   const [isFollowing, setIsFollowing] = useState(false)
 
   return (
@@ -29,7 +31,7 @@ export function TagHeader({ tagName, postCount }: TagHeaderProps) {
                 {tagName}
               </h1>
               <p className="text-sm text-muted-foreground">
-                {postCount} 篇内容使用了这个标签
+                {t('postCount', { count: postCount })}
               </p>
             </div>
           </div>
@@ -44,12 +46,12 @@ export function TagHeader({ tagName, postCount }: TagHeaderProps) {
             {isFollowing ? (
               <>
                 <BellOff className="h-4 w-4 mr-1.5" />
-                <span className="text-xs">已关注</span>
+                <span className="text-xs">{t('following')}</span>
               </>
             ) : (
               <>
                 <Bell className="h-4 w-4 mr-1.5" />
-                <span className="text-xs">关注</span>
+                <span className="text-xs">{t('follow')}</span>
               </>
             )}
           </Button>

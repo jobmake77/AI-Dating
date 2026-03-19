@@ -9,11 +9,13 @@ import { TagInput } from '@/components/tags/tag-input'
 import type { EmojiClickData } from 'emoji-picker-react'
 import { TiptapEditor, type TiptapEditorRef } from '@/components/editor/tiptap-editor'
 import { CoverImageUpload } from './cover-image-upload'
+import { useTranslations } from 'use-intl'
 
 // Dynamically import emoji picker to avoid SSR issues
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false })
 
 export function ContentForm() {
+  const t = useTranslations('editorUi')
   const [content, setContent] = useState('')
   const [tags, setTags] = useState<string[]>([])
   const [coverImage, setCoverImage] = useState<string>('')
@@ -41,7 +43,7 @@ export function ContentForm() {
     // Strip HTML tags to check if there's actual content
     const textContent = content.replace(/<[^>]*>/g, '').trim()
     if (!textContent) {
-      setError('请输入内容')
+      setError(t('contentRequired'))
       return
     }
 
@@ -59,11 +61,10 @@ export function ContentForm() {
 
       await createContent(formData)
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '发布失败，请重试'
+      const errorMessage = err instanceof Error ? err.message : t('publishFailed')
       setError(errorMessage)
       setIsSubmitting(false)
 
-      // 滚动到错误提示位置
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
@@ -90,7 +91,7 @@ export function ContentForm() {
 
       {/* Cover Image Upload */}
       <div className="space-y-2">
-        <label className="text-sm font-medium">封面图（可选）</label>
+        <label className="text-sm font-medium">{t('coverOptional')}</label>
         <CoverImageUpload
           currentCover={coverImage}
           onUploadSuccess={(url) => setCoverImage(url)}
@@ -104,7 +105,7 @@ export function ContentForm() {
           ref={editorRef}
           content={content}
           onChange={setContent}
-          placeholder="分享你的想法..."
+          placeholder={t('writeSomething')}
           onEmojiClick={() => setShowEmojiPicker(!showEmojiPicker)}
           showEmojiPicker={showEmojiPicker}
           emojiPickerElement={
@@ -114,7 +115,7 @@ export function ContentForm() {
                   onEmojiClick={onEmojiClick}
                   width={350}
                   height={400}
-                  searchPlaceholder="搜索表情..."
+                  searchPlaceholder={t('searchEmoji')}
                   previewConfig={{ showPreview: false }}
                 />
               </div>
@@ -125,7 +126,7 @@ export function ContentForm() {
         {/* Character Count */}
         <div className="flex items-center justify-between px-2">
           <span className={`text-sm ${remaining < 100 ? 'text-destructive' : 'text-muted-foreground'}`}>
-            {remaining} 字符剩余
+            {t('charactersRemaining', { count: remaining })}
           </span>
         </div>
 
@@ -134,7 +135,7 @@ export function ContentForm() {
           <TagInput
             value={tags}
             onChange={setTags}
-            placeholder="添加标签..."
+            placeholder={t('addTagsPlaceholder')}
             maxTags={5}
           />
         </div>
@@ -148,7 +149,7 @@ export function ContentForm() {
           size="lg"
           className="rounded-full px-6"
         >
-          {isSubmitting ? '发布中...' : '发布'}
+          {isSubmitting ? t('publishing') : t('publish')}
         </Button>
       </div>
     </form>

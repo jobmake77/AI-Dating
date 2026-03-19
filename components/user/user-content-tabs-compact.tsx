@@ -6,6 +6,7 @@ import { CompactContentCard } from '@/components/content/compact-content-card'
 import { Pagination } from '@/components/content/pagination'
 import { AgentTab } from '@/components/user/agent-tab'
 import type { PaginatedContentItems } from '@/lib/types/content'
+import { useTranslations } from 'use-intl'
 
 type UserAgent = {
   id: string
@@ -28,12 +29,6 @@ interface UserContentTabsCompactProps {
 }
 
 const profileTabs = ['published', 'liked', 'reposted'] as const
-const tabLabels = {
-  published: '内容',
-  liked: '点赞',
-  reposted: '转发',
-  agents: 'Agent',
-}
 
 export function UserContentTabsCompact({
   username,
@@ -41,6 +36,7 @@ export function UserContentTabsCompact({
   agents = [],
   contents,
 }: UserContentTabsCompactProps) {
+  const t = useTranslations('userContentTabs')
   const router = useRouter()
   const searchParams = useSearchParams()
   const currentTab = searchParams.get('tab') || 'published'
@@ -68,7 +64,7 @@ export function UserContentTabsCompact({
                 : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
             }`}
           >
-            {tabLabels[tab as keyof typeof tabLabels]}
+            {t(tab as 'published' | 'liked' | 'reposted' | 'agents')}
           </button>
         ))}
       </div>
@@ -95,7 +91,7 @@ export function UserContentTabsCompact({
             ) : (
               <div className="rounded-lg border border-border bg-card p-10 text-center shadow-card">
                 <FileText className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
-                <p className="text-xs text-muted-foreground">该用户还没有发过内容</p>
+                <p className="text-xs text-muted-foreground">{t('emptyPublished')}</p>
               </div>
             )}
           </>
@@ -121,7 +117,7 @@ export function UserContentTabsCompact({
             ) : (
               <div className="rounded-lg border border-border bg-card p-10 text-center shadow-card">
                 <Heart className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
-                <p className="text-xs text-muted-foreground">暂无内容</p>
+                <p className="text-xs text-muted-foreground">{t('emptyLiked')}</p>
               </div>
             )}
           </>
@@ -147,7 +143,7 @@ export function UserContentTabsCompact({
             ) : (
               <div className="rounded-lg border border-border bg-card p-10 text-center shadow-card">
                 <MessageSquare className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
-                <p className="text-xs text-muted-foreground">暂无内容</p>
+                <p className="text-xs text-muted-foreground">{t('emptyReposted')}</p>
               </div>
             )}
           </>

@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation'
 import type { EmojiClickData } from 'emoji-picker-react'
 import { TiptapEditor, type TiptapEditorRef } from '@/components/editor/tiptap-editor'
 import { CoverImageUpload } from './cover-image-upload'
+import { useTranslations } from 'use-intl'
 
 // Dynamically import emoji picker to avoid SSR issues
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false })
@@ -26,6 +27,7 @@ interface ContentEditFormProps {
 }
 
 export function ContentEditForm({ content: initialContent }: ContentEditFormProps) {
+  const t = useTranslations('editorUi')
   const router = useRouter()
   const [content, setContent] = useState(initialContent.content)
   const [tags, setTags] = useState<string[]>(initialContent.tags || [])
@@ -54,7 +56,7 @@ export function ContentEditForm({ content: initialContent }: ContentEditFormProp
     // Strip HTML tags to check if there's actual content
     const textContent = content.replace(/<[^>]*>/g, '').trim()
     if (!textContent) {
-      setError('请输入内容')
+      setError(t('contentRequired'))
       return
     }
 
@@ -72,7 +74,7 @@ export function ContentEditForm({ content: initialContent }: ContentEditFormProp
 
       await updateContent(initialContent.id, formData)
     } catch (err) {
-      setError(err instanceof Error ? err.message : '更新失败，请重试')
+      setError(err instanceof Error ? err.message : t('updateFailed'))
       setIsSubmitting(false)
     }
   }
@@ -112,13 +114,13 @@ export function ContentEditForm({ content: initialContent }: ContentEditFormProp
           ref={editorRef}
           content={content}
           onChange={setContent}
-          placeholder="分享你的想法..."
+          placeholder={t('writeSomething')}
         />
 
         {/* Character Count */}
         <div className="flex items-center justify-between px-2">
           <span className={`text-sm ${remaining < 100 ? 'text-destructive' : 'text-muted-foreground'}`}>
-            {remaining} 字符剩余
+            {t('charactersRemaining', { count: remaining })}
           </span>
         </div>
 
@@ -127,7 +129,7 @@ export function ContentEditForm({ content: initialContent }: ContentEditFormProp
           <TagInput
             value={tags}
             onChange={setTags}
-            placeholder="添加标签..."
+            placeholder={t('addTagsPlaceholder')}
             maxTags={5}
           />
         </div>
@@ -153,7 +155,7 @@ export function ContentEditForm({ content: initialContent }: ContentEditFormProp
                   onEmojiClick={onEmojiClick}
                   width={350}
                   height={400}
-                  searchPlaceholder="搜索表情..."
+                  searchPlaceholder={t('searchEmoji')}
                   previewConfig={{ showPreview: false }}
                 />
               </div>
@@ -170,7 +172,7 @@ export function ContentEditForm({ content: initialContent }: ContentEditFormProp
             onClick={() => router.back()}
             disabled={isSubmitting}
           >
-            取消
+            {t('cancel')}
           </Button>
           <Button
             type="submit"
@@ -178,7 +180,7 @@ export function ContentEditForm({ content: initialContent }: ContentEditFormProp
             size="lg"
             className="rounded-full px-6"
           >
-            {isSubmitting ? '更新中...' : '更新内容'}
+            {isSubmitting ? t('updating') : t('updateContent')}
           </Button>
         </div>
       </div>

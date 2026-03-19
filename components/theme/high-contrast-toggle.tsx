@@ -9,23 +9,25 @@ import React from 'react'
 import { useTheme } from './theme-provider'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { useTranslations } from 'use-intl'
 
 export function HighContrastToggle() {
+  const t = useTranslations('theme')
   const { preferences, setHighContrast } = useTheme()
 
   return (
     <div className="flex items-center justify-between space-x-4">
       <div className="flex-1 space-y-1">
-        <Label htmlFor="high-contrast">高对比度模式</Label>
+        <Label htmlFor="high-contrast">{t('highContrast')}</Label>
         <p className="text-sm text-muted-foreground">
-          增强颜色对比度，提高可读性（WCAG AAA 标准）
+          {t('highContrastDescription')}
         </p>
       </div>
       <Switch
         id="high-contrast"
         checked={preferences.highContrast}
         onCheckedChange={setHighContrast}
-        aria-label="切换高对比度模式"
+        aria-label={t('toggleHighContrast')}
       />
     </div>
   )

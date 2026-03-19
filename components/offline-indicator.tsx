@@ -3,12 +3,14 @@
 import { useEffect, useState } from 'react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { WifiOff, Wifi } from 'lucide-react'
+import { useTranslations } from 'use-intl'
 
 /**
  * 离线状态指示器
  * 检测网络状态并显示提示
  */
 export function OfflineIndicator() {
+  const t = useTranslations('offlineIndicator')
   const [isOnline, setIsOnline] = useState(() =>
     typeof navigator === 'undefined' ? true : navigator.onLine
   )
@@ -51,14 +53,14 @@ export function OfflineIndicator() {
         <Alert variant="destructive" className="shadow-lg">
           <WifiOff className="h-4 w-4" />
           <AlertDescription className="ml-2">
-            网络连接已断开，请检查您的网络设置
+            {t('offline')}
           </AlertDescription>
         </Alert>
       ) : (
         <Alert className="shadow-lg border-green-500 bg-green-50 dark:bg-green-950">
           <Wifi className="h-4 w-4 text-green-600 dark:text-green-400" />
           <AlertDescription className="ml-2 text-green-600 dark:text-green-400">
-            网络已恢复连接
+            {t('reconnected')}
           </AlertDescription>
         </Alert>
       )}

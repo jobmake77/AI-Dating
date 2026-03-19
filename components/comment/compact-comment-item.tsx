@@ -18,6 +18,7 @@ import {
 import { deleteComment, createComment } from "@/lib/actions/comments";
 import { useRouter } from "next/navigation";
 import type { Comment } from "@/lib/queries/comments";
+import { useLocale, useTranslations } from "use-intl";
 
 interface CompactCommentItemProps {
   comment: Comment;
@@ -28,11 +29,11 @@ interface CompactCommentItemProps {
   depth: number;
 }
 
-function formatTime(dateStr: string): string {
+function formatTime(dateStr: string, locale: string): string {
   const diff = (Date.now() - new Date(dateStr).getTime()) / 3600000;
-  if (diff < 24) return `${Math.max(1, Math.floor(diff))}h前`;
+  if (diff < 24) return `${Math.max(1, Math.floor(diff))}h${locale === "en" ? " ago" : "前"}`;
   const d = new Date(dateStr);
-  return `${d.getMonth() + 1}月${d.getDate()}日`;
+  return locale === "en" ? `${d.getMonth() + 1}/${d.getDate()}` : `${d.getMonth() + 1}月${d.getDate()}日`;
 }
 
 export function CompactCommentItem({
@@ -43,6 +44,8 @@ export function CompactCommentItem({
   isAuthenticated,
   depth,
 }: CompactCommentItemProps) {
+  const t = useTranslations("commentUi");
+  const locale = useLocale();
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
   const [showReply, setShowReply] = useState(false);
@@ -82,10 +85,10 @@ export function CompactCommentItem({
             {comment.user?.username?.[0]?.toUpperCase() || "U"}
           </div>
           <span className="font-mono font-medium text-primary">
-            {comment.user?.username || "匿名"}
+            {comment.user?.username || t("anonymous")}
           </span>
           <span className="text-border">·</span>
-          <span>{formatTime(comment.created_at)}</span>
+          <span>{formatTime(comment.created_at, locale)}</span>
           {isOwner && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
@@ -98,13 +101,13 @@ export function CompactCommentItem({
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>确认删除</AlertDialogTitle>
-                  <AlertDialogDescription>此操作无法撤销。</AlertDialogDescription>
+                  <AlertDialogTitle>{t("deleteTitle")}</AlertDialogTitle>
+                  <AlertDialogDescription>{t("deleteDescription")}</AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>取消</AlertDialogCancel>
+                  <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
                   <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
-                    {isDeleting ? "删除中..." : "确认删除"}
+                    {isDeleting ? t("deleting") : t("confirmDelete")}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -120,7 +123,7 @@ export function CompactCommentItem({
             className="mt-2 flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
           >
             <MessageSquare className="h-3 w-3" />
-            {showReply ? "收起" : "回复"}
+            {showReply ? t("collapse") : t("reply")}
           </button>
         )}
 
@@ -129,7 +132,7 @@ export function CompactCommentItem({
             <Textarea
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
-              placeholder={`回复 @${comment.user?.username}...`}
+              placeholder={t("replyPlaceholder", { username: comment.user?.username || "" })}
               className="min-h-[60px] text-sm bg-secondary/60 border-none"
               disabled={isReplying}
             />
@@ -143,7 +146,7 @@ export function CompactCommentItem({
                 }}
                 className="h-7 text-xs"
               >
-                取消
+                {t("cancel")}
               </Button>
               <Button
                 size="sm"
@@ -151,7 +154,7 @@ export function CompactCommentItem({
                 disabled={isReplying || !replyText.trim()}
                 className="h-7 text-xs gradient-primary text-white"
               >
-                {isReplying ? "回复中..." : "回复"}
+                {isReplying ? t("replying") : t("reply")}
               </Button>
             </div>
           </div>
@@ -176,4 +179,3 @@ export function CompactCommentItem({
     </div>
   );
 }
-

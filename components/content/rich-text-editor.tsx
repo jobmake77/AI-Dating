@@ -9,6 +9,7 @@ import { createLowlight } from 'lowlight'
 import { Bold, Italic, Code, Link2, List, ListOrdered } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { useTranslations } from 'use-intl'
 
 // Create lowlight instance
 const lowlight = createLowlight()
@@ -20,6 +21,7 @@ interface RichTextEditorProps {
 }
 
 export function RichTextEditor({ content, onChange, placeholder }: RichTextEditorProps) {
+  const t = useTranslations('richTextEditor')
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -27,7 +29,7 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
         codeBlock: false,
       }),
       Placeholder.configure({
-        placeholder: placeholder || '有什么新想法？',
+        placeholder: placeholder || t('placeholder'),
       }),
       Link.configure({
         openOnClick: false,
@@ -55,7 +57,7 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
   }
 
   const addLink = () => {
-    const url = window.prompt('输入链接地址：')
+    const url = window.prompt(t('linkPrompt'))
     if (url) {
       editor.chain().focus().setLink({ href: url }).run()
     }
@@ -133,7 +135,7 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
           onClick={() => editor.chain().focus().toggleCodeBlock().run()}
           className={editor.isActive('codeBlock') ? 'bg-muted' : ''}
         >
-          代码块
+          {t('codeBlock')}
         </Button>
       </div>
 

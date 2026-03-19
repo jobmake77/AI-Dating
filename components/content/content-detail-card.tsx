@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Calendar, Eye, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { zhCN } from "date-fns/locale";
+import { enUS, zhCN } from "date-fns/locale";
 import { getCategoryColor } from "@/lib/utils/categories";
 import DOMPurify from "dompurify";
 import { useMemo, useState } from "react";
@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { deleteContent } from "@/lib/actions/content";
 import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "use-intl";
 
 interface ContentDetailCardProps {
   content: {
@@ -49,10 +50,12 @@ interface ContentDetailCardProps {
 }
 
 export function ContentDetailCard({ content, canViewFullContent, currentUserId }: ContentDetailCardProps) {
+  const t = useTranslations('contentUi');
+  const locale = useLocale();
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
   const catColorHsl = content.category_color || (content.category ? getCategoryColor(content.category) : "221 83% 53%");
-  const primaryTag = content.tags?.[0] || "讨论";
+  const primaryTag = content.tags?.[0] || t('defaultTag');
   const isAuthor = currentUserId === content.author_id;
   const sanitizedContent = useMemo(() => {
     const displayContent = canViewFullContent
@@ -107,12 +110,12 @@ export function ContentDetailCard({ content, canViewFullContent, currentUserId }
                   <Calendar className="h-3 w-3" />
                   {formatDistanceToNow(new Date(content.created_at), {
                     addSuffix: true,
-                    locale: zhCN,
+                    locale: locale === 'en' ? enUS : zhCN,
                   })}
                 </span>
                 <span className="flex items-center gap-1">
                   <Eye className="h-3 w-3" />
-                  {content.view_count} 浏览
+                  {content.view_count} {t('views')}
                 </span>
                 {content.category && (
                   <Link
@@ -139,24 +142,24 @@ export function ContentDetailCard({ content, canViewFullContent, currentUserId }
               <AlertDialogTrigger asChild>
                 <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10">
                   <Trash2 className="h-4 w-4 mr-1" />
-                  删除
+                  {t('delete')}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>确认删除</AlertDialogTitle>
+                  <AlertDialogTitle>{t('confirmDeleteTitle')}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    你确定要删除这篇内容吗？此操作无法撤销。
+                    {t('confirmDeleteDescription')}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>取消</AlertDialogCancel>
+                  <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={handleDelete}
                     disabled={isDeleting}
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   >
-                    {isDeleting ? "删除中..." : "确认删除"}
+                    {isDeleting ? t('deleting') : t('confirmDelete')}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

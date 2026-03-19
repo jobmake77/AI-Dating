@@ -24,7 +24,8 @@ import {
 import { Bot, Copy, Check, Plus, Trash2, Key } from 'lucide-react'
 import { createAgent, deleteAgent } from '@/lib/actions/agents'
 import { formatDistanceToNow } from 'date-fns'
-import { zhCN } from 'date-fns/locale'
+import { enUS, zhCN } from 'date-fns/locale'
+import { useLocale, useTranslations } from 'use-intl'
 
 interface Agent {
   id: string
@@ -40,6 +41,8 @@ interface AgentTabProps {
 }
 
 export function AgentTab({ initialAgents }: AgentTabProps) {
+  const t = useTranslations('userAgents')
+  const locale = useLocale()
   const [agents, setAgents] = useState<Agent[]>(initialAgents)
   const [showCreate, setShowCreate] = useState(false)
   const [newName, setNewName] = useState('')
@@ -88,7 +91,7 @@ export function AgentTab({ initialAgents }: AgentTabProps) {
       {/* 说明 + 创建按钮 */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          将 API Key 配置到 OpenClaw Agent，Agent 将以你的身份发布内容。最多 2 个。
+          {t('description')}
         </p>
         <Button
           size="sm"
@@ -96,7 +99,7 @@ export function AgentTab({ initialAgents }: AgentTabProps) {
           disabled={agents.length >= 2}
         >
           <Plus className="h-4 w-4 mr-1" />
-          创建 Agent
+          {t('create')}
         </Button>
       </div>
 
@@ -104,8 +107,8 @@ export function AgentTab({ initialAgents }: AgentTabProps) {
       {agents.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
           <Bot className="h-12 w-12 mx-auto mb-4 opacity-30" />
-          <p className="font-medium">还没有 Agent</p>
-          <p className="text-sm mt-1">创建 Agent 并接入 OpenClaw，自动发布内容</p>
+          <p className="font-medium">{t('emptyTitle')}</p>
+          <p className="text-sm mt-1">{t('emptyDescription')}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -119,7 +122,7 @@ export function AgentTab({ initialAgents }: AgentTabProps) {
                   <Bot className="h-4 w-4 text-muted-foreground" />
                   <span className="font-medium">{agent.name}</span>
                   <Badge variant="outline" className="text-green-600 border-green-200 bg-green-50 text-xs">
-                    运行中
+                    {t('statusRunning')}
                   </Badge>
                 </div>
                 <Button
@@ -153,8 +156,18 @@ export function AgentTab({ initialAgents }: AgentTabProps) {
 
               <p className="text-xs text-muted-foreground">
                 {agent.last_used_at
-                  ? `最后活跃 ${formatDistanceToNow(new Date(agent.last_used_at), { addSuffix: true, locale: zhCN })}`
-                  : `创建于 ${formatDistanceToNow(new Date(agent.created_at), { addSuffix: true, locale: zhCN })}`
+                  ? t('lastActive', {
+                      time: formatDistanceToNow(new Date(agent.last_used_at), {
+                        addSuffix: true,
+                        locale: locale === 'en' ? enUS : zhCN,
+                      }),
+                    })
+                  : t('createdAt', {
+                      time: formatDistanceToNow(new Date(agent.created_at), {
+                        addSuffix: true,
+                        locale: locale === 'en' ? enUS : zhCN,
+                      }),
+                    })
                 }
               </p>
             </div>
@@ -166,11 +179,11 @@ export function AgentTab({ initialAgents }: AgentTabProps) {
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>创建 Agent</DialogTitle>
+            <DialogTitle>{t('createTitle')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
             <Input
-              placeholder="Agent 名称，如「每日资讯机器人」"
+              placeholder={t('namePlaceholder')}
               value={newName}
               onChange={e => setNewName(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleCreate()}
@@ -180,10 +193,10 @@ export function AgentTab({ initialAgents }: AgentTabProps) {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => { setShowCreate(false); setNewName(''); setError('') }}>
-              取消
+              {t('cancel')}
             </Button>
             <Button onClick={handleCreate} disabled={!newName.trim() || isPending}>
-              创建
+              {t('create')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -193,11 +206,13 @@ export function AgentTab({ initialAgents }: AgentTabProps) {
       <Dialog open={!!newAgent} onOpenChange={() => setNewAgent(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Agent 创建成功</DialogTitle>
+            <DialogTitle>{t('createdTitle')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
             <p className="text-sm text-muted-foreground">
-              请复制以下 API Key 并配置到 OpenClaw。<strong>此 Key 只显示一次</strong>，关闭后将无法再查看完整内容。
+              {t.rich('createdDescription', {
+                strong: (chunks) => <strong>{chunks}</strong>,
+              })}
             </p>
             <div className="flex items-center gap-2 bg-muted rounded-md px-3 py-2">
               <code className="text-xs flex-1 break-all font-mono">{newAgent?.api_key}</code>
@@ -215,7 +230,7 @@ export function AgentTab({ initialAgents }: AgentTabProps) {
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={() => setNewAgent(null)}>已复制，关闭</Button>
+            <Button onClick={() => setNewAgent(null)}>{t('copiedClose')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -224,19 +239,19 @@ export function AgentTab({ initialAgents }: AgentTabProps) {
       <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>删除 Agent</AlertDialogTitle>
+            <AlertDialogTitle>{t('deleteTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              删除「{deleteTarget?.name}」后，对应 API Key 将立即失效，OpenClaw Agent 将无法继续操作。此操作不可撤销。
+              {t('deleteDescription', { name: deleteTarget?.name || '' })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive hover:bg-destructive/90"
               onClick={() => deleteTarget && handleDelete(deleteTarget)}
               disabled={isPending}
             >
-              删除
+              {t('delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

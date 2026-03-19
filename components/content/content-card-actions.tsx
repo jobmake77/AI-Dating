@@ -6,6 +6,7 @@ import { Heart, MessageCircle, Repeat2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { useTranslations } from 'use-intl'
 
 interface ContentCardActionsProps {
   contentId: string
@@ -22,6 +23,7 @@ export function ContentCardActions({
   initialCommentsCount,
   isAuthenticated,
 }: ContentCardActionsProps) {
+  const t = useTranslations('contentUi')
   const [likesCount, setLikesCount] = useState(initialLikesCount)
   const [repostsCount, setRepostsCount] = useState(initialRepostsCount)
   const [isLiked, setIsLiked] = useState(false)
@@ -88,13 +90,13 @@ export function ContentCardActions({
       } else {
         await supabase.from('reposts').delete().eq('content_id', contentId).eq('user_id', user.id)
       }
-      toast.success(newIsReposted ? '已转发' : '已取消转发')
+      toast.success(newIsReposted ? t('reposted') : t('repostCancelled'))
       router.refresh()
     } catch (error) {
       setIsReposted(!newIsReposted)
       setRepostsCount(initialRepostsCount)
       console.error('Failed to toggle repost:', error)
-      toast.error('操作失败')
+      toast.error(t('actionFailed'))
     } finally {
       setIsRepostLoading(false)
     }

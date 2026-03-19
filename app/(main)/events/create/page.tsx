@@ -1,13 +1,22 @@
 import { requireAdmin } from '@/lib/middleware/admin'
 import { EventCreateForm } from '@/components/events/event-create-form'
 import { Calendar, MapPin } from 'lucide-react'
+import { getRequestLocale } from '@/i18n/request'
+import { getTranslation } from '@/i18n/dictionaries'
 
-export const metadata = {
-  title: '发起活动 - AI Dating',
+export async function generateMetadata() {
+  const locale = await getRequestLocale()
+
+  return {
+    title: getTranslation(locale, 'eventCreate.metadata.title', 'Create Event - AI-Dating'),
+    description: getTranslation(locale, 'eventCreate.metadata.description', 'Create official or offline events for the AI-Dating community.'),
+  }
 }
 
 export default async function CreateEventPage() {
   await requireAdmin()
+  const locale = await getRequestLocale()
+  const t = (key: string, fallback: string) => getTranslation(locale, `eventCreate.${key}`, fallback)
 
   return (
     <div className="min-h-screen bg-background">
@@ -19,9 +28,9 @@ export default async function CreateEventPage() {
               <Calendar className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold">发起活动</h1>
+              <h1 className="text-xl font-bold">{t('pageTitle', 'Create Event')}</h1>
               <p className="text-xs text-muted-foreground mt-0.5">
-                创建官方活动或线下活动
+                {t('pageDescription', 'Create official or offline events')}
               </p>
             </div>
           </div>
@@ -40,23 +49,23 @@ export default async function CreateEventPage() {
               <div className="rounded-lg border border-border bg-card overflow-hidden shadow-card">
                 <div className="h-1 gradient-primary" />
                 <div className="p-5">
-                  <h3 className="text-sm font-semibold mb-3">预览</h3>
+                  <h3 className="text-sm font-semibold mb-3">{t('previewTitle', 'Preview')}</h3>
                   <div className="space-y-3">
                     <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-                      <span className="text-xs text-muted-foreground">活动封面预览</span>
+                      <span className="text-xs text-muted-foreground">{t('previewCover', 'Event cover preview')}</span>
                     </div>
                     <div>
-                      <h4 className="text-sm font-semibold mb-1">活动标题</h4>
-                      <p className="text-xs text-muted-foreground">活动描述将显示在这里...</p>
+                      <h4 className="text-sm font-semibold mb-1">{t('previewEventTitle', 'Event title')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('previewDescription', 'Event description will appear here...')}</p>
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center gap-1.5 bg-primary/5 rounded-full px-2.5 py-1.5 text-xs w-fit">
                         <Calendar className="h-3 w-3 text-primary" />
-                        <span>活动时间</span>
+                        <span>{t('previewTime', 'Event time')}</span>
                       </div>
                       <div className="flex items-center gap-1.5 bg-warning/5 rounded-full px-2.5 py-1.5 text-xs w-fit">
                         <MapPin className="h-3 w-3 text-warning" />
-                        <span>活动地点</span>
+                        <span>{t('previewLocation', 'Event location')}</span>
                       </div>
                     </div>
                   </div>

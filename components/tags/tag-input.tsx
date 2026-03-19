@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { searchTags } from '@/lib/actions/tags'
 import type { Tag } from '@/lib/types/tag'
+import { useTranslations } from 'use-intl'
 
 interface TagInputProps {
   value: string[]
@@ -14,7 +15,8 @@ interface TagInputProps {
   maxTags?: number
 }
 
-export function TagInput({ value, onChange, placeholder = '添加标签...', maxTags = 5 }: TagInputProps) {
+export function TagInput({ value, onChange, placeholder, maxTags = 5 }: TagInputProps) {
+  const t = useTranslations('tagInput')
   const [inputValue, setInputValue] = useState('')
   const [suggestions, setSuggestions] = useState<Tag[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
@@ -86,7 +88,7 @@ export function TagInput({ value, onChange, placeholder = '添加标签...', max
               type="button"
               onClick={() => removeTag(tag)}
               className="ml-1 hover:text-destructive"
-              aria-label={`移除标签 ${tag}`}
+              aria-label={t('removeTag', { tag })}
             >
               <X className="h-3 w-3" />
             </button>
@@ -102,7 +104,7 @@ export function TagInput({ value, onChange, placeholder = '添加标签...', max
               onKeyDown={handleKeyDown}
               onFocus={() => inputValue && setShowSuggestions(true)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-              placeholder={value.length === 0 ? placeholder : ''}
+              placeholder={value.length === 0 ? (placeholder ?? t('placeholder')) : ''}
               className="border-0 p-0 h-auto focus-visible:ring-0 focus-visible:ring-offset-0"
             />
 
@@ -117,7 +119,7 @@ export function TagInput({ value, onChange, placeholder = '添加标签...', max
                     className="w-full px-3 py-2 text-left hover:bg-accent flex items-center justify-between"
                   >
                     <span>{tag.name}</span>
-                    <span className="text-xs text-muted-foreground">{tag.usage_count} 次使用</span>
+                    <span className="text-xs text-muted-foreground">{t('usageCount', { count: tag.usage_count })}</span>
                   </button>
                 ))}
               </div>
@@ -127,7 +129,7 @@ export function TagInput({ value, onChange, placeholder = '添加标签...', max
       </div>
 
       <p className="text-xs text-muted-foreground">
-        按 Enter 或逗号添加标签，最多 {maxTags} 个标签。已添加 {value.length}/{maxTags}
+        {t('countHint', { maxTags, current: value.length })}
       </p>
     </div>
   )

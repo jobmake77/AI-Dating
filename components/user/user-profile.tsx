@@ -6,7 +6,8 @@ import { SendMessageButton } from '@/components/user/send-message-button'
 import { Calendar, FileText, Heart, Github } from 'lucide-react'
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
-import { zhCN } from 'date-fns/locale'
+import { enUS, zhCN } from 'date-fns/locale'
+import { useLocale, useTranslations } from 'use-intl'
 
 interface UserProfileProps {
   user: {
@@ -31,6 +32,8 @@ interface UserProfileProps {
 }
 
 export function UserProfile({ user, isOwner, currentUserId, isFollowing = false, isAuthenticated, stats }: UserProfileProps) {
+  const t = useTranslations('userProfile')
+  const locale = useLocale()
   // 双重验证：确保 isOwner 为 true 且当前用户ID匹配
   const canEdit = isOwner && currentUserId === user.id
 
@@ -56,7 +59,7 @@ export function UserProfile({ user, isOwner, currentUserId, isFollowing = false,
               {canEdit ? (
                 <div className="flex items-center gap-2 flex-wrap">
                   <Button variant="outline" size="sm" asChild className="shadow-sm hover:shadow-md transition-shadow">
-                    <Link href="/settings">编辑资料</Link>
+                    <Link href="/settings">{t('edit')}</Link>
                   </Button>
                 </div>
               ) : (
@@ -86,13 +89,13 @@ export function UserProfile({ user, isOwner, currentUserId, isFollowing = false,
               <Link href={`/u/${user.username}/following`} className="group">
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-lg group-hover:text-primary transition-colors">{user.following_count || 0}</span>
-                  <span className="text-muted-foreground text-sm group-hover:text-primary transition-colors">关注</span>
+                  <span className="text-muted-foreground text-sm group-hover:text-primary transition-colors">{t('followingCount')}</span>
                 </div>
               </Link>
               <Link href={`/u/${user.username}/followers`} className="group">
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-lg group-hover:text-primary transition-colors">{user.followers_count || 0}</span>
-                  <span className="text-muted-foreground text-sm group-hover:text-primary transition-colors">粉丝</span>
+                  <span className="text-muted-foreground text-sm group-hover:text-primary transition-colors">{t('followers')}</span>
                 </div>
               </Link>
               {stats && (
@@ -100,12 +103,12 @@ export function UserProfile({ user, isOwner, currentUserId, isFollowing = false,
                   <div className="flex items-center gap-2 text-sm">
                     <FileText className="h-4 w-4 text-muted-foreground" />
                     <span className="font-bold text-lg">{stats.contents_count}</span>
-                    <span className="text-muted-foreground">内容</span>
+                    <span className="text-muted-foreground">{t('contents')}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <Heart className="h-4 w-4 text-muted-foreground" />
                     <span className="font-bold text-lg">{stats.total_likes}</span>
-                    <span className="text-muted-foreground">获赞</span>
+                    <span className="text-muted-foreground">{t('likes')}</span>
                   </div>
                 </>
               )}
@@ -127,7 +130,14 @@ export function UserProfile({ user, isOwner, currentUserId, isFollowing = false,
               {user.created_at && (
                 <div className="flex items-center gap-1.5">
                   <Calendar className="h-4 w-4" />
-                  <span>加入于 {formatDistanceToNow(new Date(user.created_at), { addSuffix: false, locale: zhCN })}前</span>
+                  <span>
+                    {t('joined')}{' '}
+                    {formatDistanceToNow(new Date(user.created_at), {
+                      addSuffix: false,
+                      locale: locale === 'en' ? enUS : zhCN,
+                    })}
+                    {t('agoSuffix')}
+                  </span>
                 </div>
               )}
             </div>

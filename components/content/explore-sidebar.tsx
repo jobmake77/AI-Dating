@@ -2,6 +2,7 @@
 
 import { Filter, Hash } from "lucide-react";
 import { getCategoryColor } from "@/lib/utils/categories";
+import { useTranslations } from "use-intl";
 
 interface ExploreSidebarProps {
   categories: Array<{
@@ -32,6 +33,7 @@ export function ExploreSidebar({
   onTagChange,
   isMobile = false,
 }: ExploreSidebarProps) {
+  const t = useTranslations('explorePage');
   return (
     <aside className={isMobile ? "w-full" : "hidden lg:block w-64 shrink-0"}>
       <div className={isMobile ? "space-y-3" : "sticky top-[60px] space-y-3"}>
@@ -39,7 +41,7 @@ export function ExploreSidebar({
         <div className="rounded-lg border border-border bg-card p-3 shadow-card">
           <h2 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2 px-2 flex items-center gap-1.5">
             <Filter className="h-3 w-3" />
-            类别
+            {t('categories')}
           </h2>
           <div className="space-y-0.5">
             <button
@@ -50,7 +52,7 @@ export function ExploreSidebar({
                   : "text-muted-foreground hover:bg-secondary hover:text-foreground"
               }`}
             >
-              全部类别
+              {t('allCategories')}
             </button>
             {categories.map((cat) => {
               const hsl = getCategoryColor(cat.slug);
@@ -91,7 +93,7 @@ export function ExploreSidebar({
         <div className="rounded-lg border border-border bg-card p-3 shadow-card">
           <h2 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2 px-2 flex items-center gap-1.5">
             <Hash className="h-3 w-3" />
-            标签
+            {t('tags')}
           </h2>
           <div className="space-y-0.5">
             {tags.map((tag) => (

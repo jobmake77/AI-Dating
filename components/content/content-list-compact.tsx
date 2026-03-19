@@ -2,20 +2,24 @@ import { CompactContentCard } from './compact-content-card'
 import { EmptyState } from '@/components/empty-state'
 import { FileText } from 'lucide-react'
 import type { ContentListItem } from '@/lib/types/content'
+import { getRequestLocale } from '@/i18n/request'
+import { getTranslation } from '@/i18n/dictionaries'
 
 interface ContentListCompactProps {
   contents: ContentListItem[]
   isAuthenticated?: boolean
 }
 
-export function ContentListCompact({ contents }: ContentListCompactProps) {
+export async function ContentListCompact({ contents }: ContentListCompactProps) {
+  const locale = await getRequestLocale()
+  const t = (key: string, fallback: string) => getTranslation(locale, `contentUi.${key}`, fallback)
   if (contents.length === 0) {
     return (
       <div className="p-8">
         <EmptyState
           icon={FileText}
-          title="暂无内容"
-          description="成为第一个分享内容的人"
+          title={t('emptyTitle', '暂无内容')}
+          description={t('emptyDescription', '成为第一个分享内容的人')}
         />
       </div>
     )

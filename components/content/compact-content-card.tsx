@@ -4,9 +4,10 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Heart, MessageCircle, Eye, Flame, Pin } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { zhCN } from "date-fns/locale";
+import { enUS, zhCN } from "date-fns/locale";
 import { getCategoryColor } from "@/lib/utils/categories";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useLocale, useTranslations } from "use-intl";
 
 interface CompactContentCardProps {
   content: {
@@ -53,8 +54,10 @@ const tagColors: Record<string, string> = {
 };
 
 export function CompactContentCard({ content, index = 0, compact = false }: CompactContentCardProps) {
+  const t = useTranslations('contentUi');
+  const locale = useLocale();
   const catColorHsl = content.category_color || (content.category ? getCategoryColor(content.category) : "221 83% 53%");
-  const primaryTag = content.tags?.[0] || "讨论";
+  const primaryTag = content.tags?.[0] || t('defaultTag');
   const tagColor = tagColors[primaryTag] || "bg-tag text-tag-foreground";
   const contentHref = content.href || `/post/${content.id}`;
 
@@ -115,7 +118,7 @@ export function CompactContentCard({ content, index = 0, compact = false }: Comp
                 href={`/communities/${content.community.slug}`}
                 className="rounded px-1.5 py-0.5 text-[10px] font-medium text-info bg-info/10 hover:bg-info/15"
               >
-                社区 · {content.community.name}
+                {t('communityPrefix')} · {content.community.name}
               </Link>
             )}
             <Avatar className="h-4 w-4">
@@ -134,7 +137,7 @@ export function CompactContentCard({ content, index = 0, compact = false }: Comp
             <span>
               {formatDistanceToNow(new Date(content.created_at), {
                 addSuffix: true,
-                locale: zhCN,
+                locale: locale === 'en' ? enUS : zhCN,
               })}
             </span>
             {content.is_hot && (
@@ -158,7 +161,7 @@ export function CompactContentCard({ content, index = 0, compact = false }: Comp
           <div className="flex flex-col items-center w-12">
             <span className="font-mono font-bold text-foreground">{content.comments_count}</span>
             <span className="text-[10px] flex items-center gap-0.5">
-              <MessageCircle className="h-2.5 w-2.5" /> 回复
+              <MessageCircle className="h-2.5 w-2.5" /> {t('replies')}
             </span>
           </div>
           <div className="flex flex-col items-center w-12">
@@ -166,17 +169,17 @@ export function CompactContentCard({ content, index = 0, compact = false }: Comp
               {formatCount(content.view_count)}
             </span>
             <span className="text-[10px] flex items-center gap-0.5">
-              <Eye className="h-2.5 w-2.5" /> 浏览
+              <Eye className="h-2.5 w-2.5" /> {t('views')}
             </span>
           </div>
           <div className="flex flex-col items-center w-12">
             <span className="font-mono text-[10px] text-muted-foreground">
               {formatDistanceToNow(new Date(content.created_at), {
                 addSuffix: false,
-                locale: zhCN,
-              }).replace("大约 ", "")}
+                locale: locale === 'en' ? enUS : zhCN,
+              }).replace(locale === 'en' ? "about " : "大约 ", "")}
             </span>
-            <span className="text-[10px]">活动</span>
+            <span className="text-[10px]">{t('activity')}</span>
           </div>
         </div>
       </div>

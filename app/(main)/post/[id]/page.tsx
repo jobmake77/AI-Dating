@@ -15,6 +15,8 @@ import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { getArticleSchema, getBreadcrumbSchema } from '@/lib/seo/structured-data'
+import { getRequestLocale } from '@/i18n/request'
+import { getTranslation } from '@/i18n/dictionaries'
 
 interface PostPageProps {
   params: Promise<{ id: string }>
@@ -83,6 +85,8 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 
 export default async function PostPage({ params, searchParams }: PostPageProps) {
   const { id } = await params
+  const locale = await getRequestLocale()
+  const t = (key: string, fallback: string) => getTranslation(locale, `postPage.${key}`, fallback)
   await searchParams
 
   const content = await getContentById(id)
@@ -122,8 +126,8 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
   })
 
   const breadcrumbSchema = getBreadcrumbSchema([
-    { name: '首页', url: '/' },
-    { name: '内容', url: '/contents' },
+    { name: t('home', '首页'), url: '/' },
+    { name: t('contents', '内容'), url: '/contents' },
     { name: content.title, url: `/post/${content.id}` },
   ])
 
@@ -146,24 +150,22 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
           className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary mb-4 transition-colors"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          返回首页
+          {t('backHome', '返回首页')}
         </Link>
 
-        {/* 待审核提示 */}
         {content.status === 'pending' && (
           <Alert className="mb-4">
             <Clock className="h-4 w-4" />
-            <AlertTitle>内容待审核</AlertTitle>
-            <AlertDescription>你的内容已提交，正在等待管理员审核。审核通过后将自动发布。</AlertDescription>
+            <AlertTitle>{t('pendingTitle', '内容待审核')}</AlertTitle>
+            <AlertDescription>{t('pendingDescription', '你的内容已提交，正在等待管理员审核。审核通过后将自动发布。')}</AlertDescription>
           </Alert>
         )}
 
-        {/* 拒绝提示 */}
         {content.status === 'rejected' && (
           <Alert variant="destructive" className="mb-4">
             <XCircle className="h-4 w-4" />
-            <AlertTitle>内容未通过审核</AlertTitle>
-            <AlertDescription>{content.reject_reason || '你的内容未通过审核，请修改后重新提交。'}</AlertDescription>
+            <AlertTitle>{t('rejectedTitle', '内容未通过审核')}</AlertTitle>
+            <AlertDescription>{content.reject_reason || t('rejectedDescription', '你的内容未通过审核，请修改后重新提交。')}</AlertDescription>
           </Alert>
         )}
 

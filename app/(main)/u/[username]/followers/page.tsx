@@ -7,6 +7,8 @@ import { FollowButton } from '@/components/user/follow-button'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, Users } from 'lucide-react'
+import { getRequestLocale } from '@/i18n/request'
+import { getTranslation } from '@/i18n/dictionaries'
 
 interface FollowersPageProps {
   params: Promise<{ username: string }>
@@ -15,6 +17,8 @@ interface FollowersPageProps {
 type FollowerRecord = Awaited<ReturnType<typeof getFollowers>>[number]
 
 export default async function FollowersPage({ params }: FollowersPageProps) {
+  const locale = await getRequestLocale()
+  const t = (key: string, fallback: string) => getTranslation(locale, `userRelations.${key}`, fallback)
   const { username } = await params
 
   const user = await getUserByUsername(username)
@@ -47,7 +51,7 @@ export default async function FollowersPage({ params }: FollowersPageProps) {
           className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary mb-4 transition-colors"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          返回个人主页
+          {t('backProfile', 'Back to profile')}
         </Link>
 
         {/* User Header */}
@@ -79,13 +83,13 @@ export default async function FollowersPage({ params }: FollowersPageProps) {
             href={`/u/${username}/followers`}
             className="flex-1 px-4 py-2 rounded-md text-xs font-medium transition-all gradient-primary text-white shadow-sm text-center"
           >
-            关注者
+            {t('followers', 'Followers')}
           </Link>
           <Link
             href={`/u/${username}/following`}
             className="flex-1 px-4 py-2 rounded-md text-xs font-medium transition-all text-muted-foreground hover:text-foreground hover:bg-secondary text-center"
           >
-            关注中
+            {t('following', 'Following')}
           </Link>
         </div>
 
@@ -93,7 +97,7 @@ export default async function FollowersPage({ params }: FollowersPageProps) {
         {followersWithStatus.length === 0 ? (
           <div className="rounded-lg border border-border bg-card p-10 text-center shadow-card">
             <Users className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
-            <p className="text-xs text-muted-foreground">还没有粉丝</p>
+            <p className="text-xs text-muted-foreground">{t('emptyFollowers', 'No followers yet')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">

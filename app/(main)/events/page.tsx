@@ -9,32 +9,38 @@ import { Metadata } from 'next'
 import { getRequestLocale } from '@/i18n/request'
 import { getTranslation } from '@/i18n/dictionaries'
 
-export const metadata: Metadata = {
-  title: '活动 - AI-Dating',
-  description: '发现和参与 AI 开发者线下活动。技术分享、项目展示、社交聚会，与开发者面对面交流。',
-  keywords: ['活动', 'AI', '线下活动', '技术分享', '开发者聚会'],
-  openGraph: {
-    type: 'website',
-    locale: 'zh_CN',
-    url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/events`,
-    title: '活动 - AI-Dating',
-    description: '发现和参与 AI 开发者线下活动',
-    siteName: 'AI-Dating',
-    images: [
-      {
-        url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/og?type=home`,
-        width: 1200,
-        height: 630,
-        alt: '活动',
-      },
-    ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: '活动 - AI-Dating',
-    description: '发现和参与 AI 开发者线下活动',
-    images: [`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/og?type=home`],
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale()
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+  const title = getTranslation(locale, 'eventsPage.metadata.title', 'Events - AI-Dating')
+  const description = getTranslation(locale, 'eventsPage.metadata.description', 'Discover and join AI community events.')
+
+  return {
+    title,
+    description,
+    openGraph: {
+      type: 'website',
+      locale: locale === 'en' ? 'en_US' : 'zh_CN',
+      url: `${baseUrl}/events`,
+      title,
+      description,
+      siteName: 'AI-Dating',
+      images: [
+        {
+          url: `${baseUrl}/api/og?type=home`,
+          width: 1200,
+          height: 630,
+          alt: getTranslation(locale, 'eventsPage.metadata.imageAlt', 'Events'),
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [`${baseUrl}/api/og?type=home`],
+    },
+  }
 }
 
 async function EventsList() {

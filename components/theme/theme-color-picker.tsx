@@ -9,16 +9,18 @@ import React from 'react'
 import { useTheme } from './theme-provider'
 import { ThemeColor, THEME_COLORS } from '@/types/theme'
 import { Label } from '@/components/ui/label'
+import { useTranslations } from 'use-intl'
 
 export function ThemeColorPicker() {
+  const t = useTranslations('theme')
   const { preferences, setColor } = useTheme()
 
   return (
     <div className="space-y-4">
       <div>
-        <Label htmlFor="theme-color">主题颜色</Label>
+        <Label htmlFor="theme-color">{t('color')}</Label>
         <p className="text-sm text-muted-foreground mt-1">
-          选择你喜欢的主题颜色
+          {t('colorDescription')}
         </p>
       </div>
 
@@ -36,7 +38,7 @@ export function ThemeColorPicker() {
                 border-2 transition-all hover:scale-105
                 ${isSelected ? 'border-primary' : 'border-border'}
               `}
-              aria-label={`选择${name}主题`}
+              aria-label={t('selectColor', { name })}
               aria-pressed={isSelected}
             >
               <div

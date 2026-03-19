@@ -7,6 +7,7 @@ import { AgentTab } from '@/components/user/agent-tab'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { FileText, Heart, Repeat2, Bot } from 'lucide-react'
 import type { PaginatedContentItems } from '@/lib/types/content'
+import { useTranslations } from 'use-intl'
 
 type UserAgent = {
   id: string
@@ -29,6 +30,7 @@ interface UserContentTabsProps {
 }
 
 export function UserContentTabs({ username, isOwner, agents = [], contents }: UserContentTabsProps) {
+  const t = useTranslations('userContentTabs')
   const router = useRouter()
   const searchParams = useSearchParams()
   const currentTab = searchParams.get('tab') || 'published'
@@ -45,20 +47,20 @@ export function UserContentTabs({ username, isOwner, agents = [], contents }: Us
       <TabsList className={`grid w-full ${isOwner ? 'grid-cols-4' : 'grid-cols-3'}`}>
         <TabsTrigger value="published" className="flex items-center gap-2">
           <FileText className="h-4 w-4" />
-          <span>内容</span>
+          <span>{t('published')}</span>
         </TabsTrigger>
         <TabsTrigger value="liked" className="flex items-center gap-2">
           <Heart className="h-4 w-4" />
-          <span>点赞</span>
+          <span>{t('liked')}</span>
         </TabsTrigger>
         <TabsTrigger value="reposted" className="flex items-center gap-2">
           <Repeat2 className="h-4 w-4" />
-          <span>转发</span>
+          <span>{t('reposted')}</span>
         </TabsTrigger>
         {isOwner && (
           <TabsTrigger value="agents" className="flex items-center gap-2">
             <Bot className="h-4 w-4" />
-            <span>Agent</span>
+            <span>{t('agents')}</span>
           </TabsTrigger>
         )}
       </TabsList>
@@ -78,7 +80,7 @@ export function UserContentTabs({ username, isOwner, agents = [], contents }: Us
         ) : (
           <div className="text-center py-12 text-muted-foreground">
             <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>还没有发布任何内容</p>
+            <p>{t('emptyPublished')}</p>
           </div>
         )}
       </TabsContent>
@@ -98,7 +100,7 @@ export function UserContentTabs({ username, isOwner, agents = [], contents }: Us
         ) : (
           <div className="text-center py-12 text-muted-foreground">
             <Heart className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>还没有点赞任何内容</p>
+            <p>{t('emptyLiked')}</p>
           </div>
         )}
       </TabsContent>
@@ -118,7 +120,7 @@ export function UserContentTabs({ username, isOwner, agents = [], contents }: Us
         ) : (
           <div className="text-center py-12 text-muted-foreground">
             <Repeat2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>还没有转发任何内容</p>
+            <p>{t('emptyReposted')}</p>
           </div>
         )}
       </TabsContent>

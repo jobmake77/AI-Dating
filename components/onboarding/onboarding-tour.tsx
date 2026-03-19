@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dialog'
 import { onboardingSteps, onboardingStyles } from '@/lib/config/onboarding-steps'
 import { useHydrated } from '@/lib/hooks/use-hydrated'
+import { useTranslations } from 'use-intl'
 
 interface OnboardingTourProps {
   run: boolean
@@ -22,6 +23,7 @@ interface OnboardingTourProps {
 const HIGHLIGHT_STYLE = '0 0 0 4px hsl(var(--primary) / 0.35), 0 0 0 9999px rgba(0, 0, 0, 0.45)'
 
 export function OnboardingTour({ run, onComplete, onSkip }: OnboardingTourProps) {
+  const t = useTranslations('onboardingTour')
   const mounted = useHydrated()
   const [stepIndex, setStepIndex] = useState(0)
 
@@ -102,14 +104,14 @@ export function OnboardingTour({ run, onComplete, onSkip }: OnboardingTourProps)
 
         <DialogFooter className="items-center justify-between gap-2 sm:justify-between">
           <Button type="button" variant="ghost" onClick={handleSkip}>
-            跳过引导
+            {t('skip')}
           </Button>
           <div className="flex items-center gap-2">
             <Button type="button" variant="outline" onClick={handleBack} disabled={stepIndex === 0}>
-              上一步
+              {t('back')}
             </Button>
             <Button type="button" onClick={handleNext}>
-              {isLastStep ? '完成' : '下一步'}
+              {isLastStep ? t('finish') : t('next')}
             </Button>
           </div>
         </DialogFooter>

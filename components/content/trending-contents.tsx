@@ -3,8 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { getRequestLocale } from '@/i18n/request'
+import { getTranslation } from '@/i18n/dictionaries'
 
 export async function TrendingContents() {
+  const locale = await getRequestLocale()
+  const t = (key: string, fallback: string) => getTranslation(locale, `trendingContents.${key}`, fallback)
   const trendingContents = await getTrendingContents({ limit: 5, timeRange: 'week' })
 
   if (trendingContents.length === 0) {
@@ -16,7 +20,7 @@ export async function TrendingContents() {
       <CardHeader className="pb-3">
         <Link href="/trending" className="hover:text-primary transition-colors">
           <CardTitle className="text-base">
-            热门内容
+            {t('title', '热门内容')}
           </CardTitle>
         </Link>
       </CardHeader>
@@ -49,7 +53,7 @@ export async function TrendingContents() {
                   </span>
                   <span className="text-xs text-muted-foreground">·</span>
                   <span className="text-xs text-muted-foreground">
-                    {content.likes_count} 赞
+                    {content.likes_count} {t('likes', '赞')}
                   </span>
                 </div>
               </div>
@@ -61,7 +65,7 @@ export async function TrendingContents() {
           href="/trending"
           className="flex items-center justify-center gap-1.5 text-sm text-primary hover:text-primary/80 transition-colors pt-2 border-t"
         >
-          <span>查看完整排行榜</span>
+          <span>{t('viewFull', '查看完整排行榜')}</span>
           <ArrowRight className="h-4 w-4" />
         </Link>
       </CardContent>

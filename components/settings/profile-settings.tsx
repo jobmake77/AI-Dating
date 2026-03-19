@@ -8,6 +8,7 @@ import { updateUserProfile } from '@/lib/actions/user'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { AvatarUpload } from '@/components/user/avatar-upload'
+import { useTranslations } from 'use-intl'
 
 interface ProfileSettingsProps {
   user: {
@@ -21,6 +22,7 @@ interface ProfileSettingsProps {
 }
 
 export function ProfileSettings({ user }: ProfileSettingsProps) {
+  const t = useTranslations('userSettings')
   const [fullName, setFullName] = useState(user.full_name || '')
   const [bio, setBio] = useState(user.bio || '')
   const [avatar, setAvatar] = useState(user.avatar || '')
@@ -38,11 +40,11 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
         avatar,
       })
 
-      toast.success('资料已更新')
+      toast.success(t('updated'))
       router.refresh()
     } catch (error) {
       console.error('Failed to update profile:', error)
-      toast.error('更新失败')
+      toast.error(t('updateFailed'))
     } finally {
       setIsSubmitting(false)
     }
@@ -50,7 +52,7 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
 
   return (
     <div className="rounded-lg border border-border bg-card p-6 shadow-sm space-y-5">
-      <h2 className="text-sm font-bold text-foreground">个人资料</h2>
+      <h2 className="text-sm font-bold text-foreground">{t('title')}</h2>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <AvatarUpload
@@ -61,7 +63,7 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
         <div className="space-y-4">
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-              用户名
+              {t('username')}
             </label>
             <Input
               value={user.username}
@@ -69,18 +71,18 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
               className="h-10 text-sm bg-secondary/60 border-none"
             />
             <p className="text-[10px] text-muted-foreground mt-1">
-              用户名不可修改
+              {t('usernameHint')}
             </p>
           </div>
 
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-              显示名称
+              {t('fullName')}
             </label>
             <Input
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              placeholder="你的名字"
+              placeholder={t('fullNamePlaceholder')}
               maxLength={50}
               className="h-10 text-sm bg-secondary/60 border-none focus:ring-2 focus:ring-primary/20"
             />
@@ -88,12 +90,12 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
 
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-              简介
+              {t('bio')}
             </label>
             <Textarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              placeholder="介绍一下你自己..."
+              placeholder={t('bioPlaceholder')}
               maxLength={200}
               className="text-sm bg-secondary/60 border-none resize-none min-h-[80px] focus:ring-2 focus:ring-primary/20"
             />
@@ -110,7 +112,7 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
             size="sm"
             className="h-9 bg-gradient-to-r from-primary to-primary/80 text-white hover:opacity-90 text-xs shadow-lg"
           >
-            {isSubmitting ? '保存中...' : '保存修改'}
+            {isSubmitting ? t('saving') : t('save')}
           </Button>
         </div>
       </form>

@@ -9,32 +9,42 @@ import type { CommunityListItem, CommunityMembershipRecord } from '@/lib/types/c
 import { getRequestLocale } from '@/i18n/request'
 import { getTranslation } from '@/i18n/dictionaries'
 
-export const metadata: Metadata = {
-  title: '社区 - AI-Dating',
-  description: '发现和加入感兴趣的 AI 开发者社区。与志同道合的开发者交流学习，分享项目经验。',
-  keywords: ['社区', 'AI', '开发者', '技术交流', '项目分享'],
-  openGraph: {
-    type: 'website',
-    locale: 'zh_CN',
-    url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/communities`,
-    title: '社区 - AI-Dating',
-    description: '发现和加入感兴趣的 AI 开发者社区',
-    siteName: 'AI-Dating',
-    images: [
-      {
-        url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/og?type=home`,
-        width: 1200,
-        height: 630,
-        alt: '社区',
-      },
-    ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: '社区 - AI-Dating',
-    description: '发现和加入感兴趣的 AI 开发者社区',
-    images: [`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/og?type=home`],
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale()
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+  const title = getTranslation(locale, 'communitiesPage.metadata.title', 'Communities - AI-Dating')
+  const description = getTranslation(
+    locale,
+    'communitiesPage.metadata.description',
+    'Discover and join AI communities that match your interests.'
+  )
+
+  return {
+    title,
+    description,
+    openGraph: {
+      type: 'website',
+      locale: locale === 'en' ? 'en_US' : 'zh_CN',
+      url: `${baseUrl}/communities`,
+      title,
+      description,
+      siteName: 'AI-Dating',
+      images: [
+        {
+          url: `${baseUrl}/api/og?type=home`,
+          width: 1200,
+          height: 630,
+          alt: getTranslation(locale, 'communitiesPage.metadata.imageAlt', 'Communities'),
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [`${baseUrl}/api/og?type=home`],
+    },
+  }
 }
 
 function isCommunityListItem(

@@ -2,41 +2,10 @@
 
 import { useState } from 'react'
 import { Switch } from '@/components/ui/switch'
-
-const notificationOptions = [
-  {
-    id: 'likes',
-    label: '有人赞了你的帖子',
-    desc: '包括帖子和评论的点赞',
-    color: 'bg-destructive'
-  },
-  {
-    id: 'comments',
-    label: '有人评论了你的帖子',
-    desc: '包括回复你的评论',
-    color: 'bg-blue-500'
-  },
-  {
-    id: 'follows',
-    label: '有人关注了你',
-    desc: '新粉丝通知',
-    color: 'bg-purple-500'
-  },
-  {
-    id: 'messages',
-    label: '私信通知',
-    desc: '收到新的私信时通知',
-    color: 'bg-primary'
-  },
-  {
-    id: 'community',
-    label: '社区动态',
-    desc: '你加入的社区有新活动',
-    color: 'bg-green-500'
-  },
-]
+import { useTranslations } from 'use-intl'
 
 export function NotificationSettings() {
+  const t = useTranslations('settingsNotifications')
   const [notifications, setNotifications] = useState<Record<string, boolean>>({
     likes: true,
     comments: true,
@@ -51,10 +20,42 @@ export function NotificationSettings() {
       [id]: !prev[id]
     }))
   }
+  const notificationOptions = [
+    {
+      id: 'likes',
+      label: t('likesLabel'),
+      desc: t('likesDesc'),
+      color: 'bg-destructive'
+    },
+    {
+      id: 'comments',
+      label: t('commentsLabel'),
+      desc: t('commentsDesc'),
+      color: 'bg-blue-500'
+    },
+    {
+      id: 'follows',
+      label: t('followsLabel'),
+      desc: t('followsDesc'),
+      color: 'bg-purple-500'
+    },
+    {
+      id: 'messages',
+      label: t('messagesLabel'),
+      desc: t('messagesDesc'),
+      color: 'bg-primary'
+    },
+    {
+      id: 'community',
+      label: t('communityLabel'),
+      desc: t('communityDesc'),
+      color: 'bg-green-500'
+    },
+  ]
 
   return (
     <div className="rounded-lg border border-border bg-card p-6 shadow-sm space-y-5">
-      <h2 className="text-sm font-bold text-foreground">通知设置</h2>
+      <h2 className="text-sm font-bold text-foreground">{t('title')}</h2>
       <div className="space-y-1">
         {notificationOptions.map((item) => (
           <div

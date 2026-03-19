@@ -1,20 +1,21 @@
-"use client";
+'use client'
 
-import { ArrowUpRight, TrendingUp, Users } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import type { HomepageCommunityItem, HomepageTagItem } from "@/lib/queries/home";
+import { ArrowUpRight, TrendingUp, Users } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
+import type { HomepageCommunityItem, HomepageTagItem } from '@/lib/queries/home'
+import { useTranslations } from 'use-intl'
 
 interface CommunitySidebarProps {
   communityInfo: {
-    name: string;
-    icon: string;
-    description: string;
-    members: number;
-    contents: number;
-  };
-  trendingTags: HomepageTagItem[];
-  activeCommunities: HomepageCommunityItem[];
+    name: string
+    icon: string
+    description: string
+    members: number
+    contents: number
+  }
+  trendingTags: HomepageTagItem[]
+  activeCommunities: HomepageCommunityItem[]
 }
 
 export function CommunitySidebar({
@@ -22,12 +23,13 @@ export function CommunitySidebar({
   trendingTags,
   activeCommunities,
 }: CommunitySidebarProps) {
+  const t = useTranslations('homeCommunitySidebar')
   return (
     <aside className="hidden xl:block w-80 shrink-0">
       <div className="sticky top-[76px] space-y-5 border-l border-border pl-5">
         <section>
           <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-            活跃社区
+            {t('activeTitle')}
           </h3>
 
           <div className="rounded-2xl border border-border bg-card/60">
@@ -37,7 +39,7 @@ export function CommunitySidebar({
               </span>
               <div>
                 <h2 className="text-base font-semibold tracking-[-0.03em] text-foreground">{communityInfo.name}</h2>
-                <p className="text-[11px] text-muted-foreground">按成员与内容活跃度排序</p>
+                <p className="text-[11px] text-muted-foreground">{t('activeHint')}</p>
               </div>
             </div>
 
@@ -47,7 +49,7 @@ export function CommunitySidebar({
                   {formatCompactCount(communityInfo.members)}
                 </span>
                 <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                  <Users className="h-3 w-3" /> 开发者
+                  <Users className="h-3 w-3" /> {t('membersLabel')}
                 </span>
               </div>
               <div className="border-l border-border pl-4">
@@ -55,7 +57,7 @@ export function CommunitySidebar({
                   {formatCompactCount(communityInfo.contents)}
                 </span>
                 <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                  <span className="h-1.5 w-1.5 rounded-full bg-success" /> 已发布内容
+                  <span className="h-1.5 w-1.5 rounded-full bg-success" /> {t('contentsLabel')}
                 </span>
               </div>
             </div>
@@ -72,7 +74,7 @@ export function CommunitySidebar({
                       {community.name}
                     </span>
                     <span className="text-[11px] text-muted-foreground">
-                      {community.posts_count} 篇内容 · {community.members_count} 位成员
+                      {t('communityMeta', { posts: community.posts_count, members: community.members_count })}
                     </span>
                   </div>
                   <span className="pt-0.5 font-mono text-[11px] text-muted-foreground">{community.members_count}</span>
@@ -83,7 +85,7 @@ export function CommunitySidebar({
             <div className="border-t border-border p-4">
               <Button asChild className="h-9 w-full rounded-full">
                 <Link href="/communities">
-                  进入社区广场
+                  {t('browseCommunities')}
                   <ArrowUpRight className="h-4 w-4" />
                 </Link>
               </Button>
@@ -94,7 +96,7 @@ export function CommunitySidebar({
         <section className="border-t border-border pt-4">
           <h3 className="mb-3 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
             <TrendingUp className="h-3.5 w-3.5 text-warning" />
-            热门标签
+            {t('trendingTags')}
           </h3>
           <div className="divide-y divide-border">
             {trendingTags.map((tag, i) => (
@@ -128,7 +130,7 @@ export function CommunitySidebar({
         </section>
       </div>
     </aside>
-  );
+  )
 }
 
 function formatCompactCount(value: number) {

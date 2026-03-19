@@ -8,7 +8,8 @@ import { SendMessageButton } from '@/components/user/send-message-button'
 import { Calendar, FileText, Heart, Users, Award } from 'lucide-react'
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
-import { zhCN } from 'date-fns/locale'
+import { enUS, zhCN } from 'date-fns/locale'
+import { useLocale, useTranslations } from 'use-intl'
 
 interface UserProfileCardProps {
   user: {
@@ -39,33 +40,35 @@ export function UserProfileCard({
   isAuthenticated,
   stats,
 }: UserProfileCardProps) {
+  const t = useTranslations('userProfile')
+  const locale = useLocale()
   const canEdit = isOwner && currentUserId === user.id
 
   const statItems = [
     {
       icon: Award,
-      label: 'Karma',
+      label: t('karma'),
       value: (stats?.total_likes || 0).toLocaleString(),
       color: 'text-warning',
       bg: 'bg-warning/10',
     },
     {
       icon: FileText,
-      label: '内容',
+      label: t('contents'),
       value: (stats?.contents_count || 0).toString(),
       color: 'text-primary',
       bg: 'bg-primary/10',
     },
     {
       icon: Heart,
-      label: '获赞',
+      label: t('likes'),
       value: (stats?.total_likes || 0).toString(),
       color: 'text-info',
       bg: 'bg-info/10',
     },
     {
       icon: Users,
-      label: '粉丝',
+      label: t('followers'),
       value: (user.followers_count || 0).toString(),
       color: 'text-accent',
       bg: 'bg-accent/10',
@@ -103,7 +106,7 @@ export function UserProfileCard({
               {canEdit ? (
                 <div className="flex items-center gap-2">
                   <Button variant="outline" size="sm" asChild className="h-8 text-xs">
-                    <Link href="/settings">编辑</Link>
+                    <Link href="/settings">{t('edit')}</Link>
                   </Button>
                 </div>
               ) : (
@@ -140,17 +143,17 @@ export function UserProfileCard({
           {user.created_at && (
             <span className="flex items-center gap-1">
               <Calendar className="h-3.5 w-3.5" />
-              加入于{' '}
+              {t('joined')}{' '}
               {formatDistanceToNow(new Date(user.created_at), {
                 addSuffix: false,
-                locale: zhCN,
+                locale: locale === 'en' ? enUS : zhCN,
               })}
-              前
+              {t('agoSuffix')}
             </span>
           )}
           <Link href={`/u/${user.username}/following`} className="flex items-center gap-1 hover:text-primary transition-colors">
             <Users className="h-3.5 w-3.5" />
-            <strong className="text-foreground">{user.following_count || 0}</strong> 关注中
+            <strong className="text-foreground">{user.following_count || 0}</strong> {t('following')}
           </Link>
         </div>
       </div>

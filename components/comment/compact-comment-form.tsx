@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Send } from "lucide-react";
 import { createComment } from "@/lib/actions/comments";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "use-intl";
 
 interface CompactCommentFormProps {
   contentId: string;
@@ -13,6 +14,7 @@ interface CompactCommentFormProps {
 }
 
 export function CompactCommentForm({ contentId, isAuthenticated }: CompactCommentFormProps) {
+  const t = useTranslations("commentUi");
   const [commentText, setCommentText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -21,9 +23,9 @@ export function CompactCommentForm({ contentId, isAuthenticated }: CompactCommen
   if (!isAuthenticated) {
     return (
       <div className="rounded-lg border border-border bg-card p-4 shadow-card text-center">
-        <p className="text-sm text-muted-foreground mb-3">登录后才能发表评论</p>
+        <p className="text-sm text-muted-foreground mb-3">{t("loginRequired")}</p>
         <Button size="sm" onClick={() => router.push("/login")}>
-          登录
+          {t("login")}
         </Button>
       </div>
     );
@@ -31,12 +33,12 @@ export function CompactCommentForm({ contentId, isAuthenticated }: CompactCommen
 
   const handleSubmit = async () => {
     if (!commentText.trim()) {
-      setError("评论内容不能为空");
+      setError(t("emptyError"));
       return;
     }
 
     if (commentText.length > 1000) {
-      setError("评论内容不能超过 1000 字符");
+      setError(t("tooLongError"));
       return;
     }
 
@@ -48,7 +50,7 @@ export function CompactCommentForm({ contentId, isAuthenticated }: CompactCommen
       setCommentText("");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "发表评论失败");
+      setError(err instanceof Error ? err.message : t("submitFailed"));
     } finally {
       setIsSubmitting(false);
     }
@@ -56,9 +58,9 @@ export function CompactCommentForm({ contentId, isAuthenticated }: CompactCommen
 
   return (
     <div className="rounded-lg border border-border bg-card p-4 shadow-card">
-      <h3 className="text-xs font-bold text-foreground mb-2">发表评论</h3>
+      <h3 className="text-xs font-bold text-foreground mb-2">{t("title")}</h3>
       <Textarea
-        placeholder="写下你的想法..."
+        placeholder={t("placeholder")}
         value={commentText}
         onChange={(e) => setCommentText(e.target.value)}
         className="min-h-[80px] resize-none text-sm bg-secondary/60 border-none"
@@ -76,10 +78,9 @@ export function CompactCommentForm({ contentId, isAuthenticated }: CompactCommen
           className="h-8 gap-1.5 gradient-primary text-white hover:opacity-90 text-xs shadow-primary"
         >
           <Send className="h-3 w-3" />
-          发表评论
+          {t("submit")}
         </Button>
       </div>
     </div>
   );
 }
-

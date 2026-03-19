@@ -24,6 +24,11 @@
     "close": "Close",
     "viewAll": "View all"
   },
+  "rootMetadata": {
+    "title": "AI-Dating - The AI developer community",
+    "description": "A Date with AI: a community for AI developers and creators to share code deep dives, practical workshops, architecture ideas, frontier AI, and interview experience.",
+    "imageAlt": "AI-Dating - The AI developer community"
+  },
   "nav": {
     "home": "Home",
     "feed": "Feed",
@@ -47,12 +52,16 @@
     "light": "Light",
     "dark": "Dark",
     "system": "System",
+    "toggle": "Toggle theme",
     "color": "Theme Color",
     "fontSize": "Font Size",
     "fontSizeSmall": "Small",
     "fontSizeMedium": "Medium",
     "fontSizeLarge": "Large",
+    "selectColor": "Select {name} theme",
+    "setFontSize": "Set font size to {label}",
     "highContrast": "High Contrast Mode",
+    "toggleHighContrast": "Toggle high contrast mode",
     "highContrastDescription": "Enhance color contrast for better readability (WCAG AAA compliant)",
     "colorDescription": "Choose your preferred theme color",
     "fontSizeDescription": "Adjust global font size for better readability"
@@ -61,12 +70,44 @@
     "skipToContent": "Skip to main content",
     "keyboardShortcuts": "Keyboard Shortcuts",
     "keyboardShortcutsDescription": "Use these shortcuts to navigate and interact more efficiently",
-    "keyboardShortcutsTip": "Press ? to open this help panel anytime",
+    "keyboardShortcutsTip": "Press {key} to open this help panel anytime",
+    "tipLabel": "Tip:",
     "categories": {
       "navigation": "Navigation",
       "actions": "Actions",
       "ui": "UI"
     }
+  },
+  "offlineIndicator": {
+    "offline": "You are offline. Please check your network connection.",
+    "reconnected": "Connection restored"
+  },
+  "onboardingProgress": {
+    "title": "Welcome to the AI-Dating developer community",
+    "description": "Complete these steps to get familiar with the community faster",
+    "restart": "Restart tour",
+    "progress": "Progress",
+    "go": "Go",
+    "steps": {
+      "profile": {
+        "title": "Complete your profile",
+        "description": "Help other developers get to know you"
+      },
+      "post": {
+        "title": "Publish your first post",
+        "description": "Share your technical insights"
+      },
+      "explore": {
+        "title": "Explore the community",
+        "description": "Discover high-quality technical content"
+      }
+    }
+  },
+  "onboardingTour": {
+    "skip": "Skip tour",
+    "back": "Back",
+    "next": "Next",
+    "finish": "Finish"
   },
   "settings": {
     "title": "Settings",
@@ -76,6 +117,90 @@
     "notifications": "Notifications",
     "privacy": "Privacy",
     "security": "Security"
+  },
+  "settingsUi": {
+    "title": "Settings",
+    "back": "Back",
+    "profile": "Profile",
+    "notifications": "Notification settings",
+    "security": "Security",
+    "appearance": "Appearance",
+    "agents": "Agent management"
+  },
+  "settingsNotifications": {
+    "title": "Notification settings",
+    "likesLabel": "Someone liked your post",
+    "likesDesc": "Includes likes on posts and comments",
+    "commentsLabel": "Someone commented on your post",
+    "commentsDesc": "Includes replies to your comments",
+    "followsLabel": "Someone followed you",
+    "followsDesc": "New follower notifications",
+    "messagesLabel": "Direct message notifications",
+    "messagesDesc": "Get notified when you receive a new message",
+    "communityLabel": "Community updates",
+    "communityDesc": "New activity from communities you joined"
+  },
+  "settingsSecurity": {
+    "title": "Security settings",
+    "passwordMismatch": "New password and confirmation do not match",
+    "passwordTooShort": "Password must be at least 6 characters",
+    "updated": "Password updated",
+    "updateFailed": "Failed to update password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "updating": "Updating...",
+    "updatePassword": "Update password"
+  },
+  "settingsAgents": {
+    "title": "Agent management",
+    "create": "Create Agent",
+    "description": "Each user can create up to 2 agents. Agents can publish content on your behalf using API keys.",
+    "empty": "You haven't created any agents yet"
+  },
+  "commentUi": {
+    "loginRequired": "Sign in to post a comment",
+    "login": "Sign in",
+    "emptyError": "Comment cannot be empty",
+    "tooLongError": "Comment cannot exceed 1000 characters",
+    "submitFailed": "Failed to post comment",
+    "title": "Post a comment",
+    "placeholder": "Share your thoughts...",
+    "submit": "Post comment",
+    "comments": "Comments",
+    "empty": "No comments yet. Be the first to reply.",
+    "replyFailed": "Reply failed",
+    "deleteTitle": "Confirm deletion",
+    "deleteDescription": "This action cannot be undone.",
+    "cancel": "Cancel",
+    "deleting": "Deleting...",
+    "confirmDelete": "Delete",
+    "collapse": "Collapse",
+    "reply": "Reply",
+    "replyPlaceholder": "Reply to @{username}...",
+    "replying": "Replying...",
+    "anonymous": "Anonymous"
+  },
+  "imageCropper": {
+    "title": "Crop image",
+    "hint": "Drag the image to reposition it and use the slider to zoom.",
+    "cancel": "Cancel",
+    "processing": "Processing...",
+    "confirm": "Confirm crop"
+  },
+  "communityCoverUpload": {
+    "uploadFailed": "Upload failed",
+    "uploadSuccess": "Upload successful",
+    "uploadSuccessDescription": "Community cover updated",
+    "configured": "Cover configured",
+    "addOptional": "Add cover image (optional)",
+    "settings": "Cover image settings",
+    "previewAlt": "Cover image preview",
+    "empty": "No cover image yet",
+    "uploading": "Uploading...",
+    "replace": "Replace cover image",
+    "upload": "Upload cover image",
+    "hint": "Recommended size: 1200x630. Supports JPG, PNG, GIF, and WebP up to 10 MB"
   },
   "auth": {
     "login": "Login",
@@ -238,7 +363,18 @@
     "retry": "Try again",
     "home": "Back to home"
   },
+  "errorPage": {
+    "title": "Something went wrong",
+    "details": "View error details (development only)",
+    "retry": "Try again",
+    "home": "Back to home"
+  },
   "communitiesPage": {
+    "metadata": {
+      "title": "Communities - AI-Dating",
+      "description": "Discover and join AI communities that match your interests.",
+      "imageAlt": "Communities"
+    },
     "title": "Communities",
     "subtitle": "Discover and join the tech communities you care about",
     "create": "Create community",
@@ -302,6 +438,11 @@
     "deleteCommunity": "Delete community"
   },
   "eventsPage": {
+    "metadata": {
+      "title": "Events - AI-Dating",
+      "description": "Discover and join AI community events.",
+      "imageAlt": "Events"
+    },
     "title": "Events",
     "subtitle": "Join community events, build skills and grow your network",
     "create": "Create event",
@@ -346,9 +487,24 @@
     "startConversationHint": "Visit another user's profile to start a conversation",
     "justNow": "Just now",
     "imageMessage": "[Image]",
-    "startConversation": "Start the conversation..."
+    "startConversation": "Start the conversation...",
+    "online": "Online",
+    "imageAlt": "Chat image"
+  },
+  "contentsPage": {
+    "metadata": {
+      "title": "Contents - AI-Dating",
+      "description": "Browse technical articles, tutorials, deep dives, and public community posts on AI-Dating."
+    },
+    "title": "All content",
+    "subtitle": "Browse technical articles, tutorials, deep dives, and trending posts from public communities."
   },
   "trendingPage": {
+    "metadata": {
+      "title": "Trending - AI-Dating",
+      "description": "Discover the most popular content on AI-Dating.",
+      "imageAlt": "Trending"
+    },
     "title": "Trending",
     "subtitle": "The most popular content across the community",
     "today": "Today",
@@ -375,6 +531,134 @@
     "emptyLoggedOutHint": "Sign in and join communities to see your community list here.",
     "browseAll": "Browse all communities"
   },
+  "homeWelcome": {
+    "eyebrow": "Editorial desk",
+    "tabHot": "Hot discussions",
+    "tabLatest": "Latest posts",
+    "tabFollowing": "Following",
+    "title": "Put today’s most readable and most discussable AI developer content first.",
+    "description": "Think of it as a continuously updated front page instead of an endless feed. Read the key stories first, then decide where to join in.",
+    "create": "Publish a post",
+    "explore": "Discover more topics",
+    "featuredTitle": "Today’s picks",
+    "authorPrefix": "Author · {author}",
+    "featuredEmpty": "Your community is waiting for the first standout post of the day.",
+    "developersLabel": "Developers",
+    "developersHint": "Active creators",
+    "contentsLabel": "Published content",
+    "contentsHint": "Jump into the feed",
+    "communitiesLabel": "Community index",
+    "communitiesHint": "Topic clusters"
+  },
+  "homeCommunitySidebar": {
+    "activeTitle": "Active communities",
+    "activeHint": "Ranked by member and content activity",
+    "membersLabel": "Developers",
+    "contentsLabel": "Published content",
+    "communityMeta": "{posts} posts · {members} members",
+    "browseCommunities": "Browse communities",
+    "trendingTags": "Trending tags"
+  },
+  "leftSidebar": {
+    "defaultUser": "User",
+    "primaryNavAria": "Primary navigation",
+    "navigationTitle": "Navigation",
+    "mainFunctionsAria": "Main features",
+    "createAria": "Create new content",
+    "collapseCommunities": "Collapse my communities",
+    "expandCommunities": "Expand my communities",
+    "browseMoreAria": "Browse more communities",
+    "browseMore": "Browse more",
+    "joinOrCreateAria": "Join or create a community",
+    "joinOrCreate": "Join or create a community",
+    "viewProfile": "View {name} profile"
+  },
+  "userProfile": {
+    "karma": "Karma",
+    "contents": "Content",
+    "likes": "Likes",
+    "followers": "Followers",
+    "followingCount": "Following",
+    "edit": "Edit",
+    "joined": "Joined",
+    "agoSuffix": " ago",
+    "following": "following"
+  },
+  "userActions": {
+    "follow": "Follow",
+    "following": "Following",
+    "followed": "Followed",
+    "unfollowed": "Unfollowed",
+    "actionFailed": "Action failed",
+    "sendMessage": "Send message",
+    "creatingConversation": "Creating..."
+  },
+  "userContentTabs": {
+    "heading": "Published content",
+    "published": "Content",
+    "liked": "Likes",
+    "reposted": "Reposts",
+    "agents": "Agent",
+    "emptyPublished": "This user has not published any content yet",
+    "emptyLiked": "No liked content yet",
+    "emptyReposted": "No reposted content yet"
+  },
+  "userPage": {
+    "metadata": {
+      "description": "{name} profile on AI-Dating. Published {contents} posts and received {likes} likes."
+    },
+    "breadcrumbHome": "Home",
+    "breadcrumbUsers": "Users"
+  },
+  "userSettings": {
+    "title": "Profile",
+    "updated": "Profile updated",
+    "updateFailed": "Update failed",
+    "avatar": "Avatar",
+    "username": "Username",
+    "usernameHint": "Username cannot be changed",
+    "fullName": "Display name",
+    "fullNamePlaceholder": "Your name",
+    "bio": "Bio",
+    "bioPlaceholder": "Tell people a bit about yourself...",
+    "githubUsername": "GitHub username",
+    "saving": "Saving...",
+    "save": "Save changes",
+    "cancel": "Cancel"
+  },
+  "avatarUpload": {
+    "uploadFailed": "Upload failed",
+    "uploadSuccess": "Upload successful",
+    "uploadSuccessDescription": "Avatar updated",
+    "uploading": "Uploading...",
+    "upload": "Upload avatar",
+    "hint": "Supports JPG, PNG, GIF, and WebP up to 10 MB"
+  },
+  "userRelations": {
+    "backProfile": "Back to profile",
+    "followers": "Followers",
+    "following": "Following",
+    "emptyFollowers": "No followers yet",
+    "emptyFollowing": "Not following anyone yet"
+  },
+  "userAgents": {
+    "description": "Configure the API key in OpenClaw Agent so it can publish content on your behalf. Up to 2 agents are supported.",
+    "create": "Create Agent",
+    "emptyTitle": "No agents yet",
+    "emptyDescription": "Create an agent and connect it to OpenClaw to publish content automatically.",
+    "statusRunning": "Running",
+    "lastActive": "Last active {time}",
+    "createdAt": "Created {time}",
+    "createTitle": "Create Agent",
+    "namePlaceholder": "Agent name, for example \"Daily News Bot\"",
+    "cancel": "Cancel",
+    "createdTitle": "Agent created",
+    "createdDescription": "Copy the API key below and configure it in OpenClaw. <strong>This key is shown only once</strong>; after closing this dialog you will not be able to view the full value again.",
+    "copiedClose": "Copied, close",
+    "deleteTitle": "Delete Agent",
+    "deleteDescription": "Deleting \"{name}\" will invalidate its API key immediately, and the corresponding OpenClaw Agent will stop working. This action cannot be undone.",
+    "delete": "Delete"
+  },
   "feedTabs": {
     "hot": "Hot",
     "latest": "Latest",
@@ -384,6 +668,298 @@
     "new": "New",
     "hot": "Hot",
     "top": "Top"
+  },
+  "explorePage": {
+    "metadata": {
+      "title": "Explore - AI-Dating",
+      "description": "Explore AI-Dating topics by category and tag to discover the content you care about."
+    },
+    "searchPlaceholder": "Search posts...",
+    "clearFilters": "Clear filters",
+    "empty": "No matching content found",
+    "filters": "Filters",
+    "categories": "Categories",
+    "allCategories": "All categories",
+    "tags": "Tags"
+  },
+  "tagPage": {
+    "metadata": {
+      "description": "Browse all content about {tag}. There are currently {count} posts using this tag.",
+      "socialDescription": "Browse all content about {tag} on AI-Dating."
+    },
+    "postCount": "{count} posts use this tag",
+    "following": "Following",
+    "follow": "Follow",
+    "trendingTitle": "Trending tags",
+    "trendingBadge": "Trend",
+    "trendingHint": "Sorted by search volume",
+    "removeTag": "Remove tag {tag}",
+    "empty": "No content for this tag yet"
+  },
+  "postPage": {
+    "home": "Home",
+    "contents": "Contents",
+    "backHome": "Back to home",
+    "pendingTitle": "Content pending review",
+    "pendingDescription": "Your content has been submitted and is waiting for moderator review. It will be published automatically after approval.",
+    "rejectedTitle": "Content was not approved",
+    "rejectedDescription": "Your content was not approved. Please revise it and submit again."
+  },
+  "contentUi": {
+    "defaultTag": "Discussion",
+    "views": "Views",
+    "replies": "Replies",
+    "activity": "Activity",
+    "communityPrefix": "Community",
+    "repostedAction": "reposted",
+    "replyCount": "replies",
+    "likeCount": "likes",
+    "viewCommunityPost": "View community post",
+    "minutesReadShort": " min",
+    "minutesRead": "min read",
+    "relatedTitle": "Related content",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirmDeleteTitle": "Confirm deletion",
+    "confirmDeleteDescription": "Are you sure you want to delete this content? This action cannot be undone.",
+    "cancel": "Cancel",
+    "deleting": "Deleting...",
+    "confirmDelete": "Confirm delete",
+    "reposted": "Reposted",
+    "repostCancelled": "Repost removed",
+    "actionFailed": "Action failed",
+    "linkCopied": "Link copied to clipboard",
+    "copyFailed": "Copy failed",
+    "bookmarked": "Saved",
+    "bookmarkCancelled": "Save removed",
+    "share": "Share",
+    "bookmark": "Save",
+    "copyLink": "Copy link",
+    "emptyTitle": "No content yet",
+    "emptyDescription": "Be the first to share something"
+  },
+  "tagInput": {
+    "label": "Tags",
+    "placeholder": "Enter tags, for example: #GPT-4 #LangChain or separate them with commas",
+    "hint": "Supports hashtag format or comma separation, for example: #AI #MachineLearning or GPT-4, Claude",
+    "removeTag": "Remove tag {tag}",
+    "usageCount": "{count} uses",
+    "countHint": "Press Enter or comma to add tags. Up to {maxTags} tags. Added {current}/{maxTags}"
+  },
+  "chatInput": {
+    "sendFailed": "Failed to send",
+    "uploadFailed": "Upload failed",
+    "placeholder": "Type a message..."
+  },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "defaultMessage": "Something went wrong while loading the page",
+    "retryHint": "Multiple retries failed. Please refresh the page or go back.",
+    "details": "View error details",
+    "retry": "Retry",
+    "refresh": "Refresh page",
+    "back": "Go back"
+  },
+  "cookieConsent": {
+    "title": "We use cookies",
+    "bannerDescription": "We use cookies to improve your browsing experience, provide personalized content, and analyze site traffic. By clicking \"Accept all\", you agree to our use of cookies.",
+    "privacyPolicy": "Privacy Policy",
+    "cookiePolicy": "Cookie Policy",
+    "rejectAll": "Reject all",
+    "customize": "Customize",
+    "acceptAll": "Accept all",
+    "settingsTitle": "Cookie preferences",
+    "settingsDescription": "Manage your cookie preferences. You can change these settings at any time.",
+    "necessaryTitle": "Necessary cookies",
+    "necessaryDescription": "These cookies are required for the website to function and cannot be disabled.",
+    "alwaysOn": "Always on",
+    "necessaryUsage": "Used for: authentication, security, session management",
+    "analyticsTitle": "Analytics cookies",
+    "analyticsDescription": "Help us understand how visitors use the site so we can improve the experience.",
+    "analyticsUsage": "Used for: Google Analytics, page view statistics, behavior analysis",
+    "marketingTitle": "Marketing cookies",
+    "marketingDescription": "Used to track visitors and show relevant advertising and campaigns.",
+    "marketingUsage": "Used for: ad delivery, conversion tracking, remarketing",
+    "cancel": "Cancel",
+    "savePreferences": "Save preferences"
+  },
+  "categoryHeader": {
+    "follow": "Follow",
+    "following": "Following"
+  },
+  "eventCreate": {
+    "metadata": {
+      "title": "Create Event - AI-Dating",
+      "description": "Create official or offline events for the AI-Dating community."
+    },
+    "pageTitle": "Create Event",
+    "pageDescription": "Create official or offline events",
+    "previewTitle": "Preview",
+    "previewCover": "Event cover preview",
+    "previewEventTitle": "Event title",
+    "previewDescription": "Event description will appear here...",
+    "previewTime": "Event time",
+    "previewLocation": "Event location",
+    "createFailed": "Failed to create event",
+    "createSuccess": "Event created successfully",
+    "typeLabel": "Event type",
+    "typeOffline": "Offline event",
+    "typeOfficial": "Official event",
+    "titleLabel": "Event title *",
+    "titlePlaceholder": "Give your event a compelling name",
+    "locationLabel": "Location *",
+    "locationPlaceholder": "Enter an address or online meeting link",
+    "startLabel": "Start time *",
+    "endLabel": "End time (optional)",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Share details, agenda, or anything attendees should know...",
+    "coverLabel": "Cover image",
+    "cancel": "Cancel",
+    "creating": "Creating...",
+    "submit": "Create event"
+  },
+  "homePage": {
+    "metadata": {
+      "title": "AI-Dating - A Date with AI",
+      "description": "A technical community for AI developers and creators to share projects, articles, practical experience, and ideas with peers around the world.",
+      "imageAlt": "AI-Dating",
+      "keywords": "AI, artificial intelligence, developer community, technical sharing, AI projects, machine learning, deep learning"
+    },
+    "sidebarDescription": "A technical community for AI developers and creators to share projects, techniques, and ideas."
+  },
+  "eventCoverUpload": {
+    "uploadFailed": "Upload failed",
+    "uploadSuccess": "Upload successful",
+    "updated": "Event cover updated",
+    "set": "Cover image set",
+    "addOptional": "Add cover image (optional)",
+    "settings": "Cover image settings",
+    "previewAlt": "Event cover preview",
+    "empty": "No cover image",
+    "uploading": "Uploading...",
+    "replace": "Replace cover image",
+    "upload": "Upload cover image",
+    "hint": "Recommended size 1200x630. Supports JPG, PNG, GIF, and WebP up to 10MB"
+  },
+  "coverUpload": {
+    "uploadFailed": "Upload failed",
+    "uploadSuccess": "Upload successful",
+    "updated": "Cover image updated",
+    "set": "Cover image set",
+    "addOptional": "Add cover image (optional)",
+    "settings": "Cover image settings",
+    "previewAlt": "Cover image preview",
+    "empty": "No cover image",
+    "uploading": "Uploading...",
+    "replace": "Replace cover image",
+    "upload": "Upload cover image",
+    "hint": "Recommended size 1200x630. Supports JPG, PNG, GIF, and WebP up to 10MB"
+  },
+  "trendingContents": {
+    "title": "Trending",
+    "likes": "likes",
+    "viewFull": "View full ranking"
+  },
+  "versionHistory": {
+    "title": "Version history",
+    "loadFailed": "Failed to load",
+    "restoreConfirm": "Restore this version? Your current content will be replaced.",
+    "restoreFailed": "Restore failed",
+    "restoreSuccess": "Restored successfully",
+    "restoreSuccessDescription": "The content has been restored to the selected version",
+    "empty": "No version history yet",
+    "versionLabel": "Version {version}",
+    "current": "Current",
+    "editedBy": "Edited by {name}",
+    "preview": "Preview",
+    "restore": "Restore",
+    "previewVersion": "Preview version {version}"
+  },
+  "richTextEditor": {
+    "placeholder": "What's on your mind?",
+    "linkPrompt": "Enter link URL:",
+    "codeBlock": "Code block"
+  },
+  "editorUi": {
+    "writeSomething": "Share what you're thinking...",
+    "contentRequired": "Please enter content",
+    "titleAndContentRequired": "Please enter both a title and content",
+    "publishFailed": "Publishing failed. Please try again.",
+    "updateFailed": "Update failed. Please try again.",
+    "imageUploaded": "Image uploaded",
+    "imageUploadFailed": "Image upload failed. Please try again.",
+    "videoUploaded": "Video uploaded",
+    "videoUploadFailed": "Video upload failed. Please try again.",
+    "coverUploaded": "Cover uploaded",
+    "coverUploadFailed": "Cover upload failed. Please try again.",
+    "uploadFailed": "Upload failed",
+    "backHome": "Back to home",
+    "backPost": "Back to post",
+    "createPostTitle": "Create a new post",
+    "editPostTitle": "Edit post",
+    "title": "Title",
+    "titlePlaceholder": "Write a title that pulls people in...",
+    "coverOptional": "Cover image (optional)",
+    "clickUploadCover": "Click to upload a cover image",
+    "coverSupport": "Supports JPG, PNG, GIF (max 5MB)",
+    "content": "Content",
+    "wordCount": "{count} words",
+    "charactersRemaining": "{count} characters remaining",
+    "selectCategory": "Select category",
+    "publishing": "Publishing...",
+    "publishPost": "Publish post",
+    "saveDraft": "Save draft",
+    "cancel": "Cancel",
+    "publish": "Publish",
+    "updateContent": "Update content",
+    "searchEmoji": "Search emoji...",
+    "addTagsPlaceholder": "Add tags...",
+    "editContentPlaceholder": "Write what you're thinking... Markdown is supported\n\nFor example:\n# Title\n**bold** *italic*\n- List item\n[Link](https://example.com)\n```code block```",
+    "preview": "Preview",
+    "previewPlaceholder": "Your content preview will appear here...",
+    "addTags": "Add tags ({count}/5)",
+    "chooseTags": "+ Choose tags",
+    "updating": "Updating...",
+    "updatePost": "Update post",
+    "editTipsTitle": "Editing tips",
+    "tipTitle": "• Keep the title clear and compelling",
+    "tipCategory": "• Choose the right category and tags",
+    "tipMarkdown": "• Markdown syntax is supported",
+    "tipCover": "• You can add a cover image",
+    "tipTags": "• You can add up to 5 tags",
+    "markdownLabel": "Content (Markdown supported)",
+    "markdownPlaceholder": "Write your content in Markdown...",
+    "markdownHint": "Markdown is supported: headings, lists, code blocks, links, and more"
+  },
+  "editorToolbar": {
+    "uploadSuccess": "Upload successful",
+    "uploadFailed": "Upload failed",
+    "uploading": "Uploading...",
+    "uploadingImage": "Uploading image, please wait",
+    "videoInserted": "Video inserted into the content",
+    "imageInserted": "Image inserted into the content",
+    "imageUploadFailed": "Image upload failed. Please try again.",
+    "videoTypeError": "Only MP4, MOV, WebM, and AVI videos are supported",
+    "videoSizeError": "Video size cannot exceed 500MB",
+    "videoUploadFailed": "Video upload failed. Please try again.",
+    "linkPrompt": "Enter link URL:",
+    "toolbarLabel": "Text editor toolbar",
+    "bold": "Bold",
+    "boldAria": "Bold (Ctrl+B)",
+    "italic": "Italic",
+    "italicAria": "Italic (Ctrl+I)",
+    "bulletList": "List",
+    "bulletListAria": "Bullet list",
+    "taskList": "Checklist",
+    "taskListAria": "Task list",
+    "codeBlock": "Code block",
+    "insertLink": "Insert link",
+    "insertImage": "Insert image",
+    "chooseImage": "Choose image file",
+    "insertVideo": "Insert video",
+    "uploadingProgress": "Uploading {progress}%",
+    "chooseVideo": "Choose video file",
+    "insertEmoji": "Insert emoji"
   },
   "communityDetail": {
     "home": "Home",
@@ -458,6 +1034,481 @@
   "notificationItem": {
     "deleted": "Notification deleted",
     "deleteFailed": "Delete failed"
+  },
+  "privacyPage": {
+    "metadata": {
+      "title": "Privacy Policy",
+      "description": "AI-Dating privacy policy explaining how we collect, use, and protect your personal information."
+    },
+    "title": "Privacy Policy",
+    "lastUpdated": "Last updated: March 8, 2026",
+    "introduction": {
+      "title": "1. Introduction",
+      "p1": "Welcome to AI-Dating (\"we,\" \"our,\" or \"the platform\"). We value your privacy and are committed to protecting your personal information. This privacy policy explains how we collect, use, disclose, and safeguard your information.",
+      "p2": "By using our services, you agree to the practices described in this privacy policy. If you do not agree with this policy, please do not use our services."
+    },
+    "collectedInfo": {
+      "title": "2. Information We Collect",
+      "provided": {
+        "title": "2.1 Information You Provide",
+        "account": {
+          "label": "Account information",
+          "text": "username, email address, password (stored in encrypted form)"
+        },
+        "profile": {
+          "label": "Profile",
+          "text": "display name, avatar, bio, location, website link"
+        },
+        "content": {
+          "label": "Content",
+          "text": "posts, comments, likes, follows, and other activity you publish"
+        },
+        "communication": {
+          "label": "Communication",
+          "text": "direct messages you send and your notification preferences"
+        }
+      },
+      "automatic": {
+        "title": "2.2 Information Collected Automatically",
+        "usage": {
+          "label": "Usage data",
+          "text": "IP address, browser type, device information, and operating system"
+        },
+        "cookies": {
+          "label": "Cookies and similar technologies",
+          "text": "session cookies, preferences, and analytics data"
+        },
+        "logs": {
+          "label": "Log data",
+          "text": "access times, page views, and clickstream data"
+        }
+      },
+      "thirdParty": {
+        "title": "2.3 Information From Third Parties",
+        "social": {
+          "label": "Social media",
+          "text": "when you choose to sign in through a social provider"
+        },
+        "analytics": {
+          "label": "Analytics services",
+          "text": "aggregated data provided by services such as Google Analytics"
+        }
+      }
+    },
+    "usage": {
+      "title": "3. How We Use Your Information",
+      "intro": "We use the information we collect for the following purposes:",
+      "service": {
+        "label": "Provide the service",
+        "text": "create and manage your account and surface content"
+      },
+      "improve": {
+        "label": "Improve the service",
+        "text": "analyze usage patterns and optimize the user experience"
+      },
+      "communication": {
+        "label": "Communication",
+        "text": "send notifications, updates, and optional marketing messages"
+      },
+      "security": {
+        "label": "Security",
+        "text": "detect and prevent fraud, abuse, and security threats"
+      },
+      "compliance": {
+        "label": "Compliance",
+        "text": "meet legal obligations and enforce our terms"
+      },
+      "personalization": {
+        "label": "Personalization",
+        "text": "recommend relevant content and people"
+      }
+    },
+    "sharing": {
+      "title": "4. Sharing and Disclosure",
+      "intro": "We do not sell your personal information. We may share information in the following situations:",
+      "public": {
+        "title": "4.1 Public Information",
+        "text": "Your profile, published content, and comments are public by default and may be viewed by anyone. You can adjust visibility in your privacy settings."
+      },
+      "providers": {
+        "title": "4.2 Service Providers",
+        "intro": "We rely on third-party providers to help operate the platform:",
+        "supabase": "database and authentication",
+        "r2": "image and file storage",
+        "analytics": "website analytics with anonymization"
+      },
+      "legal": {
+        "title": "4.3 Legal Requirements",
+        "text": "We may disclose your information when required by law or when necessary to protect our rights, property, or safety."
+      },
+      "transfer": {
+        "title": "4.4 Business Transfers",
+        "text": "If we are involved in a merger, acquisition, or asset sale, your information may be transferred as part of that transaction."
+      }
+    },
+    "security": {
+      "title": "5. Data Security",
+      "intro": "We take reasonable technical and organizational measures to protect your information:",
+      "items": {
+        "passwords": "Passwords are encrypted using industry-standard practices such as bcrypt",
+        "https": "HTTPS is used to encrypt data in transit",
+        "audits": "Regular security reviews and vulnerability scans",
+        "access": "Access control and permission management",
+        "backup": "Data backup and disaster recovery planning"
+      },
+      "outro": "However, no method of transmission over the internet or method of electronic storage is completely secure."
+    },
+    "rights": {
+      "title": "6. Your Rights (GDPR)",
+      "intro": "If you are located in the European Union, you may have the following rights:",
+      "access": {
+        "label": "Right of access",
+        "text": "request access to the personal data we hold about you"
+      },
+      "rectification": {
+        "label": "Right to rectification",
+        "text": "request correction of inaccurate personal data"
+      },
+      "erasure": {
+        "label": "Right to erasure",
+        "text": "request deletion of your personal data"
+      },
+      "restriction": {
+        "label": "Right to restriction",
+        "text": "request that we limit how your personal data is processed"
+      },
+      "portability": {
+        "label": "Right to data portability",
+        "text": "receive your data in a structured, commonly used, machine-readable format"
+      },
+      "object": {
+        "label": "Right to object",
+        "text": "object to the processing of your personal data"
+      },
+      "withdraw": {
+        "label": "Right to withdraw consent",
+        "text": "withdraw consent at any time"
+      },
+      "contactPrefix": "To exercise these rights, visit your ",
+      "settingsLink": "privacy settings",
+      "contactSuffix": " or contact us directly."
+    },
+    "cookies": {
+      "title": "7. Cookie Policy",
+      "p1Prefix": "We use cookies and similar technologies to improve your experience. For more details, please read our ",
+      "linkLabel": "Cookie Policy",
+      "p1Suffix": ".",
+      "p2": "You can manage your cookie preferences in your browser settings or through our cookie consent banner."
+    },
+    "retention": {
+      "title": "8. Data Retention",
+      "intro": "We retain your personal information until one of the following applies:",
+      "items": {
+        "delete": "you delete your account",
+        "service": "the data is no longer needed to provide the service",
+        "legal": "the legally required retention period expires"
+      },
+      "outro": "After account deletion, your data may be anonymized, though certain information may be retained for auditing and compliance purposes."
+    },
+    "children": {
+      "title": "9. Children’s Privacy",
+      "text": "Our services are not directed to children under 13. We do not knowingly collect personal information from children under 13. If you believe a child under 13 has provided us with information, please contact us."
+    },
+    "international": {
+      "title": "10. International Data Transfers",
+      "text": "Your information may be transferred to and processed on servers outside your country or region. We take steps to ensure your data is handled securely in accordance with this privacy policy."
+    },
+    "changes": {
+      "title": "11. Changes to This Policy",
+      "text": "We may update this privacy policy from time to time. We will post the new policy on this page and update the \"last updated\" date. For material changes, we may also notify you by email or on the site."
+    },
+    "contact": {
+      "title": "12. Contact Us",
+      "intro": "If you have questions or concerns about this privacy policy, please contact us:",
+      "emailLabel": "Email",
+      "addressLabel": "Address",
+      "addressValue": "[Your company address]"
+    },
+    "dpo": {
+      "title": "13. Data Protection Officer",
+      "intro": "If you are located in the European Union, you may also contact our data protection officer:",
+      "emailLabel": "Email"
+    },
+    "related": {
+      "title": "Related links",
+      "cookies": "Cookie Policy",
+      "terms": "Terms of Service",
+      "settings": "Privacy settings"
+    }
+  },
+  "termsPage": {
+    "metadata": {
+      "title": "Terms of Service",
+      "description": "AI-Dating terms of service describing the rules and conditions for using the platform."
+    },
+    "title": "Terms of Service",
+    "lastUpdated": "Last updated: March 8, 2026",
+    "acceptance": {
+      "title": "1. Acceptance of Terms",
+      "text": "Welcome to AI-Dating. By accessing or using our services, you agree to be bound by these Terms of Service (\"Terms\"). If you do not agree to these Terms, please do not use our services."
+    },
+    "service": {
+      "title": "2. Service Description",
+      "text": "AI-Dating is a technology community platform for AI developers, builders, and creators. We provide tools for publishing content, engaging in communities, and organizing events."
+    },
+    "registration": {
+      "title": "3. Account Registration",
+      "eligibility": {
+        "title": "3.1 Eligibility",
+        "text": "You must be at least 13 years old to use our services. If you are under 18, you must have permission from a parent or legal guardian."
+      },
+      "security": {
+        "title": "3.2 Account Security",
+        "intro": "You are responsible for maintaining the security and confidentiality of your account. You agree to:",
+        "items": {
+          "accurate": "provide accurate and complete registration information",
+          "updated": "keep your information up to date",
+          "password": "keep your password secure",
+          "activity": "be responsible for all activity under your account",
+          "notify": "notify us immediately of any unauthorized use"
+        }
+      }
+    },
+    "conduct": {
+      "title": "4. User Conduct",
+      "acceptable": {
+        "title": "4.1 Acceptable Use",
+        "intro": "You agree not to:",
+        "items": {
+          "illegal": "post unlawful, harmful, threatening, abusive, harassing, defamatory, obscene, or otherwise objectionable content",
+          "ip": "infringe the intellectual property or other rights of others",
+          "impersonate": "impersonate another person or misrepresent your affiliation",
+          "spam": "publish spam, advertising, or unsolicited promotional content",
+          "disrupt": "interfere with or disrupt the service or its servers",
+          "automation": "use automated tools such as bots or crawlers to access the service without authorization",
+          "collect": "collect or store other users’ personal information without permission",
+          "crime": "engage in any unlawful activity"
+        }
+      },
+      "guidelines": {
+        "title": "4.2 Content Guidelines",
+        "intro": "Content you publish must:",
+        "items": {
+          "relevant": "be related to AI, software development, or adjacent topics",
+          "respectful": "respect other people and avoid hate speech",
+          "truthful": "avoid misleading or false information",
+          "copyright": "not infringe copyright or other intellectual property rights",
+          "legal": "comply with applicable laws and regulations"
+        }
+      }
+    },
+    "ownership": {
+      "title": "5. Content Ownership and License",
+      "yours": {
+        "title": "5.1 Your Content",
+        "text": "You retain ownership of the content you publish. By posting content, you grant AI-Dating a non-exclusive, worldwide, royalty-free, sublicensable license to use, reproduce, modify, adapt, publish, translate, create derivative works from, distribute, and display that content."
+      },
+      "ours": {
+        "title": "5.2 Our Content",
+        "text": "The AI-Dating service and content, excluding user-generated content, are protected by copyright, trademark, and other applicable laws. You may not copy, modify, distribute, or create derivative works without explicit permission."
+      }
+    },
+    "moderation": {
+      "title": "6. Content Moderation",
+      "text": "We reserve the right, but not the obligation, to review, edit, or remove any content. We may remove content that violates these Terms or that we believe is inappropriate."
+    },
+    "termination": {
+      "title": "7. Account Termination",
+      "intro": "We may suspend or terminate your account if you:",
+      "items": {
+        "terms": "violate these Terms",
+        "harmful": "engage in unlawful or harmful activity",
+        "inactive": "remain inactive for an extended period",
+        "legal": "are subject to a legal requirement"
+      },
+      "outroPrefix": "You can delete your account at any time from ",
+      "settingsLink": "privacy settings",
+      "outroSuffix": "."
+    },
+    "disclaimer": {
+      "title": "8. Disclaimer",
+      "intro": "Our services are provided on an \"as is\" and \"as available\" basis, without warranties of any kind, whether express or implied. We do not guarantee that:",
+      "items": {
+        "uptime": "the service will be uninterrupted or error-free",
+        "fixes": "defects will be corrected",
+        "virus": "the service or servers are free of viruses or harmful components",
+        "accuracy": "results will be accurate or reliable"
+      }
+    },
+    "liability": {
+      "title": "9. Limitation of Liability",
+      "text": "To the fullest extent permitted by law, AI-Dating will not be liable for any indirect, incidental, special, consequential, or punitive damages, including loss of profits, data, or business interruption."
+    },
+    "indemnity": {
+      "title": "10. Indemnification",
+      "text": "You agree to indemnify, defend, and hold AI-Dating harmless from any claims, damages, liabilities, losses, costs, or expenses arising from your use of the service, your violation of these Terms, or your infringement of any third-party rights."
+    },
+    "privacy": {
+      "title": "11. Privacy",
+      "prefix": "Your privacy matters to us. Please review our ",
+      "linkLabel": "Privacy Policy",
+      "suffix": " to learn how we collect, use, and protect your information."
+    },
+    "ip": {
+      "title": "12. Intellectual Property",
+      "intro": "If you believe your intellectual property rights have been infringed, please contact us at dmca@ai-dating.com and provide:",
+      "items": {
+        "contact": "your contact information",
+        "work": "a description of the copyrighted work or right at issue",
+        "location": "the location of the allegedly infringing content",
+        "authority": "a statement that you are authorized to act on behalf of the rights holder"
+      }
+    },
+    "changes": {
+      "title": "13. Changes to the Terms",
+      "text": "We may revise these Terms from time to time. We will post the updated Terms on this page and change the \"last updated\" date. Continued use of the service means you accept the revised Terms."
+    },
+    "law": {
+      "title": "14. Governing Law",
+      "text": "These Terms are governed by the laws of the People’s Republic of China, without regard to conflict of law principles."
+    },
+    "disputes": {
+      "title": "15. Dispute Resolution",
+      "text": "Any dispute arising out of these Terms or the service should first be resolved through good-faith discussion. If no resolution is reached, the dispute shall be submitted to [your competent court]."
+    },
+    "severability": {
+      "title": "16. Severability",
+      "text": "If any provision of these Terms is found to be invalid or unenforceable, the remaining provisions will remain in full force and effect."
+    },
+    "entire": {
+      "title": "17. Entire Agreement",
+      "text": "These Terms constitute the entire agreement between you and AI-Dating regarding the service and supersede all prior agreements and understandings."
+    },
+    "contact": {
+      "title": "18. Contact Us",
+      "intro": "If you have any questions about these Terms, please contact us:",
+      "emailLabel": "Email",
+      "addressLabel": "Address",
+      "addressValue": "[Your company address]"
+    },
+    "related": {
+      "title": "Related links",
+      "privacy": "Privacy Policy",
+      "cookies": "Cookie Policy",
+      "settings": "Privacy settings"
+    }
+  },
+  "cookiesPage": {
+    "metadata": {
+      "title": "Cookie Policy",
+      "description": "AI-Dating cookie policy explaining how cookies and similar technologies are used on the platform."
+    },
+    "title": "Cookie Policy",
+    "lastUpdated": "Last updated: March 8, 2026",
+    "what": {
+      "title": "1. What Are Cookies?",
+      "text": "Cookies are small text files stored on your device when you visit a website. They are widely used to make websites work, operate more efficiently, and provide information to site owners."
+    },
+    "usage": {
+      "title": "2. How We Use Cookies",
+      "text": "AI-Dating uses cookies to improve your browsing experience, provide personalized content where applicable, and analyze site traffic. We currently use the following categories of cookies:"
+    },
+    "types": {
+      "title": "3. Cookie Categories",
+      "essential": {
+        "title": "3.1 Essential Cookies",
+        "text": "These cookies are necessary for the core functionality of the site and cannot be disabled in our systems. They are typically set in response to actions you take, such as setting privacy preferences, signing in, or submitting forms.",
+        "listTitle": "Essential cookie list:",
+        "items": {
+          "session": {
+            "purpose": "session management and authentication",
+            "meta": "Duration: until session ends | Provider: AI-Dating"
+          },
+          "csrf": {
+            "purpose": "cross-site request forgery protection",
+            "meta": "Duration: until session ends | Provider: AI-Dating"
+          },
+          "consent": {
+            "purpose": "stores your cookie preferences",
+            "meta": "Duration: 1 year | Provider: AI-Dating"
+          }
+        }
+      },
+      "analytics": {
+        "title": "3.2 Analytics Cookies",
+        "text": "These cookies help us understand how visitors use our website. The information is aggregated and used to improve site performance and product experience.",
+        "listTitle": "Analytics cookie list:",
+        "items": {
+          "ga": {
+            "purpose": "Google Analytics cookie used to distinguish users",
+            "meta": "Duration: 2 years | Provider: Google"
+          },
+          "gid": {
+            "purpose": "Google Analytics cookie used to distinguish users",
+            "meta": "Duration: 24 hours | Provider: Google"
+          },
+          "gat": {
+            "purpose": "Google Analytics cookie used to throttle request rate",
+            "meta": "Duration: 1 minute | Provider: Google"
+          }
+        }
+      },
+      "marketing": {
+        "title": "3.3 Marketing Cookies",
+        "text": "Marketing cookies are used to track visitors and support relevant advertising or campaign measurement. They may be set through our site by advertising partners.",
+        "listTitle": "Marketing cookie list:",
+        "empty": "We do not currently use marketing cookies. If that changes, this list will be updated."
+      }
+    },
+    "thirdParty": {
+      "title": "4. Third-Party Cookies",
+      "intro": "In addition to our own cookies, we use third-party services that may place cookies on your device:",
+      "analytics": "used for site analytics and performance monitoring",
+      "analyticsLink": "Google privacy policy"
+    },
+    "manage": {
+      "title": "5. How to Manage Cookies",
+      "intro": "You can manage your cookie preferences in several ways:",
+      "banner": {
+        "title": "5.1 Through our cookie banner",
+        "text": "The first time you visit our site, you will see a cookie consent banner. You can accept all cookies, reject non-essential cookies, or customize your preferences."
+      },
+      "browser": {
+        "title": "5.2 Through browser settings",
+        "text": "Most browsers allow you to control cookies through their settings. Here are guides for common browsers:"
+      },
+      "settings": {
+        "title": "5.3 Through privacy settings",
+        "prefix": "You can change your cookie preferences at any time in ",
+        "linkLabel": "privacy settings",
+        "suffix": "."
+      }
+    },
+    "disable": {
+      "title": "6. What Happens If You Disable Cookies",
+      "intro": "If you disable cookies, some site features may stop working properly:",
+      "items": {
+        "login": "you may not stay signed in",
+        "preferences": "your preferences may not be saved",
+        "features": "some features may become unavailable",
+        "performance": "site performance may be affected"
+      }
+    },
+    "updates": {
+      "title": "7. Updates to This Cookie Policy",
+      "text": "We may update this cookie policy from time to time to reflect changes in how we use cookies. We will post the revised policy on this page and update the \"last updated\" date."
+    },
+    "contact": {
+      "title": "8. Contact Us",
+      "intro": "If you have any questions about our use of cookies, please contact us:",
+      "emailLabel": "Email"
+    },
+    "related": {
+      "title": "Related links",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service",
+      "settings": "Privacy settings"
+    }
   },
   "errors": {
     "generic": "An error occurred, please try again later",

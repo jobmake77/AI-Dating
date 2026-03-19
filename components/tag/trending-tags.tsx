@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { TagBadge } from './tag-badge'
 import Link from 'next/link'
+import { getRequestLocale } from '@/i18n/request'
+import { getTranslation } from '@/i18n/dictionaries'
 
 async function getTrendingTags() {
   const supabase = await createClient()
@@ -32,6 +34,8 @@ async function getTrendingTags() {
 }
 
 export async function TrendingTags() {
+  const locale = await getRequestLocale()
+  const t = (key: string, fallback: string) => getTranslation(locale, `tagPage.${key}`, fallback)
   const trendingTags = await getTrendingTags()
 
   if (trendingTags.length === 0) {
@@ -41,8 +45,8 @@ export async function TrendingTags() {
   return (
     <div className="border border-border/80 px-4 py-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold">热门标签</h3>
-        <span className="text-xs text-muted-foreground">趋势</span>
+        <h3 className="text-sm font-semibold">{t('trendingTitle', '热门标签')}</h3>
+        <span className="text-xs text-muted-foreground">{t('trendingBadge', '趋势')}</span>
       </div>
       <div className="mt-3 space-y-1.5">
         {trendingTags.map(({ tag, count }, index) => (
@@ -61,7 +65,7 @@ export async function TrendingTags() {
           </Link>
         ))}
       </div>
-      <p className="mt-3 text-xs text-muted-foreground">按搜索量排序</p>
+      <p className="mt-3 text-xs text-muted-foreground">{t('trendingHint', '按搜索量排序')}</p>
     </div>
   )
 }

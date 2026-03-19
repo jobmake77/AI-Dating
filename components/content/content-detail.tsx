@@ -16,11 +16,12 @@ import {
 import { TagList } from '@/components/tag/tag-list'
 import { PostActions } from '@/components/content/post-actions'
 import { formatDistanceToNow } from 'date-fns'
-import { zhCN } from 'date-fns/locale'
+import { enUS, zhCN } from 'date-fns/locale'
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { Edit, Trash2, Eye, Clock } from 'lucide-react'
 import { deleteContent } from '@/lib/actions/content'
+import { useLocale, useTranslations } from 'use-intl'
 
 interface ContentDetailProps {
   content: {
@@ -43,6 +44,8 @@ interface ContentDetailProps {
 }
 
 export function ContentDetail({ content, isAuthenticated, isAuthor, isLiked, isReposted, contentId }: ContentDetailProps) {
+  const t = useTranslations('contentUi')
+  const locale = useLocale()
   const [isDeleting, setIsDeleting] = useState(false)
   const sanitizedContent = useMemo(
     () =>
@@ -72,18 +75,18 @@ export function ContentDetail({ content, isAuthenticated, isAuthor, isLiked, isR
           <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
             <div className="flex items-center gap-1.5">
               <Clock className="h-4 w-4" />
-              <span>{content.reading_time} 分钟阅读</span>
+              <span>{content.reading_time} {t('minutesRead')}</span>
             </div>
             <span>·</span>
             <div className="flex items-center gap-1.5">
               <Eye className="h-4 w-4" />
-              <span>{content.view_count} 浏览</span>
+              <span>{content.view_count} {t('views')}</span>
             </div>
             <span>·</span>
             <time>
               {formatDistanceToNow(new Date(content.created_at), {
                 addSuffix: true,
-                locale: zhCN,
+                locale: locale === 'en' ? enUS : zhCN,
               })}
             </time>
           </div>
@@ -93,27 +96,27 @@ export function ContentDetail({ content, isAuthenticated, isAuthor, isLiked, isR
               <Button variant="ghost" size="sm" asChild>
                 <Link href={`/edit/${contentId}`}>
                   <Edit className="h-4 w-4 mr-1.5" />
-                  编辑
+                  {t('edit')}
                 </Link>
               </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="ghost" size="sm" disabled={isDeleting}>
                     <Trash2 className="h-4 w-4 mr-1.5" />
-                    删除
+                    {t('delete')}
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>确认删除</AlertDialogTitle>
+                    <AlertDialogTitle>{t('confirmDeleteTitle')}</AlertDialogTitle>
                     <AlertDialogDescription>
-                      此操作无法撤销。确定要删除这篇内容吗？
+                      {t('confirmDeleteDescription')}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>取消</AlertDialogCancel>
+                    <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                     <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
-                      {isDeleting ? '删除中...' : '确认删除'}
+                      {isDeleting ? t('deleting') : t('confirmDelete')}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
