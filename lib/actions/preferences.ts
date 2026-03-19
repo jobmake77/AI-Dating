@@ -12,6 +12,12 @@ import { isLocale, localeCookieName, type Locale } from '@/i18n/config'
 import { z } from 'zod'
 import { cookies } from 'next/headers'
 
+function isMissingUserPreferencesTable(error?: string) {
+  if (!error) return false
+
+  return error.includes("Could not find the table 'public.user_preferences' in the schema cache")
+}
+
 export interface UserPreferences extends ThemePreferences {
   locale: Locale
   reduceMotion: boolean
@@ -47,6 +53,13 @@ async function upsertUserPreferences(userId: string, updateData: Record<string, 
     .maybeSingle()
 
   if (selectError) {
+    if (isMissingUserPreferencesTable(selectError.message)) {
+      return {
+        success: true,
+        skipped: true,
+      }
+    }
+
     return { success: false, error: selectError.message }
   }
 
@@ -60,6 +73,13 @@ async function upsertUserPreferences(userId: string, updateData: Record<string, 
   const { error } = await query
 
   if (error) {
+    if (isMissingUserPreferencesTable(error.message)) {
+      return {
+        success: true,
+        skipped: true,
+      }
+    }
+
     return { success: false, error: error.message }
   }
 
@@ -82,6 +102,10 @@ export async function getUserPreferences(): Promise<UserPreferences | null> {
     .select('*')
     .eq('user_id', user.id)
     .single()
+
+  if (error && isMissingUserPreferencesTable(error.message)) {
+    return null
+  }
 
   if (error || !data) {
     return null
@@ -148,6 +172,10 @@ export async function updateUserPreferences(
     return result
   }
 
+  if ('skipped' in result && result.skipped) {
+    console.warn('Skipped persisting user preferences because user_preferences is unavailable in this environment')
+  }
+
   revalidatePath('/settings')
   revalidatePath('/', 'layout')
   return { success: true }
@@ -171,6 +199,10 @@ export async function updateUserLocale(locale: Locale): Promise<{ success: boole
       console.error('Failed to update locale preference:', result.error)
       return result
     }
+
+    if ('skipped' in result && result.skipped) {
+      console.warn('Skipped persisting locale preference because user_preferences is unavailable in this environment')
+    }
   }
 
   revalidatePath('/', 'layout')
@@ -192,6 +224,10 @@ export async function resetUserPreferences(): Promise<{ success: boolean; error?
     .from('user_preferences')
     .delete()
     .eq('user_id', user.id)
+
+  if (error && isMissingUserPreferencesTable(error.message)) {
+    return { success: true }
+  }
 
   if (error) {
     console.error('Failed to reset user preferences:', error)

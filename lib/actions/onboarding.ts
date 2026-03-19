@@ -22,49 +22,10 @@ export async function getOnboardingProgress(): Promise<OnboardingProgress | null
       .from('user_onboarding')
       .select('*')
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle()
 
     if (error) {
-      logger.debug('Onboarding query error:', {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-      })
-
-      // 如果记录不存在，创建一个新记录
-      if (error.code === 'PGRST116') {
-        logger.info('Creating new onboarding record for user:', user.id)
-
-        const { data: newRecord, error: insertError } = await supabase
-          .from('user_onboarding')
-          .insert({
-            user_id: user.id,
-            completed_profile: false,
-            first_post_published: false,
-            explored_content: false,
-            checked_membership: false,
-            tour_completed: false,
-            tour_skipped: false,
-          })
-          .select()
-          .single()
-
-        if (insertError) {
-          logger.error('Failed to create onboarding progress:', {
-            code: insertError.code,
-            message: insertError.message,
-            details: insertError.details,
-            hint: insertError.hint,
-          })
-          return null
-        }
-
-        logger.info('Successfully created onboarding record')
-        return newRecord
-      }
-
-      logger.error('Failed to fetch onboarding progress:', {
+      logger.warn('Onboarding query returned an error, falling back to empty progress:', {
         code: error.code,
         message: error.message,
         details: error.details,
@@ -73,10 +34,43 @@ export async function getOnboardingProgress(): Promise<OnboardingProgress | null
       return null
     }
 
+    if (!data) {
+      logger.info('Creating missing onboarding record for user:', user.id)
+
+      const { data: newRecord, error: insertError } = await supabase
+        .from('user_onboarding')
+        .upsert({
+          user_id: user.id,
+          completed_profile: false,
+          first_post_published: false,
+          explored_content: false,
+          checked_membership: false,
+          tour_completed: false,
+          tour_skipped: false,
+        }, {
+          onConflict: 'user_id',
+          ignoreDuplicates: false,
+        })
+        .select()
+        .single()
+
+      if (insertError) {
+        logger.warn('Failed to create onboarding progress, homepage will continue without it:', {
+          code: insertError.code,
+          message: insertError.message,
+          details: insertError.details,
+          hint: insertError.hint,
+        })
+        return null
+      }
+
+      return newRecord
+    }
+
     logger.debug('Successfully fetched onboarding progress')
     return data
   } catch (error) {
-    logger.error('Error in getOnboardingProgress:', error)
+    logger.warn('Error in getOnboardingProgress, homepage will continue without onboarding:', error)
     return null
   }
 }

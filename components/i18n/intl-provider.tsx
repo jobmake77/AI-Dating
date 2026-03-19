@@ -11,7 +11,7 @@ interface AppIntlProviderProps {
 
 export function AppIntlProvider({ children, locale, messages }: AppIntlProviderProps) {
   return (
-    <IntlProvider locale={locale} messages={messages}>
+    <IntlProvider locale={locale} messages={messages} timeZone="Asia/Shanghai">
       {children}
     </IntlProvider>
   )
