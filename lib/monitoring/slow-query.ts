@@ -4,6 +4,7 @@
  */
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export interface SlowQueryLog {
   id: string
@@ -86,7 +87,7 @@ async function logSlowQuery(log: Omit<SlowQueryLog, 'id'>): Promise<void> {
 
     // 生产环境：保存到数据库
     if (process.env.NODE_ENV === 'production') {
-      const supabase = await createClient()
+      const supabase = createAdminClient()
       await supabase.from('slow_query_logs').insert({
         query: log.query,
         duration: log.duration,
@@ -151,7 +152,7 @@ export async function getSlowQueryStats(
  */
 export async function cleanupSlowQueryLogs(daysToKeep: number = 7): Promise<number> {
   try {
-    const supabase = await createClient()
+    const supabase = createAdminClient()
     const cutoffDate = new Date(Date.now() - daysToKeep * 24 * 60 * 60 * 1000)
 
     const { data, error } = await supabase

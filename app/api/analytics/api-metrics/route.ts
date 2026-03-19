@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,7 +22,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 生产环境：保存到数据库
-    const supabase = await createClient()
+    const supabase = createAdminClient()
 
     const { error } = await supabase.from('api_metrics').insert({
       endpoint: metrics.endpoint,
@@ -47,6 +48,25 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { data: userRow } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (userRow?.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
     const { searchParams } = new URL(req.url)
     const start = searchParams.get('start')
     const end = searchParams.get('end')
@@ -54,8 +74,6 @@ export async function GET(req: NextRequest) {
     if (!start || !end) {
       return NextResponse.json({ error: 'Missing time range' }, { status: 400 })
     }
-
-    const supabase = await createClient()
 
     const { data, error } = await supabase
       .from('api_metrics')
