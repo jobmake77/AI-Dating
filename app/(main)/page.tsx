@@ -12,7 +12,6 @@ import { getHomepageData } from "@/lib/queries/home";
 import { Metadata } from "next";
 import { getRequestLocale } from "@/i18n/request";
 import { getTranslation } from "@/i18n/dictionaries";
-import { HomeHeroBrand } from "@/components/brand/home-hero-brand";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getRequestLocale()
@@ -90,14 +89,6 @@ export default async function Home({ searchParams }: HomeProps) {
           />
 
           <main className="min-w-0 flex-1 space-y-4">
-            <HomeHeroBrand
-              subtitle={getTranslation(
-                locale,
-                'homePage.brandSubtitle',
-                'A place where people, ideas, and AI projects meet.'
-              )}
-            />
-
             <div className="flex justify-start">
               <FeedTabs showFollowing={isAuthenticated} />
             </div>

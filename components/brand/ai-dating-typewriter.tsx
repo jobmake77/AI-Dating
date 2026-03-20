@@ -9,12 +9,12 @@ interface AIDatingTypewriterProps {
   cursorClassName?: string
   text?: string
   typingSpeed?: number
-  deletingSpeed?: number
   pauseMs?: number
   restartDelayMs?: number
   startDelayMs?: number
   loop?: boolean
   showCursor?: boolean
+  hideCursorWhenDone?: boolean
 }
 
 export function AIDatingTypewriter({
@@ -22,20 +22,19 @@ export function AIDatingTypewriter({
   cursorClassName,
   text = 'AI-Dating',
   typingSpeed = 110,
-  deletingSpeed = 60,
   pauseMs = 2000,
   restartDelayMs = 500,
   startDelayMs = 0,
   loop = false,
   showCursor = true,
+  hideCursorWhenDone = false,
 }: AIDatingTypewriterProps) {
   const [displayText, setDisplayText] = useState('')
-  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | null = null
 
-    if (!loop && displayText === text) {
+    if (displayText === text && !loop) {
       return
     }
 
@@ -43,26 +42,14 @@ export function AIDatingTypewriter({
       timer = setTimeout(callback, delay)
     }
 
-    if (!isDeleting && displayText.length < text.length) {
+    if (displayText.length < text.length) {
       const nextDelay = displayText.length === 0 ? startDelayMs : typingSpeed
       schedule(nextDelay, () => {
         setDisplayText(text.slice(0, displayText.length + 1))
       })
-    } else if (!isDeleting && displayText === text) {
-      if (!loop) {
-        return
-      }
-
-      schedule(pauseMs, () => {
-        setIsDeleting(true)
-      })
-    } else if (isDeleting && displayText.length > 0) {
-      schedule(deletingSpeed, () => {
-        setDisplayText(text.slice(0, displayText.length - 1))
-      })
-    } else if (isDeleting && displayText.length === 0) {
-      schedule(restartDelayMs, () => {
-        setIsDeleting(false)
+    } else if (loop) {
+      schedule(pauseMs + restartDelayMs, () => {
+        setDisplayText('')
       })
     }
 
@@ -72,9 +59,8 @@ export function AIDatingTypewriter({
       }
     }
   }, [
-    deletingSpeed,
     displayText,
-    isDeleting,
+    hideCursorWhenDone,
     loop,
     pauseMs,
     restartDelayMs,
@@ -89,11 +75,11 @@ export function AIDatingTypewriter({
       className={cn('inline-flex items-end', className)}
     >
       <span>{displayText}</span>
-      {showCursor ? (
+      {showCursor && !(hideCursorWhenDone && displayText === text) ? (
         <span
           aria-hidden="true"
           className={cn(
-            'terminal-cursor ml-1 inline-block h-[0.95em] w-[0.58em] rounded-[2px] bg-current align-middle',
+            'terminal-cursor ml-1 inline-block h-[0.9em] w-[0.5em] rounded-[1px] bg-current align-middle',
             cursorClassName
           )}
         />

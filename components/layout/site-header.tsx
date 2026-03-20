@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Search, User, Code2, MessageSquare, Plus, Menu, X } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { useState, FormEvent, useEffect } from 'react'
 import { useToast } from '@/hooks/use-toast'
 import { NotificationDropdown } from '@/components/notifications/notification-dropdown'
@@ -16,6 +16,14 @@ import { useOptionalTranslation } from '@/components/i18n/locale-provider'
 import { useLocale } from 'use-intl'
 import type { RealtimePostgresInsertPayload } from '@supabase/supabase-js'
 import type { Tables } from '@/types/database.types'
+import { AIDatingTypewriter } from '@/components/brand/ai-dating-typewriter'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 type UserMetadata = {
   user_name?: string | null
@@ -38,6 +46,7 @@ interface SiteHeaderProps {
 export function SiteHeader({ serverUser }: SiteHeaderProps) {
   const router = useRouter()
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const { toast } = useToast()
   const locale = useLocale() as 'zh' | 'en'
   const t = useOptionalTranslation()
@@ -47,6 +56,7 @@ export function SiteHeader({ serverUser }: SiteHeaderProps) {
   const [unreadCount, setUnreadCount] = useState(0)
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [brandAnimationKey, setBrandAnimationKey] = useState<string | null>(null)
 
   const user = serverUser
   const username = serverUser?.username
@@ -158,6 +168,37 @@ export function SiteHeader({ serverUser }: SiteHeaderProps) {
   const avatarUrl = user?.avatar || user?.user_metadata?.avatar_url
   const profileLink = username ? `/u/${username}` : '/settings'
 
+  useEffect(() => {
+    const todayKey = new Intl.DateTimeFormat('en-CA', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date())
+
+    const homeAnimationStorageKey = 'ai-dating-header-played-on'
+    const query = searchParams.get('q')?.trim().toLowerCase()
+
+    let nextAnimationKey: string | null = null
+
+    if (pathname === '/') {
+      try {
+        const lastPlayedOn = window.localStorage.getItem(homeAnimationStorageKey)
+        if (lastPlayedOn !== todayKey) {
+          window.localStorage.setItem(homeAnimationStorageKey, todayKey)
+          nextAnimationKey = `home-${todayKey}`
+        }
+      } catch {
+        nextAnimationKey = `home-${todayKey}`
+      }
+    }
+
+    if (pathname === '/search' && query === 'ai-dating') {
+      nextAnimationKey = `search-${searchParams.toString()}`
+    }
+
+    setBrandAnimationKey((currentKey) => currentKey === nextAnimationKey ? currentKey : nextAnimationKey)
+  }, [pathname, searchParams])
+
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur-xl">
       <div className="mx-auto flex h-12 max-w-6xl items-center gap-3 px-4">
@@ -167,7 +208,18 @@ export function SiteHeader({ serverUser }: SiteHeaderProps) {
             <Code2 className="h-4 w-4 text-white" />
           </div>
           <span className="hidden font-mono text-sm font-bold sm:block text-foreground group-hover:text-primary transition-colors">
-            AI-Dating
+            {brandAnimationKey ? (
+              <AIDatingTypewriter
+                key={brandAnimationKey}
+                className="text-sm font-bold"
+                cursorClassName="bg-primary"
+                typingSpeed={95}
+                startDelayMs={80}
+                hideCursorWhenDone
+              />
+            ) : (
+              'AI-Dating'
+            )}
           </span>
         </Link>
 
@@ -251,22 +303,36 @@ export function SiteHeader({ serverUser }: SiteHeaderProps) {
                 </Link>
               </Button>
 
-              {/* User avatar */}
-              <Button variant="ghost" size="icon" asChild className="hidden sm:flex h-8 w-8">
-                <Link href={profileLink}>
-                  {avatarUrl ? (
-                    <Image
-                      src={avatarUrl}
-                      alt={displayName}
-                      width={24}
-                      height={24}
-                      className="w-6 h-6 rounded-full object-cover"
-                    />
-                  ) : (
-                    <User className="h-4 w-4" />
-                  )}
-                </Link>
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="hidden sm:flex h-8 w-8">
+                    {avatarUrl ? (
+                      <Image
+                        src={avatarUrl}
+                        alt={displayName}
+                        width={24}
+                        height={24}
+                        className="w-6 h-6 rounded-full object-cover"
+                      />
+                    ) : (
+                      <User className="h-4 w-4" />
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-44">
+                  <DropdownMenuItem asChild>
+                    <Link href={profileLink}>{t('nav.profile', '个人主页')}</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={handleSignOut}
+                    disabled={isSigningOut}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    {isSigningOut ? t('auth.loggingOut', '退出中...') : t('auth.logout', '退出登录')}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
           ) : (
             <Button asChild size="sm" className="h-8 px-3 text-xs">

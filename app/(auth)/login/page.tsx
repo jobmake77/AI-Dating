@@ -109,8 +109,8 @@ export default function LoginPage() {
                 loop
                 pauseMs={2000}
                 typingSpeed={120}
-                deletingSpeed={70}
-                restartDelayMs={450}
+                restartDelayMs={320}
+                cursorClassName="bg-blue-500 dark:bg-blue-400"
               />
             </CardTitle>
             <CardDescription className="text-base mt-2">
