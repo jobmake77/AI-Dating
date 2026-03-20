@@ -84,7 +84,7 @@ export async function getHomepageData(userId?: string): Promise<HomepageData> {
       .eq('type', 'public')
       .order('members_count', { ascending: false })
       .order('posts_count', { ascending: false })
-      .limit(5),
+      .limit(3),
     supabase
       .from('tags')
       .select('name, slug, usage_count')

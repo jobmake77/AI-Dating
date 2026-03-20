@@ -6,8 +6,7 @@ import { updateUserRole } from '@/lib/actions/admin'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { User, Shield, Calendar } from 'lucide-react'
-import { formatDistanceToNow } from 'date-fns'
-import { zhCN } from 'date-fns/locale'
+import { formatISODate } from '@/lib/utils/date'
 import { useToast } from '@/hooks/use-toast'
 import Image from 'next/image'
 
@@ -100,10 +99,7 @@ export function UserManagementList({ users }: UserManagementListProps) {
                 <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
-                    注册于 {formatDistanceToNow(new Date(user.created_at), {
-                      addSuffix: true,
-                      locale: zhCN,
-                    })}
+                    注册于 <time dateTime={user.created_at}>{formatISODate(user.created_at)}</time>
                   </span>
                 </div>
               </div>

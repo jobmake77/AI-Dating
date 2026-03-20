@@ -1,45 +1,36 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { FileText, Heart, MessageSquare } from 'lucide-react'
+import { Bookmark, FileText, Heart, MessageSquare } from 'lucide-react'
 import { CompactContentCard } from '@/components/content/compact-content-card'
 import { Pagination } from '@/components/content/pagination'
-import { AgentTab } from '@/components/user/agent-tab'
 import type { PaginatedContentItems } from '@/lib/types/content'
 import { useTranslations } from 'use-intl'
 
-type UserAgent = {
-  id: string
-  name: string
-  api_key: string
-  status: string
-  last_used_at: string | null
-  created_at: string
-}
-
 interface UserContentTabsCompactProps {
   username: string
-  isOwner: boolean
-  agents?: UserAgent[]
+  isOwner?: boolean
   contents: {
     published: PaginatedContentItems
     liked: PaginatedContentItems
     reposted: PaginatedContentItems
+    bookmarked: PaginatedContentItems
   }
 }
 
-const profileTabs = ['published', 'liked', 'reposted'] as const
+const profileTabs = ['published', 'liked', 'reposted', 'bookmarked'] as const
 
 export function UserContentTabsCompact({
   username,
-  isOwner,
-  agents = [],
+  isOwner = false,
   contents,
 }: UserContentTabsCompactProps) {
   const t = useTranslations('userContentTabs')
   const router = useRouter()
   const searchParams = useSearchParams()
   const currentTab = searchParams.get('tab') || 'published'
+  const effectiveCurrentTab = currentTab === 'bookmarked' && !isOwner ? 'published' : currentTab
+  const visibleTabs = isOwner ? profileTabs : profileTabs.filter((tab) => tab !== 'bookmarked')
 
   const handleTabChange = (value: string) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -48,30 +39,28 @@ export function UserContentTabsCompact({
     router.push(`/u/${username}?${params.toString()}`)
   }
 
-  const allTabs = isOwner ? [...profileTabs, 'agents'] : profileTabs
-
   return (
     <div className="space-y-4">
       {/* Compact tabs */}
       <div className="flex items-center gap-1 rounded-lg border border-border bg-card p-1 shadow-card">
-        {allTabs.map((tab) => (
+        {visibleTabs.map((tab) => (
           <button
             key={tab}
             onClick={() => handleTabChange(tab)}
             className={`flex-1 px-4 py-2 rounded-md text-xs font-medium transition-all ${
-              currentTab === tab
+              effectiveCurrentTab === tab
                 ? 'gradient-primary text-white shadow-sm'
                 : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
             }`}
           >
-            {t(tab as 'published' | 'liked' | 'reposted' | 'agents')}
+            {t(tab)}
           </button>
         ))}
       </div>
 
       {/* Content area */}
       <div className="space-y-1.5">
-        {currentTab === 'published' && (
+        {effectiveCurrentTab === 'published' && (
           <>
             {contents.published.items.length > 0 ? (
               <>
@@ -97,7 +86,7 @@ export function UserContentTabsCompact({
           </>
         )}
 
-        {currentTab === 'liked' && (
+        {effectiveCurrentTab === 'liked' && (
           <>
             {contents.liked.items.length > 0 ? (
               <>
@@ -123,7 +112,7 @@ export function UserContentTabsCompact({
           </>
         )}
 
-        {currentTab === 'reposted' && (
+        {effectiveCurrentTab === 'reposted' && (
           <>
             {contents.reposted.items.length > 0 ? (
               <>
@@ -149,7 +138,31 @@ export function UserContentTabsCompact({
           </>
         )}
 
-        {currentTab === 'agents' && isOwner && <AgentTab initialAgents={agents} />}
+        {effectiveCurrentTab === 'bookmarked' && (
+          <>
+            {contents.bookmarked.items.length > 0 ? (
+              <>
+                {contents.bookmarked.items.map((content, i) => (
+                  <CompactContentCard key={content.id} content={content} index={i} />
+                ))}
+                {contents.bookmarked.totalPages > 1 && (
+                  <div className="mt-4">
+                    <Pagination
+                      currentPage={contents.bookmarked.currentPage}
+                      totalPages={contents.bookmarked.totalPages}
+                      basePath={`/u/${username}?tab=bookmarked`}
+                    />
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="rounded-lg border border-border bg-card p-10 text-center shadow-card">
+                <Bookmark className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
+                <p className="text-xs text-muted-foreground">{t('emptyBookmarked')}</p>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   )

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { MessageSquare, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,6 +17,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { deleteComment, createComment } from "@/lib/actions/comments";
+import { formatISODate } from "@/lib/utils/date";
 import { useRouter } from "next/navigation";
 import type { Comment } from "@/lib/queries/comments";
 import { useLocale, useTranslations } from "use-intl";
@@ -30,10 +32,8 @@ interface CompactCommentItemProps {
 }
 
 function formatTime(dateStr: string, locale: string): string {
-  const diff = (Date.now() - new Date(dateStr).getTime()) / 3600000;
-  if (diff < 24) return `${Math.max(1, Math.floor(diff))}h${locale === "en" ? " ago" : "前"}`;
-  const d = new Date(dateStr);
-  return locale === "en" ? `${d.getMonth() + 1}/${d.getDate()}` : `${d.getMonth() + 1}月${d.getDate()}日`;
+  void locale;
+  return formatISODate(dateStr);
 }
 
 export function CompactCommentItem({
@@ -81,9 +81,15 @@ export function CompactCommentItem({
     <div className={`${depth > 0 ? "ml-6 border-l-2 border-primary/20 pl-4" : ""}`}>
       <div className="py-3">
         <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1.5">
-          <div className="flex h-6 w-6 items-center justify-center rounded-full gradient-primary text-[9px] font-bold text-white">
-            {comment.user?.username?.[0]?.toUpperCase() || "U"}
-          </div>
+          <Avatar className="h-6 w-6">
+            <AvatarImage
+              src={comment.user?.avatar || undefined}
+              alt={comment.user?.username || t("anonymous")}
+            />
+            <AvatarFallback className="gradient-primary text-[9px] font-bold text-white">
+              {comment.user?.username?.[0]?.toUpperCase() || "U"}
+            </AvatarFallback>
+          </Avatar>
           <span className="font-mono font-medium text-primary">
             {comment.user?.username || t("anonymous")}
           </span>

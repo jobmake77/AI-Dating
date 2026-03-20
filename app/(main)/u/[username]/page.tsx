@@ -2,7 +2,7 @@ import { getUserByUsername } from '@/lib/actions/user'
 import { getContents, getUserLikedContents, getUserRepostedContents } from '@/lib/queries/content'
 import { getUserStats } from '@/lib/queries/user'
 import { checkUserFollowing } from '@/lib/actions/follows'
-import { getUserAgents } from '@/lib/actions/agents'
+import { getUserBookmarkedContents } from '@/lib/actions/bookmarks'
 import { createClient } from '@/lib/supabase/server'
 import { UserProfileCard } from '@/components/user/user-profile-card'
 import { UserContentTabsCompact } from '@/components/user/user-content-tabs-compact'
@@ -15,6 +15,7 @@ import { getTranslation } from '@/i18n/dictionaries'
 type ContentsResult = Awaited<ReturnType<typeof getContents>>
 type UserLikedContentsResult = Awaited<ReturnType<typeof getUserLikedContents>>
 type UserRepostedContentsResult = Awaited<ReturnType<typeof getUserRepostedContents>>
+type UserBookmarkedContentsResult = Awaited<ReturnType<typeof getUserBookmarkedContents>>
 
 interface UserPageProps {
   params: Promise<{ username: string }>
@@ -90,6 +91,7 @@ export default async function UserPage({ params, searchParams }: UserPageProps) 
 
   // 严格的权限检查：只有当前用户ID与页面用户ID完全匹配时才是所有者
   const isOwner = !!(currentUser && currentUser.id === user.id)
+  const activeTab = tab === 'bookmarked' && !isOwner ? 'published' : tab
 
   // Check if current user is following this user
   let isFollowing = false
@@ -100,24 +102,24 @@ export default async function UserPage({ params, searchParams }: UserPageProps) 
   // Get user stats
   const stats = await getUserStats(user.id)
 
-  // 只有本人才加载 agents
-  const agents = isOwner ? await getUserAgents() : []
-
   // 根据当前标签获取对应的内容
   let publishedContents: ContentsResult = { contents: [], totalPages: 0 }
   let likedContents: UserLikedContentsResult = { contents: [], totalPages: 0 }
   let repostedContents: UserRepostedContentsResult = { contents: [], totalPages: 0 }
+  let bookmarkedContents: UserBookmarkedContentsResult = { contents: [], totalPages: 0, total: 0, page: 1, limit: 12 }
 
-  if (tab === 'published') {
+  if (activeTab === 'published') {
     publishedContents = await getContents({
       page,
       authorId: user.id,
       status: 'approved',
     })
-  } else if (tab === 'liked') {
+  } else if (activeTab === 'liked') {
     likedContents = await getUserLikedContents(user.id, { page })
-  } else if (tab === 'reposted') {
+  } else if (activeTab === 'reposted') {
     repostedContents = await getUserRepostedContents(user.id, { page })
+  } else if (activeTab === 'bookmarked' && isOwner) {
+    bookmarkedContents = await getUserBookmarkedContents(user.id, { page })
   }
 
   // Generate structured data
@@ -158,22 +160,26 @@ export default async function UserPage({ params, searchParams }: UserPageProps) 
         <UserContentTabsCompact
           username={username}
           isOwner={isOwner}
-          agents={agents}
           contents={{
             published: {
               items: publishedContents.contents,
-              currentPage: tab === 'published' ? page : 1,
+              currentPage: activeTab === 'published' ? page : 1,
               totalPages: publishedContents.totalPages,
             },
             liked: {
               items: likedContents.contents,
-              currentPage: tab === 'liked' ? page : 1,
+              currentPage: activeTab === 'liked' ? page : 1,
               totalPages: likedContents.totalPages,
             },
             reposted: {
               items: repostedContents.contents,
-              currentPage: tab === 'reposted' ? page : 1,
+              currentPage: activeTab === 'reposted' ? page : 1,
               totalPages: repostedContents.totalPages,
+            },
+            bookmarked: {
+              items: bookmarkedContents.contents,
+              currentPage: activeTab === 'bookmarked' ? page : 1,
+              totalPages: bookmarkedContents.totalPages,
             },
           }}
         />

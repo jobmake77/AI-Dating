@@ -1,5 +1,6 @@
 'use server'
 import { logger } from '@/lib/utils/logger'
+import { hasEventEnded } from '@/lib/utils/events'
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
@@ -92,6 +93,24 @@ export async function joinEvent(eventId: string) {
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return { success: false, error: '请先登录' }
 
+  const { data: event, error: eventError } = await supabase
+    .from('events')
+    .select('id, status, start_time, end_time')
+    .eq('id', eventId)
+    .maybeSingle()
+
+  if (eventError || !event) {
+    return { success: false, error: '活动不存在' }
+  }
+
+  if (event.status !== 'active') {
+    return { success: false, error: '该活动当前不可报名' }
+  }
+
+  if (hasEventEnded(event.start_time, event.end_time)) {
+    return { success: false, error: '活动已结束，无法报名' }
+  }
+
   const { error } = await supabase
     .from('event_participants')
     .insert({ event_id: eventId, user_id: user.id })
@@ -112,6 +131,20 @@ export async function leaveEvent(eventId: string) {
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return { success: false, error: '请先登录' }
+
+  const { data: event, error: eventError } = await supabase
+    .from('events')
+    .select('id, status, start_time, end_time')
+    .eq('id', eventId)
+    .maybeSingle()
+
+  if (eventError || !event) {
+    return { success: false, error: '活动不存在' }
+  }
+
+  if (event.status !== 'active' || hasEventEnded(event.start_time, event.end_time)) {
+    return { success: false, error: '活动已结束，无法取消报名' }
+  }
 
   const { error } = await supabase
     .from('event_participants')
@@ -138,6 +171,20 @@ export async function checkInEvent(eventId: string) {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return { success: false, error: '请先登录' }
+    }
+
+    const { data: event, error: eventError } = await supabase
+      .from('events')
+      .select('id, status, start_time, end_time')
+      .eq('id', eventId)
+      .maybeSingle()
+
+    if (eventError || !event) {
+      return { success: false, error: '活动不存在' }
+    }
+
+    if (event.status !== 'active' || hasEventEnded(event.start_time, event.end_time)) {
+      return { success: false, error: '活动已结束，无法签到' }
     }
 
     // 检查是否已参加活动

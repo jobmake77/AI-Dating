@@ -18,7 +18,7 @@
     "more": "更多",
     "less": "收起",
     "back": "返回",
-    "next": "下一步",
+    "next": "下一页",
     "previous": "上一步",
     "submit": "提交",
     "close": "关闭",
@@ -574,7 +574,7 @@
     "viewProfile": "查看 {name} 的个人资料"
   },
   "userProfile": {
-    "karma": "Karma",
+    "voice": "声量",
     "contents": "内容",
     "likes": "获赞",
     "followers": "粉丝",
@@ -598,10 +598,11 @@
     "published": "内容",
     "liked": "点赞",
     "reposted": "转发",
-    "agents": "Agent",
+    "bookmarked": "收藏",
     "emptyPublished": "该用户还没有发过内容",
     "emptyLiked": "暂无点赞内容",
-    "emptyReposted": "暂无转发内容"
+    "emptyReposted": "暂无转发内容",
+    "emptyBookmarked": "暂无收藏内容"
   },
   "userPage": {
     "metadata": {
@@ -1016,6 +1017,7 @@
     "events": "活动",
     "official": "官方",
     "cancelled": "已取消",
+    "ended": "已结束",
     "participants": "{count} 人参与",
     "details": "活动详情",
     "endsAt": "结束：{date}",
@@ -1026,6 +1028,7 @@
     "joined": "报名成功！",
     "joinedState": "已参加",
     "joinAction": "报名参加",
+    "endedNotice": "活动已结束，报名与取消报名入口已关闭",
     "linkCopied": "链接已复制",
     "linkCopiedDescription": "可粘贴到微信等平台分享",
     "copyFailed": "复制失败，请手动复制链接",

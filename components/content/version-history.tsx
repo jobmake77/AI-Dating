@@ -5,8 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { getContentVersions, restoreContentVersion } from '@/lib/actions/content-versions'
-import { formatDistanceToNow } from 'date-fns'
-import { enUS, zhCN } from 'date-fns/locale'
+import { formatISODate } from '@/lib/utils/date'
 import { History, RotateCcw, Eye } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import {
@@ -16,7 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { useLocale, useTranslations } from 'use-intl'
+import { useTranslations } from 'use-intl'
 
 interface ContentVersion {
   id: string
@@ -38,7 +37,6 @@ interface VersionHistoryProps {
 
 export function VersionHistory({ contentId, isAuthor }: VersionHistoryProps) {
   const t = useTranslations('versionHistory')
-  const locale = useLocale()
   const [versions, setVersions] = useState<ContentVersion[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedVersion, setSelectedVersion] = useState<ContentVersion | null>(null)
@@ -151,10 +149,7 @@ export function VersionHistory({ contentId, isAuthor }: VersionHistoryProps) {
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {formatDistanceToNow(new Date(version.created_at), {
-                      addSuffix: true,
-                      locale: locale === 'en' ? enUS : zhCN,
-                    })}
+                    <time dateTime={version.created_at}>{formatISODate(version.created_at)}</time>
                   </p>
                   <p className="text-sm text-muted-foreground">
                     {t('editedBy', { name: version.author.full_name || version.author.username })}
@@ -196,11 +191,9 @@ export function VersionHistory({ contentId, isAuthor }: VersionHistoryProps) {
               {t('previewVersion', { version: selectedVersion?.version_number ?? '' })}
             </DialogTitle>
             <DialogDescription>
-              {selectedVersion &&
-                formatDistanceToNow(new Date(selectedVersion.created_at), {
-                  addSuffix: true,
-                  locale: locale === 'en' ? enUS : zhCN,
-                })}
+              {selectedVersion && (
+                <time dateTime={selectedVersion.created_at}>{formatISODate(selectedVersion.created_at)}</time>
+              )}
             </DialogDescription>
           </DialogHeader>
 

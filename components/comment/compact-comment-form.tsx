@@ -11,9 +11,10 @@ import { useTranslations } from "use-intl";
 interface CompactCommentFormProps {
   contentId: string;
   isAuthenticated: boolean;
+  className?: string;
 }
 
-export function CompactCommentForm({ contentId, isAuthenticated }: CompactCommentFormProps) {
+export function CompactCommentForm({ contentId, isAuthenticated, className }: CompactCommentFormProps) {
   const t = useTranslations("commentUi");
   const [commentText, setCommentText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -22,7 +23,7 @@ export function CompactCommentForm({ contentId, isAuthenticated }: CompactCommen
 
   if (!isAuthenticated) {
     return (
-      <div className="rounded-lg border border-border bg-card p-4 shadow-card text-center">
+      <div className={className ? `${className} text-center` : "text-center"}>
         <p className="text-sm text-muted-foreground mb-3">{t("loginRequired")}</p>
         <Button size="sm" onClick={() => router.push("/login")}>
           {t("login")}
@@ -57,7 +58,7 @@ export function CompactCommentForm({ contentId, isAuthenticated }: CompactCommen
   };
 
   return (
-    <div className="rounded-lg border border-border bg-card p-4 shadow-card">
+    <div className={className}>
       <h3 className="text-xs font-bold text-foreground mb-2">{t("title")}</h3>
       <Textarea
         placeholder={t("placeholder")}

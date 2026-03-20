@@ -13,8 +13,7 @@ import {
 } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { CheckCircle, XCircle, Eye, User, Calendar } from 'lucide-react'
-import { formatDistanceToNow } from 'date-fns'
-import { zhCN } from 'date-fns/locale'
+import { formatISODate } from '@/lib/utils/date'
 import Image from 'next/image'
 import { useToast } from '@/hooks/use-toast'
 import Link from 'next/link'
@@ -141,10 +140,7 @@ export function ModerationList({ contents }: ModerationListProps) {
                   <span className="text-sm text-muted-foreground">·</span>
                   <span className="text-sm text-muted-foreground flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
-                    {formatDistanceToNow(new Date(content.created_at), {
-                      addSuffix: true,
-                      locale: zhCN,
-                    })}
+                    <time dateTime={content.created_at}>{formatISODate(content.created_at)}</time>
                   </span>
                 </div>
 

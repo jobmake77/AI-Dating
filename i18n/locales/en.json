@@ -574,7 +574,7 @@
     "viewProfile": "View {name} profile"
   },
   "userProfile": {
-    "karma": "Karma",
+    "voice": "Buzz",
     "contents": "Content",
     "likes": "Likes",
     "followers": "Followers",
@@ -598,10 +598,11 @@
     "published": "Content",
     "liked": "Likes",
     "reposted": "Reposts",
-    "agents": "Agent",
+    "bookmarked": "Bookmarks",
     "emptyPublished": "This user has not published any content yet",
     "emptyLiked": "No liked content yet",
-    "emptyReposted": "No reposted content yet"
+    "emptyReposted": "No reposted content yet",
+    "emptyBookmarked": "No bookmarked content yet"
   },
   "userPage": {
     "metadata": {
@@ -1016,6 +1017,7 @@
     "events": "Events",
     "official": "Official",
     "cancelled": "Cancelled",
+    "ended": "Ended",
     "participants": "{count} participants",
     "details": "Event details",
     "endsAt": "Ends: {date}",
@@ -1026,6 +1028,7 @@
     "joined": "Registered successfully!",
     "joinedState": "Joined",
     "joinAction": "Register",
+    "endedNotice": "This event has ended, so registration changes are closed.",
     "linkCopied": "Link copied",
     "linkCopiedDescription": "You can now paste it anywhere you want to share it.",
     "copyFailed": "Copy failed. Please copy the link manually.",

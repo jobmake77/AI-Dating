@@ -24,14 +24,19 @@ interface CreatePostFormProps {
   categories: ContentCategory[]
 }
 
+function getDefaultCategorySlug(categories: ContentCategory[]) {
+  return categories.find((category) => category.slug === 'chat')?.slug || categories[0]?.slug || ''
+}
+
 export function CreatePostForm({ categories }: CreatePostFormProps) {
   const t = useTranslations('editorUi')
   const router = useRouter()
   const [title, setTitle] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState(categories[0]?.slug || '')
+  const [selectedCategory, setSelectedCategory] = useState(getDefaultCategorySlug(categories))
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [coverImage, setCoverImage] = useState<string | null>(null)
+  const [coverPanelOpen, setCoverPanelOpen] = useState(false)
   const [isUploadingImage, setIsUploadingImage] = useState(false)
   const [isUploadingVideo, setIsUploadingVideo] = useState(false)
   const imageInputRef = useRef<HTMLInputElement>(null)
@@ -232,28 +237,51 @@ export function CreatePostForm({ categories }: CreatePostFormProps) {
               </div>
 
               <div className="mb-6">
-                <label className="text-sm font-medium text-foreground mb-2 block">{t('coverOptional')}</label>
-                {coverImage ? (
-                  <div className="relative rounded-lg overflow-hidden border border-border">
-                    <Image src={coverImage} alt="Cover" fill unoptimized sizes="768px" className="h-48 object-cover" />
-                    <button
-                      onClick={() => setCoverImage(null)}
-                      className="absolute top-2 right-2 p-1.5 rounded-full bg-destructive text-white hover:bg-destructive/90"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                ) : (
+                <div className="rounded-lg border border-border bg-background">
                   <button
                     type="button"
-                    onClick={() => coverImageInputRef.current?.click()}
-                    className="w-full border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer"
+                    onClick={() => setCoverPanelOpen((prev) => !prev)}
+                    className="flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-secondary/40"
                   >
-                    <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">{t('clickUploadCover')}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{t('coverSupport')}</p>
+                    <div>
+                      <span className="block text-sm font-medium text-foreground">{t('coverOptional')}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {coverImage ? t('coverUploaded') : t('coverSupport')}
+                      </span>
+                    </div>
+                    <span className="text-xs font-medium text-primary">
+                      {coverPanelOpen ? '收起' : '展开'}
+                    </span>
                   </button>
-                )}
+
+                  {(coverPanelOpen || !!coverImage) && (
+                    <div className="border-t border-border px-4 py-4">
+                      {coverImage ? (
+                        <div className="relative overflow-hidden rounded-lg border border-border">
+                          <div className="relative h-40">
+                            <Image src={coverImage} alt="Cover" fill unoptimized sizes="768px" className="object-cover" />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setCoverImage(null)}
+                            className="absolute top-2 right-2 rounded-full bg-destructive p-1.5 text-white hover:bg-destructive/90"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => coverImageInputRef.current?.click()}
+                          className="w-full rounded-lg border border-dashed border-border px-4 py-8 text-center transition-colors hover:border-primary/50"
+                        >
+                          <Upload className="mx-auto mb-2 h-7 w-7 text-muted-foreground" />
+                          <p className="text-sm text-muted-foreground">{t('clickUploadCover')}</p>
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
                 <input
                   ref={coverImageInputRef}
                   type="file"
@@ -294,58 +322,57 @@ export function CreatePostForm({ categories }: CreatePostFormProps) {
                   }}
                 />
 
-                <div className="mb-2 flex items-center gap-2 p-2 border border-border rounded-lg bg-background">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => editor?.chain().focus().toggleBold().run()}
-                    className={editor?.isActive('bold') ? 'bg-secondary' : ''}
-                    disabled={isUploadingImage || isUploadingVideo}
-                  >
-                    <Bold className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => editor?.chain().focus().toggleItalic().run()}
-                    className={editor?.isActive('italic') ? 'bg-secondary' : ''}
-                    disabled={isUploadingImage || isUploadingVideo}
-                  >
-                    <Italic className="h-4 w-4" />
-                  </Button>
-                  <div className="h-4 w-px bg-border" />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleImageButtonClick}
-                    disabled={isUploadingImage || isUploadingVideo}
-                  >
-                    {isUploadingImage ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <ImageIcon className="h-4 w-4" />
-                    )}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleVideoButtonClick}
-                    disabled={isUploadingImage || isUploadingVideo}
-                  >
-                    {isUploadingVideo ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Video className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-
                 <div className="rounded-lg border border-border bg-background overflow-hidden">
                   <EditorContent editor={editor} />
+                  <div className="flex items-center gap-2 border-t border-border bg-background px-2 py-2">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => editor?.chain().focus().toggleBold().run()}
+                      className={editor?.isActive('bold') ? 'bg-secondary' : ''}
+                      disabled={isUploadingImage || isUploadingVideo}
+                    >
+                      <Bold className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => editor?.chain().focus().toggleItalic().run()}
+                      className={editor?.isActive('italic') ? 'bg-secondary' : ''}
+                      disabled={isUploadingImage || isUploadingVideo}
+                    >
+                      <Italic className="h-4 w-4" />
+                    </Button>
+                    <div className="h-4 w-px bg-border" />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleImageButtonClick}
+                      disabled={isUploadingImage || isUploadingVideo}
+                    >
+                      {isUploadingImage ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <ImageIcon className="h-4 w-4" />
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleVideoButtonClick}
+                      disabled={isUploadingImage || isUploadingVideo}
+                    >
+                      {isUploadingVideo ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Video className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>

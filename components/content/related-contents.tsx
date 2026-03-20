@@ -2,11 +2,10 @@ import { getRelatedContents } from '@/lib/actions/recommendations'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import { Clock, Eye } from 'lucide-react'
-import { formatDistanceToNow } from 'date-fns'
-import { enUS, zhCN } from 'date-fns/locale'
 import type { RelatedContentItem } from '@/lib/types/content'
 import { getRequestLocale } from '@/i18n/request'
 import { getTranslation } from '@/i18n/dictionaries'
+import { formatISODate } from '@/lib/utils/date'
 
 interface RelatedContentsProps {
   contentId: string
@@ -47,12 +46,7 @@ export async function RelatedContents({ contentId }: RelatedContentsProps) {
                 </div>
                 <div className="flex items-center gap-1">
                   <Clock className="w-3 h-3" />
-                  <span>
-                    {formatDistanceToNow(new Date(content.created_at), {
-                      addSuffix: true,
-                      locale: locale === 'en' ? enUS : zhCN,
-                    })}
-                  </span>
+                  <time dateTime={content.created_at}>{formatISODate(content.created_at)}</time>
                 </div>
               </div>
             </div>

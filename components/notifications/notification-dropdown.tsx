@@ -7,17 +7,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import Link from 'next/link'
 import { getNotifications, markAllAsRead } from '@/lib/actions/notifications'
 import type { Notification } from '@/lib/actions/notifications'
+import { formatISODate } from '@/lib/utils/date'
 import { useOptionalTranslation } from '@/components/i18n/locale-provider'
 import { useLocale } from 'use-intl'
 
 function formatTime(dateStr: string, locale: 'zh' | 'en'): string {
-  const diff = (Date.now() - new Date(dateStr).getTime()) / 3600000
-  if (diff < 24) {
-    const hours = Math.max(1, Math.floor(diff))
-    return locale === 'en' ? `${hours}h ago` : `${hours}h前`
-  }
-  const d = new Date(dateStr)
-  return locale === 'en' ? `${d.getMonth() + 1}/${d.getDate()}` : `${d.getMonth() + 1}月${d.getDate()}日`
+  void locale
+  return formatISODate(dateStr)
 }
 
 function typeIcon(type: string) {

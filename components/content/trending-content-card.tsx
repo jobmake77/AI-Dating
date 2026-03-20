@@ -3,11 +3,10 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Heart, MessageCircle, Eye, Repeat2, Flame, Pin, Trophy, Medal, Award } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { enUS, zhCN } from "date-fns/locale";
 import { getCategoryColor } from "@/lib/utils/categories";
+import { formatISODate } from "@/lib/utils/date";
 import type { TrendingContentItem } from "@/lib/types/content";
-import { useLocale, useTranslations } from "use-intl";
+import { useTranslations } from "use-intl";
 
 interface TrendingContentCardProps {
   content: TrendingContentItem;
@@ -32,13 +31,13 @@ const rankStyles = [
 ];
 
 export function TrendingContentCard({ content, rank }: TrendingContentCardProps) {
-  const locale = useLocale();
   const t = useTranslations('trendingPage');
   const catColorHsl = content.category_color || (content.category ? getCategoryColor(content.category) : "221 83% 53%");
   const primaryTag = content.tags?.[0] || t('defaultTag');
   const tagColor = tagColors[primaryTag] || "bg-tag text-tag-foreground";
   const rankStyle = rank < 3 ? rankStyles[rank] : null;
   const RankIcon = rankStyle ? rankStyle.icon : null;
+  const createdDate = formatISODate(content.created_at);
 
   return (
     <div className="flex items-start gap-3">
@@ -112,12 +111,7 @@ export function TrendingContentCard({ content, rank }: TrendingContentCardProps)
                 {content.users.full_name || content.users.username}
               </Link>
               <span className="text-muted-foreground/50">·</span>
-              <span>
-                {formatDistanceToNow(new Date(content.created_at), {
-                  addSuffix: true,
-                  locale: locale === 'en' ? enUS : zhCN,
-                })}
-              </span>
+              <time dateTime={content.created_at}>{createdDate}</time>
               {content.is_hot && (
                 <span className="flex items-center gap-0.5 text-warning">
                   <Flame className="h-3 w-3" />

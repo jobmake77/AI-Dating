@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
+import { cn } from "@/lib/utils";
 
 interface CompactPostActionsProps {
   contentId: string;
@@ -15,6 +16,7 @@ interface CompactPostActionsProps {
   initialIsReposted: boolean;
   initialIsBookmarked: boolean;
   isAuthenticated: boolean;
+  className?: string;
 }
 
 export function CompactPostActions({
@@ -25,6 +27,7 @@ export function CompactPostActions({
   initialIsReposted,
   initialIsBookmarked,
   isAuthenticated,
+  className,
 }: CompactPostActionsProps) {
   const t = useTranslations('contentUi');
   const [likesCount, setLikesCount] = useState(initialLikesCount);
@@ -159,7 +162,7 @@ export function CompactPostActions({
   };
 
   return (
-    <div className="mt-5 flex items-center gap-3 pt-4 border-t border-border text-xs text-muted-foreground">
+    <div className={cn("flex flex-wrap items-center justify-end gap-3 text-xs text-muted-foreground", className)}>
       <button
         onClick={handleToggleLike}
         disabled={isLikeLoading}

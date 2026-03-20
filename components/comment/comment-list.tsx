@@ -17,15 +17,14 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Trash2, MessageCircle } from 'lucide-react'
 import { deleteComment, createComment } from '@/lib/actions/comments'
+import { formatISODate } from '@/lib/utils/date'
 import { useRouter } from 'next/navigation'
 import type { Comment } from '@/lib/queries/comments'
 import { useLocale, useTranslations } from 'use-intl'
 
 function formatTime(dateStr: string, locale: string): string {
-  const diff = (Date.now() - new Date(dateStr).getTime()) / 3600000
-  if (diff < 24) return `${Math.max(1, Math.floor(diff))}h${locale === 'en' ? ' ago' : '前'}`
-  const d = new Date(dateStr)
-  return locale === 'en' ? `${d.getMonth() + 1}/${d.getDate()}` : `${d.getMonth() + 1}月${d.getDate()}日`
+  void locale
+  return formatISODate(dateStr)
 }
 
 interface CommentListProps {

@@ -3,20 +3,12 @@ import Image from 'next/image'
 import { TagList } from '@/components/tag/tag-list'
 import { Clock, Eye, User } from 'lucide-react'
 import { ContentCardActions } from './content-card-actions'
-import { useLocale, useTranslations } from 'use-intl'
+import { formatISODate } from '@/lib/utils/date'
+import { useTranslations } from 'use-intl'
 
 function formatTime(dateStr: string, locale: string): string {
-  const now = new Date()
-  const date = new Date(dateStr)
-  const diffMs = now.getTime() - date.getTime()
-  const diffH = diffMs / (1000 * 60 * 60)
-  if (diffH < 24) {
-    const h = Math.max(1, Math.floor(diffH))
-    return locale === 'en' ? `${h}h ago` : `${h}h前`
-  }
-  const m = date.getMonth() + 1
-  const d = date.getDate()
-  return locale === 'en' ? `${m}/${d}` : `${m}月${d}日`
+  void locale
+  return formatISODate(dateStr)
 }
 
 interface ContentCardProps {
@@ -42,7 +34,6 @@ interface ContentCardProps {
 }
 
 export function ContentCard({ content, isAuthenticated = false }: ContentCardProps) {
-  const locale = useLocale()
   const t = useTranslations('contentUi')
   return (
     <article className="px-4 py-3 border-b border-border hover:bg-accent/30 transition-colors duration-150 cursor-pointer">
@@ -73,8 +64,8 @@ export function ContentCard({ content, isAuthenticated = false }: ContentCardPro
               {content.users.full_name || content.users.username}
             </Link>
               <span className="text-muted-foreground text-[14px]">·</span>
-              <time className="text-muted-foreground text-[14px]">
-              {formatTime(content.created_at, locale)}
+              <time className="text-muted-foreground text-[14px]" dateTime={content.created_at}>
+              {formatTime(content.created_at, 'zh')}
               </time>
           </div>
 

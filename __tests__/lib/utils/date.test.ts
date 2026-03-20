@@ -46,28 +46,28 @@ describe('Date Utils', () => {
   })
 
   describe('formatRelativeTime', () => {
-    it('应该返回"刚刚"对于少于 60 秒的时间', () => {
+    it('应该返回明确日期对于少于 60 秒的时间', () => {
       const date = new Date('2026-03-08T11:59:30Z')
       const result = formatRelativeTime(date)
-      expect(result).toBe('刚刚')
+      expect(result).toBe('2026-03-08')
     })
 
-    it('应该返回分钟数对于少于 1 小时的时间', () => {
+    it('应该返回明确日期对于少于 1 小时的时间', () => {
       const date = new Date('2026-03-08T11:30:00Z')
       const result = formatRelativeTime(date)
-      expect(result).toBe('30 分钟前')
+      expect(result).toBe('2026-03-08')
     })
 
-    it('应该返回小时数对于少于 24 小时的时间', () => {
+    it('应该返回明确日期对于少于 24 小时的时间', () => {
       const date = new Date('2026-03-08T08:00:00Z')
       const result = formatRelativeTime(date)
-      expect(result).toBe('4 小时前')
+      expect(result).toBe('2026-03-08')
     })
 
-    it('应该返回天数对于少于 30 天的时间', () => {
+    it('应该返回明确日期对于少于 30 天的时间', () => {
       const date = new Date('2026-03-05T12:00:00Z')
       const result = formatRelativeTime(date)
-      expect(result).toBe('3 天前')
+      expect(result).toBe('2026-03-05')
     })
   })
 

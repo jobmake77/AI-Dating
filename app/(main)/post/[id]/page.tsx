@@ -169,40 +169,44 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
           </Alert>
         )}
 
-        {/* Content Detail Card */}
-        <ContentDetailCard
-          content={content}
-          canViewFullContent
-          currentUserId={user?.id}
-        />
-
-        {/* Actions */}
-        <div className="mt-4 rounded-lg border border-border bg-card p-4 shadow-card">
-          <CompactPostActions
-            contentId={id}
-            initialLikesCount={content.likes_count}
-            initialRepostsCount={content.reposts_count}
-            initialIsLiked={isLiked}
-            initialIsReposted={isReposted}
-            initialIsBookmarked={isBookmarked}
-            isAuthenticated={!!user}
-          />
-        </div>
-
-        {/* Comment Input */}
-        <div className="mt-4">
-          <CompactCommentForm contentId={id} isAuthenticated={!!user} />
-        </div>
-
-        {/* Comments */}
-        <div id="comments-section" className="mt-4">
-          <CompactCommentList
-            comments={comments}
+        <div className="overflow-hidden rounded-lg border border-border bg-card shadow-card">
+          {/* Content Detail */}
+          <ContentDetailCard
+            content={content}
+            canViewFullContent
             currentUserId={user?.id}
-            contentId={id}
-            isAuthenticated={!!user}
-            commentsCount={content.comments_count || 0}
+            className="bg-transparent"
+            footer={
+              <CompactPostActions
+                contentId={id}
+                initialLikesCount={content.likes_count}
+                initialRepostsCount={content.reposts_count}
+                initialIsLiked={isLiked}
+                initialIsReposted={isReposted}
+                initialIsBookmarked={isBookmarked}
+                isAuthenticated={!!user}
+              />
+            }
           />
+
+          {/* Comment Input */}
+          <div className="border-t border-border px-5 py-4">
+            <CompactCommentForm
+              contentId={id}
+              isAuthenticated={!!user}
+            />
+          </div>
+
+          {/* Comments */}
+          <div id="comments-section" className="border-t border-border px-5 py-4">
+            <CompactCommentList
+              comments={comments}
+              currentUserId={user?.id}
+              contentId={id}
+              isAuthenticated={!!user}
+              commentsCount={content.comments_count || 0}
+            />
+          </div>
         </div>
       </div>
     </div>

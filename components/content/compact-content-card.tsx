@@ -3,11 +3,10 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Heart, MessageCircle, Eye, Flame, Pin } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { enUS, zhCN } from "date-fns/locale";
 import { getCategoryColor } from "@/lib/utils/categories";
+import { formatISODate } from "@/lib/utils/date";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { useLocale, useTranslations } from "use-intl";
+import { useTranslations } from "use-intl";
 
 interface CompactContentCardProps {
   content: {
@@ -55,11 +54,11 @@ const tagColors: Record<string, string> = {
 
 export function CompactContentCard({ content, index = 0, compact = false }: CompactContentCardProps) {
   const t = useTranslations('contentUi');
-  const locale = useLocale();
   const catColorHsl = content.category_color || (content.category ? getCategoryColor(content.category) : "221 83% 53%");
   const primaryTag = content.tags?.[0] || t('defaultTag');
   const tagColor = tagColors[primaryTag] || "bg-tag text-tag-foreground";
   const contentHref = content.href || `/post/${content.id}`;
+  const createdDate = formatISODate(content.created_at);
 
   return (
     <motion.article
@@ -134,12 +133,7 @@ export function CompactContentCard({ content, index = 0, compact = false }: Comp
               {content.users.full_name || content.users.username}
             </Link>
             <span className="text-muted-foreground/50">·</span>
-            <span>
-              {formatDistanceToNow(new Date(content.created_at), {
-                addSuffix: true,
-                locale: locale === 'en' ? enUS : zhCN,
-              })}
-            </span>
+            <time dateTime={content.created_at}>{createdDate}</time>
             {content.is_hot && (
               <span className="flex items-center gap-0.5 text-warning">
                 <Flame className="h-3 w-3" />
@@ -173,12 +167,7 @@ export function CompactContentCard({ content, index = 0, compact = false }: Comp
             </span>
           </div>
           <div className="flex flex-col items-center w-12">
-            <span className="font-mono text-[10px] text-muted-foreground">
-              {formatDistanceToNow(new Date(content.created_at), {
-                addSuffix: false,
-                locale: locale === 'en' ? enUS : zhCN,
-              }).replace(locale === 'en' ? "about " : "大约 ", "")}
-            </span>
+            <span className="font-mono text-[10px] text-muted-foreground">{createdDate}</span>
             <span className="text-[10px]">{t('activity')}</span>
           </div>
         </div>

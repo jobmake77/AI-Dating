@@ -15,13 +15,34 @@ import {
 } from '@/components/ui/alert-dialog'
 import { TagList } from '@/components/tag/tag-list'
 import { PostActions } from '@/components/content/post-actions'
-import { formatDistanceToNow } from 'date-fns'
-import { enUS, zhCN } from 'date-fns/locale'
+import { formatISODate } from '@/lib/utils/date'
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { Edit, Trash2, Eye, Clock } from 'lucide-react'
 import { deleteContent } from '@/lib/actions/content'
-import { useLocale, useTranslations } from 'use-intl'
+import { useTranslations } from 'use-intl'
+
+function sanitizeHtml(content: string) {
+  const sanitizer = (
+    DOMPurify as unknown as {
+      sanitize?: (value: string, config?: Record<string, unknown>) => string
+      default?: {
+        sanitize?: (value: string, config?: Record<string, unknown>) => string
+      }
+    }
+  )
+
+  const sanitize = sanitizer.sanitize ?? sanitizer.default?.sanitize
+
+  if (!sanitize) {
+    return content
+  }
+
+  return sanitize(content, {
+    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'img', 'a', 'code', 'pre', 'blockquote', 'div', 'span', 'table', 'thead', 'tbody', 'tr', 'th', 'td'],
+    ALLOWED_ATTR: ['href', 'src', 'alt', 'width', 'height', 'class', 'style', 'target', 'rel'],
+  })
+}
 
 interface ContentDetailProps {
   content: {
@@ -45,16 +66,12 @@ interface ContentDetailProps {
 
 export function ContentDetail({ content, isAuthenticated, isAuthor, isLiked, isReposted, contentId }: ContentDetailProps) {
   const t = useTranslations('contentUi')
-  const locale = useLocale()
   const [isDeleting, setIsDeleting] = useState(false)
   const sanitizedContent = useMemo(
-    () =>
-      DOMPurify.sanitize(content.content, {
-      ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'img', 'a', 'code', 'pre', 'blockquote', 'div', 'span', 'table', 'thead', 'tbody', 'tr', 'th', 'td'],
-      ALLOWED_ATTR: ['href', 'src', 'alt', 'width', 'height', 'class', 'style', 'target', 'rel'],
-    }),
+    () => sanitizeHtml(content.content),
     [content.content]
   )
+  const createdDate = formatISODate(content.created_at)
 
   const handleDelete = async () => {
     setIsDeleting(true)
@@ -83,12 +100,7 @@ export function ContentDetail({ content, isAuthenticated, isAuthor, isLiked, isR
               <span>{content.view_count} {t('views')}</span>
             </div>
             <span>·</span>
-            <time>
-              {formatDistanceToNow(new Date(content.created_at), {
-                addSuffix: true,
-                locale: locale === 'en' ? enUS : zhCN,
-              })}
-            </time>
+            <time dateTime={content.created_at}>{createdDate}</time>
           </div>
 
           {isAuthor && (

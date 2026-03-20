@@ -11,6 +11,7 @@ interface CompactCommentListProps {
   contentId: string;
   isAuthenticated: boolean;
   commentsCount: number;
+  className?: string;
 }
 
 export function CompactCommentList({
@@ -19,11 +20,12 @@ export function CompactCommentList({
   contentId,
   isAuthenticated,
   commentsCount,
+  className,
 }: CompactCommentListProps) {
   const t = useTranslations("commentUi");
   if (comments.length === 0) {
     return (
-      <div className="rounded-lg border border-border bg-card p-4 shadow-card">
+      <div className={className}>
         <h2 className="font-mono text-xs font-bold text-foreground mb-3 flex items-center gap-2">
           <MessageSquare className="h-3.5 w-3.5 text-info" />
           {t("comments")}
@@ -37,7 +39,7 @@ export function CompactCommentList({
   }
 
   return (
-    <div className="rounded-lg border border-border bg-card p-4 shadow-card">
+    <div className={className}>
       <h2 className="font-mono text-xs font-bold text-foreground mb-1 flex items-center gap-2">
         <MessageSquare className="h-3.5 w-3.5 text-info" />
         {t("comments")}

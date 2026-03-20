@@ -2,8 +2,7 @@ import Link from 'next/link'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { TagList } from '@/components/tag/tag-list'
 import { Heart, Repeat2, MessageCircle, Clock } from 'lucide-react'
-import { formatDistanceToNow } from 'date-fns'
-import { enUS, zhCN } from 'date-fns/locale'
+import { formatISODate } from '@/lib/utils/date'
 import { getRequestLocale } from '@/i18n/request'
 import { getTranslation } from '@/i18n/dictionaries'
 
@@ -47,6 +46,7 @@ export async function ContentCard({ content }: ContentCardProps) {
   const displayTime = content.is_repost && content.reposted_at
     ? content.reposted_at
     : content.created_at
+  const displayDate = formatISODate(displayTime)
   const contentHref = content.href || `/post/${content.id}`
   const isCommunityPost = content.source_type === 'community_post' && content.community
 
@@ -98,10 +98,7 @@ export async function ContentCard({ content }: ContentCardProps) {
                 href={contentHref}
                 className="text-muted-foreground text-sm hover:underline"
               >
-                {formatDistanceToNow(new Date(displayTime), {
-                  addSuffix: true,
-                  locale: locale === 'en' ? enUS : zhCN,
-                })}
+                <time dateTime={displayTime}>{displayDate}</time>
               </Link>
               {content.community && (
                 <>

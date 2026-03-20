@@ -6,8 +6,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Heart, MessageCircle, Repeat2, UserPlus, User, X } from 'lucide-react'
 import Link from 'next/link'
-import { formatDistanceToNow } from 'date-fns'
-import { enUS, zhCN } from 'date-fns/locale'
+import { formatISODate } from '@/lib/utils/date'
 import { markAsRead, deleteNotification } from '@/lib/actions/notifications'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -125,10 +124,7 @@ export function NotificationItem({ notification }: NotificationItemProps) {
             )}
 
             <p className="text-xs text-muted-foreground mt-2">
-              {formatDistanceToNow(new Date(notification.created_at), {
-                addSuffix: true,
-                locale: locale === 'en' ? enUS : zhCN,
-              })}
+              <time dateTime={notification.created_at}>{formatISODate(notification.created_at)}</time>
             </p>
           </div>
 

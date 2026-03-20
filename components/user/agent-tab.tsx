@@ -23,9 +23,8 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Bot, Copy, Check, Plus, Trash2, Key } from 'lucide-react'
 import { createAgent, deleteAgent } from '@/lib/actions/agents'
-import { formatDistanceToNow } from 'date-fns'
-import { enUS, zhCN } from 'date-fns/locale'
-import { useLocale, useTranslations } from 'use-intl'
+import { formatISODate } from '@/lib/utils/date'
+import { useTranslations } from 'use-intl'
 
 interface Agent {
   id: string
@@ -42,7 +41,6 @@ interface AgentTabProps {
 
 export function AgentTab({ initialAgents }: AgentTabProps) {
   const t = useTranslations('userAgents')
-  const locale = useLocale()
   const [agents, setAgents] = useState<Agent[]>(initialAgents)
   const [showCreate, setShowCreate] = useState(false)
   const [newName, setNewName] = useState('')
@@ -157,16 +155,10 @@ export function AgentTab({ initialAgents }: AgentTabProps) {
               <p className="text-xs text-muted-foreground">
                 {agent.last_used_at
                   ? t('lastActive', {
-                      time: formatDistanceToNow(new Date(agent.last_used_at), {
-                        addSuffix: true,
-                        locale: locale === 'en' ? enUS : zhCN,
-                      }),
+                      time: formatISODate(agent.last_used_at),
                     })
                   : t('createdAt', {
-                      time: formatDistanceToNow(new Date(agent.created_at), {
-                        addSuffix: true,
-                        locale: locale === 'en' ? enUS : zhCN,
-                      }),
+                      time: formatISODate(agent.created_at),
                     })
                 }
               </p>

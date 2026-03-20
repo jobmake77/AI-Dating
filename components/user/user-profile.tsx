@@ -5,9 +5,8 @@ import { FollowButton } from '@/components/user/follow-button'
 import { SendMessageButton } from '@/components/user/send-message-button'
 import { Calendar, FileText, Heart, Github } from 'lucide-react'
 import Link from 'next/link'
-import { formatDistanceToNow } from 'date-fns'
-import { enUS, zhCN } from 'date-fns/locale'
-import { useLocale, useTranslations } from 'use-intl'
+import { formatISODate } from '@/lib/utils/date'
+import { useTranslations } from 'use-intl'
 
 interface UserProfileProps {
   user: {
@@ -33,7 +32,6 @@ interface UserProfileProps {
 
 export function UserProfile({ user, isOwner, currentUserId, isFollowing = false, isAuthenticated, stats }: UserProfileProps) {
   const t = useTranslations('userProfile')
-  const locale = useLocale()
   // 双重验证：确保 isOwner 为 true 且当前用户ID匹配
   const canEdit = isOwner && currentUserId === user.id
 
@@ -131,12 +129,7 @@ export function UserProfile({ user, isOwner, currentUserId, isFollowing = false,
                 <div className="flex items-center gap-1.5">
                   <Calendar className="h-4 w-4" />
                   <span>
-                    {t('joined')}{' '}
-                    {formatDistanceToNow(new Date(user.created_at), {
-                      addSuffix: false,
-                      locale: locale === 'en' ? enUS : zhCN,
-                    })}
-                    {t('agoSuffix')}
+                    {t('joined')} {formatISODate(user.created_at)}
                   </span>
                 </div>
               )}

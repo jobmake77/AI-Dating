@@ -1,11 +1,11 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { motion } from "framer-motion";
 import { Calendar, Eye, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { formatDistanceToNow } from "date-fns";
-import { enUS, zhCN } from "date-fns/locale";
 import { getCategoryColor } from "@/lib/utils/categories";
+import { formatISODate } from "@/lib/utils/date";
 import DOMPurify from "dompurify";
 import { useMemo, useState } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -23,7 +23,30 @@ import {
 } from "@/components/ui/alert-dialog";
 import { deleteContent } from "@/lib/actions/content";
 import { useRouter } from "next/navigation";
-import { useLocale, useTranslations } from "use-intl";
+import { useTranslations } from "use-intl";
+import { cn } from "@/lib/utils";
+
+function sanitizeHtml(content: string) {
+  const sanitizer = (
+    DOMPurify as unknown as {
+      sanitize?: (value: string, config?: Record<string, unknown>) => string;
+      default?: {
+        sanitize?: (value: string, config?: Record<string, unknown>) => string;
+      };
+    }
+  )
+
+  const sanitize = sanitizer.sanitize ?? sanitizer.default?.sanitize
+
+  if (!sanitize) {
+    return content
+  }
+
+  return sanitize(content, {
+    ALLOWED_TAGS: ["p", "br", "strong", "em", "u", "h1", "h2", "h3", "h4", "h5", "h6", "ul", "ol", "li", "img", "a", "code", "pre", "blockquote", "div", "span", "table", "thead", "tbody", "tr", "th", "td"],
+    ALLOWED_ATTR: ["href", "src", "alt", "width", "height", "class", "style", "target", "rel"],
+  })
+}
 
 interface ContentDetailCardProps {
   content: {
@@ -47,25 +70,24 @@ interface ContentDetailCardProps {
   };
   canViewFullContent: boolean;
   currentUserId?: string;
+  footer?: ReactNode;
+  className?: string;
 }
 
-export function ContentDetailCard({ content, canViewFullContent, currentUserId }: ContentDetailCardProps) {
+export function ContentDetailCard({ content, canViewFullContent, currentUserId, footer, className }: ContentDetailCardProps) {
   const t = useTranslations('contentUi');
-  const locale = useLocale();
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
   const catColorHsl = content.category_color || (content.category ? getCategoryColor(content.category) : "221 83% 53%");
   const primaryTag = content.tags?.[0] || t('defaultTag');
   const isAuthor = currentUserId === content.author_id;
+  const createdDate = formatISODate(content.created_at);
   const sanitizedContent = useMemo(() => {
     const displayContent = canViewFullContent
       ? content.content
       : content.content.substring(0, 500) + "...";
 
-    return DOMPurify.sanitize(displayContent, {
-      ALLOWED_TAGS: ["p", "br", "strong", "em", "u", "h1", "h2", "h3", "h4", "h5", "h6", "ul", "ol", "li", "img", "a", "code", "pre", "blockquote", "div", "span", "table", "thead", "tbody", "tr", "th", "td"],
-      ALLOWED_ATTR: ["href", "src", "alt", "width", "height", "class", "style", "target", "rel"],
-    });
+    return sanitizeHtml(displayContent);
   }, [canViewFullContent, content.content]);
 
   const handleDelete = async () => {
@@ -83,7 +105,7 @@ export function ContentDetailCard({ content, canViewFullContent, currentUserId }
     <motion.article
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-lg border border-border bg-card overflow-hidden shadow-card"
+      className={cn("overflow-hidden", className)}
     >
       {/* Category color bar */}
       <div className="h-1" style={{ backgroundColor: `hsl(${catColorHsl})` }} />
@@ -108,10 +130,7 @@ export function ContentDetailCard({ content, canViewFullContent, currentUserId }
               <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                 <span className="flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
-                  {formatDistanceToNow(new Date(content.created_at), {
-                    addSuffix: true,
-                    locale: locale === 'en' ? enUS : zhCN,
-                  })}
+                  <time dateTime={content.created_at}>{createdDate}</time>
                 </span>
                 <span className="flex items-center gap-1">
                   <Eye className="h-3 w-3" />
@@ -176,6 +195,12 @@ export function ContentDetailCard({ content, canViewFullContent, currentUserId }
           dangerouslySetInnerHTML={{ __html: sanitizedContent }}
         />
       </div>
+
+      {footer ? (
+        <div className="px-5 py-4">
+          {footer}
+        </div>
+      ) : null}
     </motion.article>
   );
 }

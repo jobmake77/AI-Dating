@@ -7,9 +7,8 @@ import { FollowButton } from '@/components/user/follow-button'
 import { SendMessageButton } from '@/components/user/send-message-button'
 import { Calendar, FileText, Heart, Users, Award } from 'lucide-react'
 import Link from 'next/link'
-import { formatDistanceToNow } from 'date-fns'
-import { enUS, zhCN } from 'date-fns/locale'
-import { useLocale, useTranslations } from 'use-intl'
+import { formatISODate } from '@/lib/utils/date'
+import { useTranslations } from 'use-intl'
 
 interface UserProfileCardProps {
   user: {
@@ -29,6 +28,9 @@ interface UserProfileCardProps {
   stats?: {
     contents_count: number
     total_likes: number
+    total_comments: number
+    total_reposts: number
+    total_views: number
   }
 }
 
@@ -41,14 +43,22 @@ export function UserProfileCard({
   stats,
 }: UserProfileCardProps) {
   const t = useTranslations('userProfile')
-  const locale = useLocale()
   const canEdit = isOwner && currentUserId === user.id
+  const joinedDate = user.created_at ? formatISODate(user.created_at) : null
+  const voiceScore = Math.round(
+    (stats?.total_likes || 0) * 1 +
+    (stats?.total_comments || 0) * 3 +
+    (stats?.total_reposts || 0) * 4 +
+    (user.followers_count || 0) * 2 +
+    (stats?.total_views || 0) / 20 +
+    (stats?.contents_count || 0) * 1
+  )
 
   const statItems = [
     {
       icon: Award,
-      label: t('karma'),
-      value: (stats?.total_likes || 0).toLocaleString(),
+      label: t('voice'),
+      value: voiceScore.toLocaleString(),
       color: 'text-warning',
       bg: 'bg-warning/10',
     },
@@ -143,12 +153,7 @@ export function UserProfileCard({
           {user.created_at && (
             <span className="flex items-center gap-1">
               <Calendar className="h-3.5 w-3.5" />
-              {t('joined')}{' '}
-              {formatDistanceToNow(new Date(user.created_at), {
-                addSuffix: false,
-                locale: locale === 'en' ? enUS : zhCN,
-              })}
-              {t('agoSuffix')}
+              {t('joined')} {joinedDate}
             </span>
           )}
           <Link href={`/u/${user.username}/following`} className="flex items-center gap-1 hover:text-primary transition-colors">
