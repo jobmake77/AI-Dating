@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { getPopularSearchTags, searchAll } from '@/lib/actions/search'
@@ -12,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
 import type { SearchResult, SearchTag } from '@/lib/types/search'
 import { useTranslations } from 'use-intl'
+import { AIDatingTypewriter } from '@/components/brand/ai-dating-typewriter'
 
 type SearchTab = 'contents' | 'users' | 'tags'
 
@@ -31,6 +32,10 @@ export default function SearchPage() {
   })
   const [popularTags, setPopularTags] = useState<SearchTag[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const easterEggRefreshKeyRef = useRef<string | null>(null)
+
+  const normalizedQuery = useMemo(() => query.trim().toLowerCase(), [query])
+  const isAIDatingQuery = normalizedQuery === 'ai-dating'
 
   // 防抖搜索
   const debouncedSearch = useDebouncedCallback(async (searchQuery: string) => {
@@ -59,6 +64,21 @@ export default function SearchPage() {
   }, [initialQuery, debouncedSearch])
 
   useEffect(() => {
+    const normalizedInitialQuery = initialQuery.trim().toLowerCase()
+
+    if (normalizedInitialQuery !== 'ai-dating') {
+      return
+    }
+
+    if (easterEggRefreshKeyRef.current === initialQuery) {
+      return
+    }
+
+    easterEggRefreshKeyRef.current = initialQuery
+    router.refresh()
+  }, [initialQuery, router])
+
+  useEffect(() => {
     let mounted = true
 
     const loadPopularTags = async () => {
@@ -84,6 +104,10 @@ export default function SearchPage() {
     setQuery(value)
     if (value.trim()) {
       router.push(`/search?q=${encodeURIComponent(value)}`)
+      if (value.trim().toLowerCase() === 'ai-dating') {
+        easterEggRefreshKeyRef.current = value
+        router.refresh()
+      }
     }
     debouncedSearch(value)
   }
@@ -113,6 +137,21 @@ export default function SearchPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-3xl px-4 py-6">
+        {isAIDatingQuery && (
+          <div className="mb-4 rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/8 via-primary/5 to-transparent px-4 py-3 shadow-sm">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.28em] text-primary/70">
+              AI-Dating
+            </div>
+            <AIDatingTypewriter
+              key={initialQuery}
+              className="mt-1 text-2xl font-black tracking-tight text-foreground sm:text-3xl"
+              cursorClassName="text-primary"
+              typingSpeed={105}
+              startDelayMs={160}
+            />
+          </div>
+        )}
+
         {/* 搜索框 */}
         <div className="relative mb-5">
           <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />

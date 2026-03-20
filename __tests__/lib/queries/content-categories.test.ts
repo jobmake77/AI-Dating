@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { getContentCategories } from '@/lib/queries/content-categories'
 
 const createClientMock = vi.hoisted(() => vi.fn())
-const loggerErrorMock = vi.hoisted(() => vi.fn())
+const loggerWarnMock = vi.hoisted(() => vi.fn())
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: createClientMock,
@@ -11,7 +11,8 @@ vi.mock('@/lib/supabase/server', () => ({
 
 vi.mock('@/lib/utils/logger', () => ({
   logger: {
-    error: loggerErrorMock,
+    warn: loggerWarnMock,
+    error: vi.fn(),
   },
 }))
 
@@ -82,6 +83,6 @@ describe('content category queries', () => {
 
     expect(categories.length).toBeGreaterThan(0)
     expect(categories.every((category) => category.requiredRole === 'user')).toBe(true)
-    expect(loggerErrorMock).toHaveBeenCalled()
+    expect(loggerWarnMock).toHaveBeenCalled()
   })
 })

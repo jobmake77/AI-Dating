@@ -13,6 +13,7 @@ import { Github, Mail, Sparkles, Zap } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { signInWithEmail, signInWithGitHub } from '@/lib/actions/auth'
 import { useTranslations } from 'use-intl'
+import { AIDatingTypewriter } from '@/components/brand/ai-dating-typewriter'
 
 export default function LoginPage() {
   const t = useTranslations('authPages.login')
@@ -104,7 +105,13 @@ export default function LoginPage() {
               </div>
             </div>
             <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
-              {t('title')}
+              <AIDatingTypewriter
+                loop
+                pauseMs={2000}
+                typingSpeed={120}
+                deletingSpeed={70}
+                restartDelayMs={450}
+              />
             </CardTitle>
             <CardDescription className="text-base mt-2">
               {t('description')}
