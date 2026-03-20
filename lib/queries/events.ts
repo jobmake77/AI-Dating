@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/utils/logger'
 import { isValidUuid } from '@/lib/utils/is-valid-uuid'
 
 export async function getEvents(options?: {
@@ -25,7 +26,7 @@ export async function getEvents(options?: {
   const { data, error, count } = await query
 
   if (error) {
-    console.error('获取活动列表失败:', error)
+    logger.warn('获取活动列表失败，返回空列表:', error)
     return { data: [], count: 0, error }
   }
 
@@ -43,13 +44,15 @@ export async function getEventById(id: string) {
     .from('events')
     .select('*')
     .eq('id', id)
-    .single()
+    .maybeSingle()
 
   if (error) {
-    if (error.code !== 'PGRST116') {
-      console.error('获取活动详情失败:', error)
-    }
+    logger.warn('获取活动详情失败，返回空结果:', error)
     return { data: null, error }
+  }
+
+  if (!event) {
+    return { data: null, error: null }
   }
 
   // 单独获取创建者信息

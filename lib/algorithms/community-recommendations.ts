@@ -103,7 +103,7 @@ export async function getInterestBasedRecommendations(
     const { data: communities, error } = await query.limit(50)
 
     if (error) {
-      logger.error('获取社区推荐失败:', error)
+      logger.warn('获取社区推荐失败，返回空结果:', error)
       return []
     }
 
@@ -141,7 +141,7 @@ export async function getInterestBasedRecommendations(
       .sort((a, b) => b.score - a.score)
       .slice(0, limit)
   } catch (error) {
-    logger.error('获取兴趣推荐失败:', error)
+    logger.warn('获取兴趣推荐失败，返回空结果:', error)
     return []
   }
 }
@@ -165,7 +165,7 @@ export async function getHotCommunities(
       .limit(limit)
 
     if (error) {
-      logger.error('获取热门社区失败:', error)
+      logger.warn('获取热门社区失败，返回空列表:', error)
       return []
     }
 
@@ -179,7 +179,7 @@ export async function getHotCommunities(
       reason: '热门社区'
     }))
   } catch (error) {
-    logger.error('获取热门社区失败:', error)
+    logger.warn('获取热门社区失败，返回空列表:', error)
     return []
   }
 }
@@ -202,7 +202,7 @@ export async function getNewCommunities(
       .limit(limit)
 
     if (error) {
-      logger.error('获取新建社区失败:', error)
+      logger.warn('获取新建社区失败，返回空列表:', error)
       return []
     }
 
@@ -216,7 +216,7 @@ export async function getNewCommunities(
       reason: '新建社区'
     }))
   } catch (error) {
-    logger.error('获取新建社区失败:', error)
+    logger.warn('获取新建社区失败，返回空列表:', error)
     return []
   }
 }
@@ -255,7 +255,7 @@ export async function getMixedRecommendations(
       .sort((a, b) => b.score - a.score)
       .slice(0, limit)
   } catch (error) {
-    logger.error('获取混合推荐失败:', error)
+    logger.warn('获取混合推荐失败，返回空列表:', error)
     return []
   }
 }

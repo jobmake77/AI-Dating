@@ -92,12 +92,12 @@ export async function getHomepageData(userId?: string): Promise<HomepageData> {
       .limit(5),
   ])
 
-  if (usersError) logger.error('Failed to fetch homepage total users:', usersError)
-  if (contentsError) logger.error('Failed to fetch homepage total contents:', contentsError)
-  if (communitiesError) logger.error('Failed to fetch homepage total communities:', communitiesError)
-  if (joinedError) logger.error('Failed to fetch homepage joined communities:', joinedError)
-  if (trendingError) logger.error('Failed to fetch homepage trending communities:', trendingError)
-  if (tagsError) logger.error('Failed to fetch homepage popular tags:', tagsError)
+  if (usersError) logger.warn('Failed to fetch homepage total users, defaulting to 0:', usersError)
+  if (contentsError) logger.warn('Failed to fetch homepage total contents, defaulting to 0:', contentsError)
+  if (communitiesError) logger.warn('Failed to fetch homepage total communities, defaulting to 0:', communitiesError)
+  if (joinedError) logger.warn('Failed to fetch homepage joined communities, defaulting to empty:', joinedError)
+  if (trendingError) logger.warn('Failed to fetch homepage trending communities, defaulting to empty:', trendingError)
+  if (tagsError) logger.warn('Failed to fetch homepage popular tags, defaulting to empty:', tagsError)
 
   return {
     stats: {

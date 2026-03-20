@@ -222,7 +222,7 @@ export async function getContentsFeed(params: ContentListParams = {}) {
   ])
 
   if (originalError) {
-    logger.error('Failed to fetch original contents:', originalError)
+    logger.warn('Failed to fetch original contents, returning empty feed:', originalError)
     return {
       contents: [],
       total: 0,
@@ -233,7 +233,7 @@ export async function getContentsFeed(params: ContentListParams = {}) {
   }
 
   if (repostsError) {
-    logger.error('Failed to fetch reposts:', repostsError)
+    logger.warn('Failed to fetch reposts, continuing with original contents only:', repostsError)
   }
 
   // 3. 合并数据
@@ -352,7 +352,7 @@ export async function getContents(params: ContentListParams = {}) {
   const { data, error, count } = await query.range(from, to)
 
   if (error) {
-    logger.error("Failed to fetch contents:", error)
+    logger.warn('Failed to fetch contents, returning empty result:', error)
     return { contents: [], totalPages: 0 }
   }
 
@@ -386,10 +386,10 @@ export async function getContentById(id: string) {
     `)
     .eq('id', id)
     .is('deleted_at', null)  // Exclude soft-deleted records
-    .single()
+    .maybeSingle()
 
   if (error) {
-    logger.error("Failed to fetch content:", error)
+    logger.warn('Failed to fetch content by id, returning null:', error)
     return null
   }
 
@@ -424,10 +424,10 @@ export async function getContentBySlug(slug: string) {
     `)
     .eq('slug', slug)
     .is('deleted_at', null)  // Exclude soft-deleted records
-    .single()
+    .maybeSingle()
 
   if (error) {
-    logger.error("Failed to fetch content:", error)
+    logger.warn('Failed to fetch content by slug, returning null:', error)
     return null
   }
 
@@ -474,7 +474,7 @@ export async function getUserLikedContents(userId: string, params: { page?: numb
     .range(from, to)
 
   if (error) {
-    logger.error("Failed to fetch liked contents:", error)
+    logger.warn('Failed to fetch liked contents, returning empty result:', error)
     return { contents: [], totalPages: 0 }
   }
 
@@ -521,7 +521,7 @@ export async function getUserRepostedContents(userId: string, params: { page?: n
     .range(from, to)
 
   if (error) {
-    logger.error("Failed to fetch reposted contents:", error)
+    logger.warn('Failed to fetch reposted contents, returning empty result:', error)
     return { contents: [], totalPages: 0 }
   }
 

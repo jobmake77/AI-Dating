@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { cache } from 'react'
+import { logger } from '@/lib/utils/logger'
 
 // =====================================================
 // Community Queries
@@ -36,7 +37,7 @@ export async function getCommunities(options?: {
   const { data, error, count } = await query
 
   if (error) {
-    console.error('获取社区列表失败:', error)
+    logger.warn('获取社区列表失败，返回空列表:', error)
     return { data: [], count: 0, error }
   }
 
@@ -57,7 +58,7 @@ export const getCommunityBySlug = cache(async (slug: string) => {
       return { data: null, error: null }
     }
 
-    console.error('获取社区详情失败:', {
+    logger.warn('获取社区详情失败，返回空结果:', {
       slug,
       error,
       errorMessage: error.message,
@@ -88,7 +89,7 @@ export async function getUserCommunities(userId: string, options?: {
     .range(offset, offset + limit - 1)
 
   if (error) {
-    console.error('获取用户社区列表失败:', error)
+    logger.warn('获取用户社区列表失败，返回空列表:', error)
     return { data: [], count: 0, error }
   }
 
@@ -125,7 +126,7 @@ export async function getCommunityMembers(communityId: string, options?: {
   const { data, error, count } = await query
 
   if (error) {
-    console.error('获取社区成员列表失败:', error)
+    logger.warn('获取社区成员列表失败，返回空列表:', error)
     return { data: [], count: 0, error }
   }
 
@@ -162,7 +163,7 @@ export async function getTrendingCommunities(limit: number = 10) {
     .limit(limit)
 
   if (error) {
-    console.error('获取热门社区失败:', error)
+    logger.warn('获取热门社区失败，返回空列表:', error)
     return { data: [], error }
   }
 
@@ -195,7 +196,7 @@ export async function getRecommendedCommunities(userId: string, limit: number = 
     .limit(limit)
 
   if (error) {
-    console.error('获取推荐社区失败:', error)
+    logger.warn('获取推荐社区失败，返回空列表:', error)
     return { data: [], error }
   }
 

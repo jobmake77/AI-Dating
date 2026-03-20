@@ -77,11 +77,11 @@ async function getMatchedTags(
     ])
 
   if (tagsByNameError) {
-    logger.error('Failed to fetch tags by name for explore filters:', tagsByNameError)
+    logger.warn('Failed to fetch tags by name for explore filters, continuing with partial matches:', tagsByNameError)
   }
 
   if (tagsBySlugError) {
-    logger.error('Failed to fetch tags by slug for explore filters:', tagsBySlugError)
+    logger.warn('Failed to fetch tags by slug for explore filters, continuing with partial matches:', tagsBySlugError)
   }
 
   const matchedTags = new Map<string, MatchedTagRow>()
@@ -116,7 +116,7 @@ async function getApprovedContentIdsForTagValues(
   ])
 
   if (legacyContentsResult.error) {
-    logger.error('Failed to fetch legacy tag matches for explore filters:', legacyContentsResult.error)
+    logger.warn('Failed to fetch legacy tag matches for explore filters, continuing with empty fallback:', legacyContentsResult.error)
   }
 
   const contentIds = new Set<string>((legacyContentsResult.data || []).map((content) => content.id))
@@ -130,7 +130,7 @@ async function getApprovedContentIdsForTagValues(
       .is('contents.deleted_at', null)
 
     if (contentTagsError) {
-      logger.error('Failed to fetch content tags for explore filters:', contentTagsError)
+      logger.warn('Failed to fetch content tags for explore filters, continuing with partial matches:', contentTagsError)
     } else {
       contentTags.forEach((contentTag: { content_id: string }) => {
         contentIds.add(contentTag.content_id)
@@ -178,11 +178,11 @@ async function getApprovedContentIdsByCategories(
   ])
 
   if (directCategoryContentsResult.error) {
-    logger.error('Failed to fetch direct category matches for explore:', directCategoryContentsResult.error)
+    logger.warn('Failed to fetch direct category matches for explore, continuing with fallback:', directCategoryContentsResult.error)
   }
 
   if (legacyContentsResult.error) {
-    logger.error('Failed to fetch legacy category matches for explore:', legacyContentsResult.error)
+    logger.warn('Failed to fetch legacy category matches for explore, continuing with fallback:', legacyContentsResult.error)
   }
 
   const tagIdToCategorySlugs = new Map<string, string[]>()
@@ -213,7 +213,7 @@ async function getApprovedContentIdsByCategories(
       .is('contents.deleted_at', null)
 
     if (contentTagsError) {
-      logger.error('Failed to fetch category relations for explore:', contentTagsError)
+      logger.warn('Failed to fetch category relations for explore, continuing with partial matches:', contentTagsError)
     } else {
       contentTags.forEach((contentTag: { content_id: string; tag_id: string }) => {
         tagIdToCategorySlugs.get(contentTag.tag_id)?.forEach((categorySlug) => {
@@ -291,7 +291,7 @@ export async function getPopularTags(limit: number = 20) {
     .limit(limit)
 
   if (error) {
-    logger.error('Failed to fetch popular tags:', error)
+    logger.warn('Failed to fetch popular tags, returning empty list:', error)
     return []
   }
 
@@ -378,7 +378,7 @@ export async function getExploreContents(params: ExploreParams = {}) {
   const { data, error, count } = await query.range(from, to)
 
   if (error) {
-    logger.error('Failed to fetch explore contents:', error)
+    logger.warn('Failed to fetch explore contents, returning empty result:', error)
     return { contents: [], totalPages: 0, total: 0 }
   }
 

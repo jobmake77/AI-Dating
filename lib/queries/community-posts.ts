@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/utils/logger'
 
 // =====================================================
 // Community Post Queries
@@ -38,7 +39,7 @@ export async function getCommunityPosts(communityId: string, options?: {
   const { data, error, count } = await query
 
   if (error) {
-    console.error('获取社区帖子列表失败:', error)
+    logger.warn('获取社区帖子列表失败，返回空列表:', error)
     return { data: [], count: 0, error }
   }
 
@@ -56,11 +57,15 @@ export async function getCommunityPostById(postId: string) {
       community:communities!community_posts_community_id_fkey(id, slug, name, type)
     `)
     .eq('id', postId)
-    .single()
+    .maybeSingle()
 
   if (error) {
-    console.error('获取帖子详情失败:', error)
+    logger.warn('获取帖子详情失败，返回空结果:', error)
     return { data: null, error }
+  }
+
+  if (!data) {
+    return { data: null, error: null }
   }
 
   return { data, error: null }
@@ -84,7 +89,7 @@ export async function getPostComments(postId: string, options?: {
     .range(offset, offset + limit - 1)
 
   if (error) {
-    console.error('获取评论列表失败:', error)
+    logger.warn('获取评论列表失败，返回空列表:', error)
     return { data: [], count: 0, error }
   }
 
@@ -128,7 +133,7 @@ export async function getUserPosts(userId: string, options?: {
     .range(offset, offset + limit - 1)
 
   if (error) {
-    console.error('获取用户帖子列表失败:', error)
+    logger.warn('获取用户帖子列表失败，返回空列表:', error)
     return { data: [], count: 0, error }
   }
 
@@ -179,7 +184,7 @@ export async function getHotPosts(options?: {
   const { data, error } = await query
 
   if (error) {
-    console.error('获取热门帖子失败:', error)
+    logger.warn('获取热门帖子失败，返回空列表:', error)
     return { data: [], error }
   }
 
@@ -207,7 +212,7 @@ export async function getLatestPosts(options?: {
     .range(offset, offset + limit - 1)
 
   if (error) {
-    console.error('获取最新帖子失败:', error)
+    logger.warn('获取最新帖子失败，返回空列表:', error)
     return { data: [], count: 0, error }
   }
 

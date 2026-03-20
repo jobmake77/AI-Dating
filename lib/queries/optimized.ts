@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/utils/logger'
 
 /**
  * 数据库查询优化工具
@@ -25,7 +26,7 @@ export async function batchGetUsers(userIds: string[]) {
     .is('deleted_at', null)  // Exclude soft-deleted users
 
   if (error) {
-    console.error('批量获取用户失败:', error)
+    logger.warn('批量获取用户失败，返回空列表:', error)
     return []
   }
 
@@ -60,7 +61,7 @@ export async function batchGetContents(contentIds: string[]) {
     .is('deleted_at', null)  // Exclude soft-deleted contents
 
   if (error) {
-    console.error('批量获取内容失败:', error)
+    logger.warn('批量获取内容失败，返回空列表:', error)
     return []
   }
 
@@ -82,7 +83,7 @@ export async function batchCheckUserLikes(userId: string, contentIds: string[]) 
     .in('content_id', contentIds)
 
   if (error) {
-    console.error('批量检查点赞状态失败:', error)
+    logger.warn('批量检查点赞状态失败，返回空结果:', error)
     return new Set<string>()
   }
 
@@ -104,7 +105,7 @@ export async function batchCheckUserFollows(userId: string, targetUserIds: strin
     .in('following_id', targetUserIds)
 
   if (error) {
-    console.error('批量检查关注状态失败:', error)
+    logger.warn('批量检查关注状态失败，返回空结果:', error)
     return new Set<string>()
   }
 
@@ -368,7 +369,7 @@ export async function getArchivedContents(options: {
     .range(offset, offset + limit - 1)
 
   if (error) {
-    console.error('获取归档内容失败:', error)
+    logger.warn('获取归档内容失败，返回空列表:', error)
     return { data: [], count: 0 }
   }
 

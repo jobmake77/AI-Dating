@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/utils/logger'
 import { normalizeSingleRelation } from '@/lib/utils/normalize'
 
 export interface Comment {
@@ -76,7 +77,7 @@ export async function getCommentsByContentId(contentId: string): Promise<Comment
       .order('created_at', { ascending: false })
 
     if (e2) {
-      console.error('Failed to fetch comments:', e2)
+      logger.warn('Failed to fetch comments, returning empty list:', e2)
       return []
     }
     data = d2

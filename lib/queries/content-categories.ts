@@ -76,7 +76,7 @@ export async function getContentCategories(options: {
 
     return filterCategoriesByRole((data || []).map(mapCategoryRow), role)
   } catch (error) {
-    logger.error('Failed to fetch content categories, falling back to defaults:', error)
+    logger.warn('Failed to fetch content categories, falling back to defaults:', error)
     const fallback = mapFallbackCategories().filter((category) => includeInactive || category.isActive)
     return filterCategoriesByRole(fallback, role)
   }
