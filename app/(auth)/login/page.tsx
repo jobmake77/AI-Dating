@@ -110,12 +110,15 @@ export default function LoginPage() {
                 pauseMs={2000}
                 typingSpeed={120}
                 restartDelayMs={320}
-                cursorClassName="bg-blue-500 dark:bg-blue-400"
+                cursorClassName="text-blue-500 dark:text-blue-400"
               />
             </CardTitle>
             <CardDescription className="text-base mt-2">
               {t('description')}
             </CardDescription>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t('supportHint')}
+            </p>
           </CardHeader>
 
           <CardContent className="space-y-4 relative">

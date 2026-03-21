@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { TagList } from '@/components/tag/tag-list'
-import { Heart, Repeat2, MessageCircle, Clock } from 'lucide-react'
+import { Heart, Repeat2, MessageCircle, Clock, Pin } from 'lucide-react'
 import { formatISODate } from '@/lib/utils/date'
 import { getRequestLocale } from '@/i18n/request'
 import { getTranslation } from '@/i18n/dictionaries'
@@ -37,6 +37,9 @@ interface ContentCardProps {
       full_name: string | null
     }
     reposted_at?: string
+    is_profile_pinned?: boolean
+    is_site_pinned?: boolean
+    is_pinned?: boolean
   }
 }
 
@@ -49,6 +52,7 @@ export async function ContentCard({ content }: ContentCardProps) {
   const displayDate = formatISODate(displayTime)
   const contentHref = content.href || `/post/${content.id}`
   const isCommunityPost = content.source_type === 'community_post' && content.community
+  const isPinned = content.is_site_pinned || content.is_profile_pinned || content.is_pinned
 
   return (
     <article className="border-b border-border/50 hover:bg-muted/30 transition-colors cursor-pointer">
@@ -115,9 +119,12 @@ export async function ContentCard({ content }: ContentCardProps) {
 
             {/* 标题 */}
             <Link href={contentHref} className="block mb-2">
-              <h3 className="font-bold text-base leading-snug hover:underline line-clamp-2">
-                {content.title}
-              </h3>
+              <div className="flex items-start gap-1.5">
+                {isPinned && <Pin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />}
+                <h3 className="font-bold text-base leading-snug hover:underline line-clamp-2">
+                  {content.title}
+                </h3>
+              </div>
             </Link>
 
             {/* 摘要 */}

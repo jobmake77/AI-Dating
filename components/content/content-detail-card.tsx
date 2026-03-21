@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { motion } from "framer-motion";
-import { Calendar, Eye, Trash2 } from "lucide-react";
+import { Calendar, Eye, Pin, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { getCategoryColor } from "@/lib/utils/categories";
 import { formatISODate } from "@/lib/utils/date";
@@ -62,6 +62,8 @@ interface ContentDetailCardProps {
     view_count: number;
     created_at: string;
     author_id: string;
+    is_profile_pinned?: boolean;
+    is_site_pinned?: boolean;
     users: {
       username: string;
       avatar: string | null;
@@ -79,7 +81,7 @@ export function ContentDetailCard({ content, canViewFullContent, currentUserId, 
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
   const catColorHsl = content.category_color || (content.category ? getCategoryColor(content.category) : "221 83% 53%");
-  const primaryTag = content.tags?.[0] || t('defaultTag');
+  const primaryTag = content.tags?.[0];
   const isAuthor = currentUserId === content.author_id;
   const createdDate = formatISODate(content.created_at);
   const sanitizedContent = useMemo(() => {
@@ -148,9 +150,23 @@ export function ContentDetailCard({ content, canViewFullContent, currentUserId, 
                     {content.category_name || content.category}
                   </Link>
                 )}
-                <span className="rounded-full bg-primary/10 px-2 py-0.5 font-mono text-[10px] text-primary font-medium">
-                  {primaryTag}
-                </span>
+                {content.is_site_pinned && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 font-mono text-[10px] font-medium text-primary">
+                    <Pin className="h-3 w-3" />
+                    {t('sitePinned')}
+                  </span>
+                )}
+                {content.is_profile_pinned && !content.is_site_pinned && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 font-mono text-[10px] font-medium text-primary">
+                    <Pin className="h-3 w-3" />
+                    {t('profilePinned')}
+                  </span>
+                )}
+                {primaryTag ? (
+                  <span className="rounded-full bg-primary/10 px-2 py-0.5 font-mono text-[10px] text-primary font-medium">
+                    {primaryTag}
+                  </span>
+                ) : null}
               </div>
             </div>
           </div>

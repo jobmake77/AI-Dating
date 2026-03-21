@@ -111,8 +111,8 @@ export function normalizeUser(user: unknown): NormalizedUser | null {
         : null,
     bio: typeof rawUser.bio === 'string' ? rawUser.bio : null,
     role: typeof rawUser.role === 'string' ? rawUser.role : 'user',
-    followers_count: typeof rawUser.followers_count === 'number' ? rawUser.followers_count : 0,
-    following_count: typeof rawUser.following_count === 'number' ? rawUser.following_count : 0,
+    followers_count: typeof rawUser.followers_count === 'number' ? Math.max(rawUser.followers_count, 0) : 0,
+    following_count: typeof rawUser.following_count === 'number' ? Math.max(rawUser.following_count, 0) : 0,
   }
 }
 

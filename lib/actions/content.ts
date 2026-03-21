@@ -170,7 +170,7 @@ export async function createContent(formData: FormData) {
 
   revalidatePath('/contents')
   revalidatePath('/')
-  redirect(`/post/${data.id}`)
+  redirect('/?tab=latest')
 }
 
 export async function updateContent(id: string, formData: FormData) {
@@ -278,6 +278,73 @@ export async function deleteContent(id: string) {
   revalidatePath('/contents')
   revalidatePath('/')
   revalidatePath(`/post/${id}`)
+}
+
+export async function toggleContentPin(id: string, scope: 'profile' | 'site') {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    redirect('/login')
+  }
+
+  const [{ data: content }, { data: userData }] = await Promise.all([
+    supabase
+      .from('contents')
+      .select('id, author_id, category, is_profile_pinned, is_site_pinned')
+      .eq('id', id)
+      .is('deleted_at', null)
+      .single(),
+    supabase
+      .from('users')
+      .select('role, username')
+      .eq('id', user.id)
+      .single(),
+  ])
+
+  if (!content) {
+    throw new Error('内容不存在')
+  }
+
+  const isAdmin = userData?.role === 'admin'
+  const isAuthor = content.author_id === user.id
+
+  if (scope === 'profile' && !isAuthor) {
+    throw new Error('只能置顶自己的内容到个人主页')
+  }
+
+  if (scope === 'site' && !isAdmin) {
+    throw new Error('只有管理员可以执行全站置顶')
+  }
+
+  const updates = scope === 'profile'
+    ? {
+        is_profile_pinned: !content.is_profile_pinned,
+        pinned_by: user.id,
+        pinned_at: new Date().toISOString(),
+      }
+    : {
+        is_site_pinned: !content.is_site_pinned,
+        pinned_by: user.id,
+        pinned_at: new Date().toISOString(),
+      }
+
+  const { error } = await supabase
+    .from('contents')
+    .update(updates)
+    .eq('id', id)
+
+  if (error) {
+    throw new Error(`Failed to toggle content pin: ${error.message}`)
+  }
+
+  revalidatePath('/')
+  revalidatePath('/contents')
+  revalidatePath(`/post/${id}`)
+
+  if (userData?.username) {
+    revalidatePath(`/u/${userData.username}`)
+  }
 }
 
 export async function incrementViewCount(id: string) {

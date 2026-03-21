@@ -30,6 +30,8 @@ export interface ContentListItem {
   source_type?: 'content' | 'repost' | 'community_post'
   community?: ContentCommunitySummary | null
   is_pinned?: boolean
+  is_profile_pinned?: boolean
+  is_site_pinned?: boolean
   is_hot?: boolean
 }
 
@@ -67,6 +69,8 @@ export interface TrendingContentItem {
   created_at: string
   users: ContentAuthorSummary
   is_pinned?: boolean
+  is_profile_pinned?: boolean
+  is_site_pinned?: boolean
   is_hot?: boolean
   score?: number
 }

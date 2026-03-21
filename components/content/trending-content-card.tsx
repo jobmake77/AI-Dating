@@ -6,7 +6,6 @@ import { Heart, MessageCircle, Eye, Repeat2, Flame, Pin, Trophy, Medal, Award } 
 import { getCategoryColor } from "@/lib/utils/categories";
 import { formatISODate } from "@/lib/utils/date";
 import type { TrendingContentItem } from "@/lib/types/content";
-import { useTranslations } from "use-intl";
 
 interface TrendingContentCardProps {
   content: TrendingContentItem;
@@ -31,13 +30,13 @@ const rankStyles = [
 ];
 
 export function TrendingContentCard({ content, rank }: TrendingContentCardProps) {
-  const t = useTranslations('trendingPage');
   const catColorHsl = content.category_color || (content.category ? getCategoryColor(content.category) : "221 83% 53%");
-  const primaryTag = content.tags?.[0] || t('defaultTag');
-  const tagColor = tagColors[primaryTag] || "bg-tag text-tag-foreground";
+  const primaryTag = content.tags?.[0];
+  const tagColor = primaryTag ? (tagColors[primaryTag] || "bg-tag text-tag-foreground") : "";
   const rankStyle = rank < 3 ? rankStyles[rank] : null;
   const RankIcon = rankStyle ? rankStyle.icon : null;
   const createdDate = formatISODate(content.created_at);
+  const isPinned = content.is_site_pinned || content.is_profile_pinned || content.is_pinned;
 
   return (
     <div className="flex items-start gap-3">
@@ -80,7 +79,7 @@ export function TrendingContentCard({ content, rank }: TrendingContentCardProps)
           <div className="flex-1 min-w-0">
             {/* Title row */}
             <div className="flex items-center gap-1.5 flex-wrap mb-1">
-              {content.is_pinned && <Pin className="h-3 w-3 text-primary shrink-0" />}
+              {isPinned && <Pin className="h-3 w-3 text-primary shrink-0" />}
               <Link href={`/post/${content.id}`}>
                 <h3 className="text-[13px] font-semibold leading-snug text-foreground group-hover:text-primary transition-colors">
                   {content.title}
@@ -101,9 +100,11 @@ export function TrendingContentCard({ content, rank }: TrendingContentCardProps)
                   {content.category_name || content.category}
                 </span>
               )}
-              <span className={`rounded px-1.5 py-0.5 font-mono text-[10px] font-medium ${tagColor}`}>
-                {primaryTag}
-              </span>
+              {primaryTag ? (
+                <span className={`rounded px-1.5 py-0.5 font-mono text-[10px] font-medium ${tagColor}`}>
+                  {primaryTag}
+                </span>
+              ) : null}
               <Link
                 href={`/u/${content.users.username}`}
                 className="font-medium text-link hover:underline"

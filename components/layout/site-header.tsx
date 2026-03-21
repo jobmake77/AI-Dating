@@ -212,7 +212,7 @@ export function SiteHeader({ serverUser }: SiteHeaderProps) {
               <AIDatingTypewriter
                 key={brandAnimationKey}
                 className="text-sm font-bold"
-                cursorClassName="bg-primary"
+                cursorClassName="text-primary"
                 typingSpeed={95}
                 startDelayMs={80}
                 hideCursorWhenDone
@@ -321,8 +321,13 @@ export function SiteHeader({ serverUser }: SiteHeaderProps) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-44">
                   <DropdownMenuItem asChild>
-                    <Link href={profileLink}>{t('nav.profile', '个人主页')}</Link>
+                    <Link href={profileLink}>{t('nav.account', '个人信息')}</Link>
                   </DropdownMenuItem>
+                  {user?.role === 'admin' && (
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin">{t('nav.adminPanel', '管理面板')}</Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={handleSignOut}
@@ -387,8 +392,17 @@ export function SiteHeader({ serverUser }: SiteHeaderProps) {
                   onClick={() => setMobileMenuOpen(false)}
                   className="px-3 py-2 text-sm font-medium rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
                 >
-                  {t('nav.profile', '个人主页')}
+                  {t('nav.account', '个人信息')}
                 </Link>
+                {user?.role === 'admin' && (
+                  <Link
+                    href="/admin"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="px-3 py-2 text-sm font-medium rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+                  >
+                    {t('nav.adminPanel', '管理面板')}
+                  </Link>
+                )}
                 <button
                   onClick={() => {
                     setMobileMenuOpen(false)

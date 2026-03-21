@@ -45,11 +45,13 @@ export function UserProfileCard({
   const t = useTranslations('userProfile')
   const canEdit = isOwner && currentUserId === user.id
   const joinedDate = user.created_at ? formatISODate(user.created_at) : null
+  const followersCount = Math.max(user.followers_count || 0, 0)
+  const followingCount = Math.max(user.following_count || 0, 0)
   const voiceScore = Math.round(
     (stats?.total_likes || 0) * 1 +
     (stats?.total_comments || 0) * 3 +
     (stats?.total_reposts || 0) * 4 +
-    (user.followers_count || 0) * 2 +
+    followersCount * 2 +
     (stats?.total_views || 0) / 20 +
     (stats?.contents_count || 0) * 1
   )
@@ -79,7 +81,7 @@ export function UserProfileCard({
     {
       icon: Users,
       label: t('followers'),
-      value: (user.followers_count || 0).toString(),
+      value: followersCount.toString(),
       color: 'text-accent',
       bg: 'bg-accent/10',
     },
@@ -158,7 +160,7 @@ export function UserProfileCard({
           )}
           <Link href={`/u/${user.username}/following`} className="flex items-center gap-1 hover:text-primary transition-colors">
             <Users className="h-3.5 w-3.5" />
-            <strong className="text-foreground">{user.following_count || 0}</strong> {t('following')}
+            <strong className="text-foreground">{followingCount}</strong> {t('following')}
           </Link>
         </div>
       </div>

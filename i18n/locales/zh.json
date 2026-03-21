@@ -43,6 +43,8 @@
     "notifications": "通知",
     "messages": "消息",
     "admin": "管理后台",
+    "adminPanel": "管理面板",
+    "account": "个人信息",
     "logout": "退出登录",
     "me": "我的"
   },
@@ -246,7 +248,7 @@
   "authPages": {
     "login": {
       "title": "欢迎来到 AI-Dating",
-      "description": "选择你喜欢的方式登录或注册",
+      "description": "当前支持邮箱登录和 GitHub 登录",
       "tab": "登录",
       "emailLabel": "邮箱",
       "emailPlaceholder": "your@email.com",
@@ -258,6 +260,7 @@
       "divider": "或",
       "github": "使用 GitHub 登录",
       "githubRedirecting": "跳转中...",
+      "supportHint": "当前支持邮箱登录和 GitHub 登录，其他第三方登录暂未开放。",
       "oauthHint": "当前 OAuth 仅支持 GitHub，其他第三方登录暂未开放。",
       "signupPrompt": "还没有账号？",
       "signupLink": "立即注册"
@@ -733,6 +736,12 @@
     "copyFailed": "复制失败",
     "bookmarked": "已收藏",
     "bookmarkCancelled": "已取消收藏",
+    "pinToProfile": "置顶到个人主页",
+    "unpinFromProfile": "取消个人置顶",
+    "pinToSite": "全站置顶",
+    "unpinFromSite": "取消全站置顶",
+    "profilePinned": "个人主页置顶",
+    "sitePinned": "全站置顶",
     "share": "分享",
     "bookmark": "收藏",
     "copyLink": "复制链接",

@@ -35,6 +35,8 @@ interface CompactContentCardProps {
       name: string;
     } | null;
     is_pinned?: boolean;
+    is_profile_pinned?: boolean;
+    is_site_pinned?: boolean;
     is_hot?: boolean;
   };
   index?: number;
@@ -55,10 +57,11 @@ const tagColors: Record<string, string> = {
 export function CompactContentCard({ content, index = 0, compact = false }: CompactContentCardProps) {
   const t = useTranslations('contentUi');
   const catColorHsl = content.category_color || (content.category ? getCategoryColor(content.category) : "221 83% 53%");
-  const primaryTag = content.tags?.[0] || t('defaultTag');
-  const tagColor = tagColors[primaryTag] || "bg-tag text-tag-foreground";
+  const primaryTag = content.tags?.[0];
+  const tagColor = primaryTag ? (tagColors[primaryTag] || "bg-tag text-tag-foreground") : "";
   const contentHref = content.href || `/post/${content.id}`;
   const createdDate = formatISODate(content.created_at);
+  const isPinned = content.is_site_pinned || content.is_profile_pinned || content.is_pinned;
 
   return (
     <motion.article
@@ -88,7 +91,7 @@ export function CompactContentCard({ content, index = 0, compact = false }: Comp
         <div className="flex-1 min-w-0">
           {/* Title row */}
           <div className="mb-1 flex flex-wrap items-center gap-1.5">
-            {content.is_pinned && <Pin className="h-3 w-3 text-primary shrink-0" />}
+            {isPinned && <Pin className="h-3 w-3 text-primary shrink-0" />}
             <Link href={contentHref}>
               <h3 className="text-[13px] font-semibold leading-snug text-foreground group-hover:text-primary transition-colors">
                 {content.title}
@@ -109,9 +112,11 @@ export function CompactContentCard({ content, index = 0, compact = false }: Comp
                 {content.category_name || content.category}
               </span>
             )}
-            <span className={`rounded px-1.5 py-0.5 font-mono text-[10px] font-medium ${tagColor}`}>
-              {primaryTag}
-            </span>
+            {primaryTag ? (
+              <span className={`rounded px-1.5 py-0.5 font-mono text-[10px] font-medium ${tagColor}`}>
+                {primaryTag}
+              </span>
+            ) : null}
             {content.community && (
               <Link
                 href={`/communities/${content.community.slug}`}

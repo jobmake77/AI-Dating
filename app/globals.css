@@ -200,7 +200,6 @@
 
 .terminal-cursor {
   animation: terminal-cursor-blink 1s steps(1, end) infinite;
-  box-shadow: 0 0 0 1px hsl(var(--background) / 0.12);
 }
 
 /* Prose styles for markdown content */

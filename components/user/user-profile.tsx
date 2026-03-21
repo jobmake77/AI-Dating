@@ -34,6 +34,8 @@ export function UserProfile({ user, isOwner, currentUserId, isFollowing = false,
   const t = useTranslations('userProfile')
   // 双重验证：确保 isOwner 为 true 且当前用户ID匹配
   const canEdit = isOwner && currentUserId === user.id
+  const followersCount = Math.max(user.followers_count || 0, 0)
+  const followingCount = Math.max(user.following_count || 0, 0)
 
   return (
     <Card className="overflow-hidden border-border/50 shadow-lg">
@@ -86,13 +88,13 @@ export function UserProfile({ user, isOwner, currentUserId, isFollowing = false,
             <div className="flex items-center gap-6 mb-5 flex-wrap">
               <Link href={`/u/${user.username}/following`} className="group">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-lg group-hover:text-primary transition-colors">{user.following_count || 0}</span>
+                  <span className="font-bold text-lg group-hover:text-primary transition-colors">{followingCount}</span>
                   <span className="text-muted-foreground text-sm group-hover:text-primary transition-colors">{t('followingCount')}</span>
                 </div>
               </Link>
               <Link href={`/u/${user.username}/followers`} className="group">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-lg group-hover:text-primary transition-colors">{user.followers_count || 0}</span>
+                  <span className="font-bold text-lg group-hover:text-primary transition-colors">{followersCount}</span>
                   <span className="text-muted-foreground text-sm group-hover:text-primary transition-colors">{t('followers')}</span>
                 </div>
               </Link>

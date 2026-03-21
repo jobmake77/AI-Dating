@@ -52,6 +52,8 @@ export interface FeedItem {
   } | null
   is_repost: boolean
   is_pinned?: boolean
+  is_profile_pinned?: boolean
+  is_site_pinned?: boolean
   is_hot?: boolean
   reposted_by?: {
     id: string
@@ -85,6 +87,18 @@ type RepostWithContent = {
 
 const FEED_CANDIDATE_MULTIPLIER = 4
 const FEED_MAX_CANDIDATES = 120
+
+function isMissingPinColumnError(error: { code?: string | null; message?: string | null } | null | undefined) {
+  if (!error) {
+    return false
+  }
+
+  return error.code === '42703' && (
+    error.message?.includes('is_site_pinned') ||
+    error.message?.includes('is_profile_pinned') ||
+    error.message?.includes('pinned_at')
+  )
+}
 
 async function getCategoryMetaMap() {
   const categories = await getContentCategories({ includeInactive: true })
@@ -184,28 +198,44 @@ export async function getContentsFeed(params: ContentListParams = {}) {
     }
   }
 
-  // 1. 获取原创内容候选集
-  let originalQuery = buildContentsBaseQuery(supabase, status)
+  const buildOriginalQuery = (withPinOrdering: boolean) => {
+    let query = buildContentsBaseQuery(supabase, status)
 
-  if (tag) {
-    originalQuery = originalQuery.contains('tags', [tag])
+    if (tag) {
+      query = query.contains('tags', [tag])
+    }
+
+    if (sortBy === 'following') {
+      query = query.in('author_id', followingIds)
+    }
+
+    if (withPinOrdering) {
+      if (sortBy === 'latest' || sortBy === 'following') {
+        query = query
+          .order('is_site_pinned', { ascending: false })
+          .order('pinned_at', { ascending: false, nullsFirst: false })
+          .order('created_at', { ascending: false })
+      } else {
+        query = query
+          .order('is_site_pinned', { ascending: false })
+          .order('pinned_at', { ascending: false, nullsFirst: false })
+          .order('likes_count', { ascending: false })
+          .order('comments_count', { ascending: false })
+          .order('views', { ascending: false })
+          .order('created_at', { ascending: false })
+      }
+    } else if (sortBy === 'latest' || sortBy === 'following') {
+      query = query.order('created_at', { ascending: false })
+    } else {
+      query = query
+        .order('likes_count', { ascending: false })
+        .order('comments_count', { ascending: false })
+        .order('views', { ascending: false })
+        .order('created_at', { ascending: false })
+    }
+
+    return query.range(0, candidateWindow - 1)
   }
-
-  if (sortBy === 'following') {
-    originalQuery = originalQuery.in('author_id', followingIds)
-  }
-
-  if (sortBy === 'latest' || sortBy === 'following') {
-    originalQuery = originalQuery.order('created_at', { ascending: false })
-  } else {
-    originalQuery = originalQuery
-      .order('likes_count', { ascending: false })
-      .order('comments_count', { ascending: false })
-      .order('views', { ascending: false })
-      .order('created_at', { ascending: false })
-  }
-
-  originalQuery = originalQuery.range(0, candidateWindow - 1)
 
   let repostsQuery = buildRepostsBaseQuery(supabase, status)
   if (sortBy === 'following') {
@@ -213,13 +243,15 @@ export async function getContentsFeed(params: ContentListParams = {}) {
   }
   repostsQuery = repostsQuery.order('created_at', { ascending: false }).range(0, candidateWindow - 1)
 
-  const [
-    { data: originalContents, error: originalError, count: originalCount },
-    { data: reposts, error: repostsError, count: repostsCount },
-  ] = await Promise.all([
-    originalQuery,
-    repostsQuery,
-  ])
+  let originalResult = await buildOriginalQuery(true)
+
+  if (isMissingPinColumnError(originalResult.error)) {
+    logger.warn('Pin fields are missing in contents table, falling back to legacy feed ordering:', originalResult.error)
+    originalResult = await buildOriginalQuery(false)
+  }
+
+  const { data: reposts, error: repostsError, count: repostsCount } = await repostsQuery
+  const { data: originalContents, error: originalError, count: originalCount } = originalResult
 
   if (originalError) {
     logger.warn('Failed to fetch original contents, returning empty feed:', originalError)
@@ -292,6 +324,10 @@ export async function getContentsFeed(params: ContentListParams = {}) {
 
   // 5. Sort based on sortBy parameter
   filteredItems.sort((a, b) => {
+    if ((a.is_site_pinned ? 1 : 0) !== (b.is_site_pinned ? 1 : 0)) {
+      return (b.is_site_pinned ? 1 : 0) - (a.is_site_pinned ? 1 : 0)
+    }
+
     if (sortBy === 'latest') {
       // Sort by time (newest first)
       const timeA = a.is_repost ? new Date(a.reposted_at!).getTime() : new Date(a.created_at).getTime()
@@ -323,33 +359,56 @@ export async function getContents(params: ContentListParams = {}) {
   const supabase = await createClient()
   const { page = 1, limit = 12, tag, status = 'approved', authorId } = params
 
-  let query = supabase
-    .from('contents')
-    .select(`
-      *,
-      users:author_id (
-        id,
-        username,
-        avatar,
-        full_name
-      )
-    `, { count: 'exact' })
-    .eq('status', status)
-    .is('deleted_at', null)  // Exclude soft-deleted records
-    .order('created_at', { ascending: false })
-
-  if (tag) {
-    query = query.contains('tags', [tag])
-  }
-
-  if (authorId) {
-    query = query.eq('author_id', authorId)
-  }
-
   const from = (page - 1) * limit
   const to = from + limit - 1
 
-  const { data, error, count } = await query.range(from, to)
+  const buildQuery = (withPinOrdering: boolean) => {
+    let query = supabase
+      .from('contents')
+      .select(`
+        *,
+        users:author_id (
+          id,
+          username,
+          avatar,
+          full_name
+        )
+      `, { count: 'exact' })
+      .eq('status', status)
+      .is('deleted_at', null)
+
+    if (tag) {
+      query = query.contains('tags', [tag])
+    }
+
+    if (authorId) {
+      query = query.eq('author_id', authorId)
+      query = withPinOrdering
+        ? query
+          .order('is_profile_pinned', { ascending: false })
+          .order('pinned_at', { ascending: false, nullsFirst: false })
+          .order('created_at', { ascending: false })
+        : query.order('created_at', { ascending: false })
+    } else {
+      query = withPinOrdering
+        ? query
+          .order('is_site_pinned', { ascending: false })
+          .order('pinned_at', { ascending: false, nullsFirst: false })
+          .order('created_at', { ascending: false })
+        : query.order('created_at', { ascending: false })
+    }
+
+    return query.range(from, to)
+  }
+
+  let result = await buildQuery(true)
+
+  if (isMissingPinColumnError(result.error)) {
+    logger.warn('Pin fields are missing in contents table, falling back to legacy content ordering:', result.error)
+    result = await buildQuery(false)
+  }
+
+  const { data, error, count } = result
 
   if (error) {
     logger.warn('Failed to fetch contents, returning empty result:', error)

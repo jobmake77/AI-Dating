@@ -806,7 +806,11 @@ export type Database = {
           deleted_at: string | null
           excerpt: string | null
           id: string
+          is_profile_pinned: boolean
+          is_site_pinned: boolean
           likes_count: number | null
+          pinned_at: string | null
+          pinned_by: string | null
           price_type: string | null
           reading_time: number | null
           reject_reason: string | null
@@ -828,7 +832,11 @@ export type Database = {
           deleted_at?: string | null
           excerpt?: string | null
           id?: string
+          is_profile_pinned?: boolean
+          is_site_pinned?: boolean
           likes_count?: number | null
+          pinned_at?: string | null
+          pinned_by?: string | null
           price_type?: string | null
           reading_time?: number | null
           reject_reason?: string | null
@@ -850,7 +858,11 @@ export type Database = {
           deleted_at?: string | null
           excerpt?: string | null
           id?: string
+          is_profile_pinned?: boolean
+          is_site_pinned?: boolean
           likes_count?: number | null
+          pinned_at?: string | null
+          pinned_by?: string | null
           price_type?: string | null
           reading_time?: number | null
           reject_reason?: string | null

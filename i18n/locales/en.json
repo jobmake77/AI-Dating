@@ -43,6 +43,8 @@
     "notifications": "Notifications",
     "messages": "Messages",
     "admin": "Admin",
+    "adminPanel": "Admin panel",
+    "account": "Account",
     "logout": "Logout",
     "me": "Me"
   },
@@ -246,7 +248,7 @@
   "authPages": {
     "login": {
       "title": "Welcome to AI-Dating",
-      "description": "Choose your preferred way to sign in or create an account",
+      "description": "Email and GitHub sign-in are currently supported",
       "tab": "Sign in",
       "emailLabel": "Email",
       "emailPlaceholder": "your@email.com",
@@ -258,6 +260,7 @@
       "divider": "or",
       "github": "Continue with GitHub",
       "githubRedirecting": "Redirecting...",
+      "supportHint": "Email and GitHub sign-in are supported right now. Other third-party providers are not available yet.",
       "oauthHint": "OAuth is currently available for GitHub only. Other providers are not enabled yet.",
       "signupPrompt": "Don't have an account yet?",
       "signupLink": "Create one now"
@@ -733,6 +736,12 @@
     "copyFailed": "Copy failed",
     "bookmarked": "Saved",
     "bookmarkCancelled": "Save removed",
+    "pinToProfile": "Pin to profile",
+    "unpinFromProfile": "Unpin from profile",
+    "pinToSite": "Pin site-wide",
+    "unpinFromSite": "Unpin site-wide",
+    "profilePinned": "Pinned on profile",
+    "sitePinned": "Pinned site-wide",
     "share": "Share",
     "bookmark": "Save",
     "copyLink": "Copy link",

@@ -79,10 +79,12 @@ export function AIDatingTypewriter({
         <span
           aria-hidden="true"
           className={cn(
-            'terminal-cursor ml-1 inline-block h-[0.9em] w-[0.5em] rounded-[1px] bg-current align-middle',
+            'terminal-cursor ml-1 inline-block font-mono leading-none align-middle text-current',
             cursorClassName
           )}
-        />
+        >
+          _
+        </span>
       ) : null}
     </span>
   )

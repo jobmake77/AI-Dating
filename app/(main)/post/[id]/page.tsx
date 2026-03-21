@@ -4,19 +4,30 @@ import { checkUserLiked } from '@/lib/actions/likes'
 import { checkUserReposted } from '@/lib/actions/reposts'
 import { checkUserBookmarked } from '@/lib/actions/bookmarks'
 import { createClient } from '@/lib/supabase/server'
-import { incrementViewCount } from '@/lib/actions/content'
+import { incrementViewCount, toggleContentPin } from '@/lib/actions/content'
 import { ContentDetailCard } from '@/components/content/content-detail-card'
 import { CompactPostActions } from '@/components/content/compact-post-actions'
 import { CompactCommentForm } from '@/components/comment/compact-comment-form'
 import { CompactCommentList } from '@/components/comment/compact-comment-list'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Clock, XCircle, ArrowLeft } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Clock, XCircle, ArrowLeft, Pin } from 'lucide-react'
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { getArticleSchema, getBreadcrumbSchema } from '@/lib/seo/structured-data'
 import { getRequestLocale } from '@/i18n/request'
 import { getTranslation } from '@/i18n/dictionaries'
+
+async function handleToggleProfilePin(id: string): Promise<void> {
+  'use server'
+  await toggleContentPin(id, 'profile')
+}
+
+async function handleToggleSitePin(id: string): Promise<void> {
+  'use server'
+  await toggleContentPin(id, 'site')
+}
 
 interface PostPageProps {
   params: Promise<{ id: string }>
@@ -87,6 +98,7 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
   const { id } = await params
   const locale = await getRequestLocale()
   const t = (key: string, fallback: string) => getTranslation(locale, `postPage.${key}`, fallback)
+  const contentUiT = (key: string, fallback: string) => getTranslation(locale, `contentUi.${key}`, fallback)
   await searchParams
 
   const content = await getContentById(id)
@@ -97,6 +109,11 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
   // Check authentication and membership status
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  const { data: viewerProfile } = user
+    ? await supabase.from('users').select('role').eq('id', user.id).maybeSingle()
+    : { data: null }
+  const isAuthor = user?.id === content.author_id
+  const isAdmin = viewerProfile?.role === 'admin'
 
   // Fetch comments
   const comments = await getCommentsByContentId(id)
@@ -177,15 +194,40 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
             currentUserId={user?.id}
             className="bg-transparent"
             footer={
-              <CompactPostActions
-                contentId={id}
-                initialLikesCount={content.likes_count}
-                initialRepostsCount={content.reposts_count}
-                initialIsLiked={isLiked}
-                initialIsReposted={isReposted}
-                initialIsBookmarked={isBookmarked}
-                isAuthenticated={!!user}
-              />
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-wrap items-center gap-2">
+                  {isAuthor && (
+                    <form action={handleToggleProfilePin.bind(null, id)}>
+                      <Button type="submit" variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
+                        <Pin className={`h-3.5 w-3.5 ${content.is_profile_pinned ? 'fill-current' : ''}`} />
+                        {content.is_profile_pinned
+                          ? contentUiT('unpinFromProfile', '取消个人置顶')
+                          : contentUiT('pinToProfile', '置顶到个人主页')}
+                      </Button>
+                    </form>
+                  )}
+                  {isAdmin && (
+                    <form action={handleToggleSitePin.bind(null, id)}>
+                      <Button type="submit" variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
+                        <Pin className={`h-3.5 w-3.5 ${content.is_site_pinned ? 'fill-current' : ''}`} />
+                        {content.is_site_pinned
+                          ? contentUiT('unpinFromSite', '取消全站置顶')
+                          : contentUiT('pinToSite', '置顶到全站')}
+                      </Button>
+                    </form>
+                  )}
+                </div>
+
+                <CompactPostActions
+                  contentId={id}
+                  initialLikesCount={content.likes_count}
+                  initialRepostsCount={content.reposts_count}
+                  initialIsLiked={isLiked}
+                  initialIsReposted={isReposted}
+                  initialIsBookmarked={isBookmarked}
+                  isAuthenticated={!!user}
+                />
+              </div>
             }
           />
 

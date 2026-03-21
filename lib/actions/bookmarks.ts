@@ -121,6 +121,8 @@ type BookmarkedContentRow = {
   price_type: string
   reading_time?: number | null
   view_count: number
+  is_profile_pinned?: boolean
+  is_site_pinned?: boolean
   likes_count: number
   reposts_count: number
   comments_count: number
@@ -153,6 +155,8 @@ export async function getUserBookmarkedContents(userId: string, params: { page?:
           price_type,
           reading_time,
           view_count,
+          is_profile_pinned,
+          is_site_pinned,
           likes_count,
           reposts_count,
           comments_count,
